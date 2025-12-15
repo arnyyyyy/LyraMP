@@ -23,17 +23,17 @@ import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
 import com.arno.lyramp.feature.lyrics.repository.LyricsGetterRepository
 import org.koin.compose.koinInject
 
-internal class ShowLyricsScreen(val artist: String, val songName: String) : Screen {
+internal class LyricsScreen(val artist: String, val songName: String) : Screen {
 
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
-                val repository: LyricsGetterRepository = koinInject()
+                val lyricsRepository: LyricsGetterRepository = koinInject()
                 val screenModel = LyricsScreenModel(
                         artist = artist,
                         song = songName,
-                        lyricsRepository = repository
+                        lyricsRepository = lyricsRepository,
                 )
                 val uiState by screenModel.uiState.collectAsState()
                 Scaffold(
@@ -77,9 +77,7 @@ internal class ShowLyricsScreen(val artist: String, val songName: String) : Scre
                                         }
 
                                         is LyricsUiState.Success -> {
-                                                ShowLyricsSuccessCard(
-                                                        lyrics = state.lyrics,
-                                                )
+                                                ShowLyricsSuccessCard(lyrics = state.lyrics,)
                                         }
                                 }
                         }

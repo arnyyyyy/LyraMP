@@ -30,6 +30,12 @@ class AuthUpdateHandler {
                                         state = state.copy(isLoading = false),
                                         news = AuthNews.NavigateToHistory
                                 )
+
+                        AuthUpdate.SuccessNavigateToYandex ->
+                                AuthCommand(
+                                        state = state.copy(isLoading = false),
+                                        news = AuthNews.NavigateToYandexEnterPlaylist
+                                )
                 }
         }
 }

@@ -4,5 +4,6 @@ val appModules = listOf(
     networkModule,
     authModule,
     listeningHistoryModule,
-    lyricsModule
+    lyricsModule,
+    translationModule
 )

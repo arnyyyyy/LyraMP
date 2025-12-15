@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.authorization.domain.usecase.HandleAuthCallbackUseCase
 import com.arno.lyramp.feature.authorization.domain.usecase.InitAuthUseCase
+import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,11 @@ class AuthorizationScreenModel(
         fun onEvent(event: AuthEvent) {
                 when (event) {
                         is AuthEvent.OnLoginClick -> {
+                                if (event.service == MusicServiceType.YANDEX) {
+                                        processUpdate(AuthUpdate.SuccessNavigateToYandex)
+                                        return
+                                }
+
                                 processUpdate(AuthUpdate.Loading)
 
                                 screenModelScope.launch {

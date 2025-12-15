@@ -25,6 +25,7 @@ kotlin {
                         baseName = "ComposeApp"
                         isStatic = true
                         linkerOpts("-framework", "Security")
+                        linkerOpts("-framework", "AVFoundation")
                 }
         }
 
@@ -65,7 +66,9 @@ kotlin {
                         implementation(libs.multiplatform.settings.no.arg)
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
-
+                        implementation(libs.korio)
+                        implementation(libs.basic.sound)
+                        implementation(libs.okio)
                 }
                 commonTest.dependencies {
                         implementation(libs.kotlin.test)

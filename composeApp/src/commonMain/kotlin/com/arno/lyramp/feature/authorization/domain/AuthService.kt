@@ -1,7 +1,7 @@
 package com.arno.lyramp.feature.authorization.domain
 
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.repository.AuthRepository
+import com.arno.lyramp.feature.authorization.repository.AuthApiRepository
 
 interface AuthService {
         suspend fun initAuth(service: MusicServiceType)
@@ -9,10 +9,10 @@ interface AuthService {
 }
 
 internal class AuthServiceImpl(
-        private val repositories: Map<MusicServiceType, AuthRepository>
+        private val repositories: Map<MusicServiceType, AuthApiRepository>
 ) : AuthService {
 
-        private fun getRepositoryForService(service: MusicServiceType): AuthRepository =
+        private fun getRepositoryForService(service: MusicServiceType): AuthApiRepository =
                 repositories[service]
                         ?: error("AuthRepository for $service is not provided")
 

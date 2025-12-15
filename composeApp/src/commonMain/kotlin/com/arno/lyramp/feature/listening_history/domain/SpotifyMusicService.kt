@@ -1,12 +1,12 @@
 package com.arno.lyramp.feature.listening_history.domain
 
-import com.arno.lyramp.feature.authorization.repository.AuthRepository
+import com.arno.lyramp.feature.authorization.repository.AuthApiRepository
 import com.arno.lyramp.feature.listening_history.api.SpotifyMusicApi
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.util.Log
 
 internal class SpotifyMusicService(
-        private val authRepo: AuthRepository,
+        private val authRepo: AuthApiRepository,
         private val api: SpotifyMusicApi
 ) : MusicService {
 

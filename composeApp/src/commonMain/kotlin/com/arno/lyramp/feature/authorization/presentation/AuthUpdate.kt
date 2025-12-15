@@ -5,6 +5,7 @@ sealed interface AuthUpdate {
         object Finish : AuthUpdate
         data class Error(val message: String) : AuthUpdate
         object SuccessNavigate : AuthUpdate
+        object SuccessNavigateToYandex : AuthUpdate
 }
 
 data class AuthCommand(

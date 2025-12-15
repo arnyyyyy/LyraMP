@@ -11,7 +11,7 @@ import com.arno.lyramp.feature.authorization.presentation.spotify.launchSpotifyA
 internal class SpotifyAuthRepository(
         private val api: SpotifyAuthApi,
         private val authConfig: SpotifyAuthConfig
-) : AuthRepository {
+) : AuthApiRepository {
 
         override val service: MusicServiceType = MusicServiceType.SPOTIFY
 
@@ -64,5 +64,10 @@ internal class SpotifyAuthRepository(
         private fun saveTokens(accessToken: String, refreshToken: String?) {
                 SpotifyAuthStorage.accessToken = accessToken
                 if (refreshToken != null) SpotifyAuthStorage.refreshToken = refreshToken
+                try {
+                        AuthSelectionStorage.lastAuthorizedService = MusicServiceType.SPOTIFY.name
+                } catch (e: Throwable) {
+                        Log.logger.e(e) { "SpotifyAuthRepository: token saving failed" }
+                }
         }
 }

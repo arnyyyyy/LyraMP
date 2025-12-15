@@ -20,15 +20,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
-import com.arno.lyramp.feature.lyrics.ui.ShowLyricsScreen
-import com.arno.lyramp.util.Log
+import com.arno.lyramp.feature.lyrics.ui.LyricsScreen
 import org.koin.compose.koinInject
 
 internal object ShowListeningHistoryScreen : Screen {
 
         @Composable
         override fun Content() {
-                Log.logger.i { "Navigated to ShowListeningHistoryScreen" }
                 val navigator = LocalNavigator.currentOrThrow
                 val screenModel: ListeningHistoryScreenModel = koinInject()
                 val uiState by screenModel.uiState.collectAsState()
@@ -41,11 +39,14 @@ internal object ShowListeningHistoryScreen : Screen {
                         ) {
                                 when (val state = uiState) {
                                         is ListeningHistoryUiState.Loading -> {
-                                                LoadingContent()
+                                                CircularProgressIndicator()
                                         }
 
                                         is ListeningHistoryUiState.Empty -> {
-                                                EmptyContent()
+                                                Text(
+                                                        text = "Нет сохранённых треков",
+                                                        style = MaterialTheme.typography.bodyLarge
+                                                )
                                         }
 
                                         is ListeningHistoryUiState.Error -> {
@@ -57,7 +58,7 @@ internal object ShowListeningHistoryScreen : Screen {
                                                         tracks = state.tracks,
                                                         onTrackClick = { track ->
                                                                 navigator.push(
-                                                                        ShowLyricsScreen(
+                                                                        LyricsScreen(
                                                                                 artist = track.artists.firstOrNull()
                                                                                         ?: "",
                                                                                 songName = track.name
@@ -70,19 +71,6 @@ internal object ShowListeningHistoryScreen : Screen {
                         }
                 }
         }
-}
-
-@Composable
-private fun LoadingContent() {
-        CircularProgressIndicator()
-}
-
-@Composable
-private fun EmptyContent() {
-        Text(
-                text = "Нет сохранённых треков",
-                style = MaterialTheme.typography.bodyLarge
-        )
 }
 
 @Composable

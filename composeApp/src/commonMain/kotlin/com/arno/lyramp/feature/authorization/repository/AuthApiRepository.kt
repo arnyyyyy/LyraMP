@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.authorization.repository
 
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 
-interface AuthRepository {
+interface AuthApiRepository {
         val service: MusicServiceType
 
         suspend fun initAuthFlow()
