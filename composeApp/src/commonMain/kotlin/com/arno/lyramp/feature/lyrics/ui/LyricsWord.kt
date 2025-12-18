@@ -20,7 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.translation.model.WordInfo
 import com.arno.lyramp.feature.translation.model.TranslationResult
 import com.arno.lyramp.feature.translation.presentation.TranslationState
@@ -35,10 +38,13 @@ internal fun LyricsWord(word: String) {
 
         Text(
                 text = word,
-                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color(0xFF2C3E50),
+                lineHeight = 28.sp,
                 modifier = Modifier
                         .clickable { if (word.isNotBlank()) showTranslation = true }
-                        .padding(end = 4.dp)
+                        .padding(end = 5.dp, bottom = 2.dp)
         )
 
         if (showTranslation) {
@@ -131,7 +137,7 @@ private fun ShowWordTranslation(
                                 },
                                 enabled = !isLoadingAudio
                         ) {
-                                Text(if (isPlayingSource) "⏸ Оригинал" else "🔊 Оригинал")
+                                Text("🔊 ")
                         }
                 },
                 confirmButton = {

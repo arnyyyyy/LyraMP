@@ -3,7 +3,6 @@ package com.arno.lyramp.feature.listening_history.presentation
 import cafe.adriel.voyager.core.model.ScreenModel
 import com.arno.lyramp.feature.listening_history.domain.MusicService
 import com.arno.lyramp.feature.listening_history.ui.ListeningHistoryUiState
-import com.arno.lyramp.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel

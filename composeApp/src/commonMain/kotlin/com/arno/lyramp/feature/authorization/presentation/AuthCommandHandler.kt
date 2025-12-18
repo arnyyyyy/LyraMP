@@ -1,5 +1,7 @@
 package com.arno.lyramp.feature.authorization.presentation
 
+import com.arno.lyramp.feature.authorization.model.MusicServiceType
+
 class AuthUpdateHandler {
 
         fun handle(
@@ -25,17 +27,27 @@ class AuthUpdateHandler {
                                         state = state.copy(isLoading = false)
                                 )
 
-                        AuthUpdate.SuccessNavigate ->
-                                AuthCommand(
-                                        state = state.copy(isLoading = false),
-                                        news = AuthNews.NavigateToHistory
-                                )
+                        is AuthUpdate.SuccessNavigate -> {
+                                when (update.musicService) {
+                                        MusicServiceType.SPOTIFY ->
+                                                AuthCommand(
+                                                        state = state.copy(isLoading = false),
+                                                        news = AuthNews.NavigateToOnboarding
+                                                )
 
-                        AuthUpdate.SuccessNavigateToYandex ->
-                                AuthCommand(
-                                        state = state.copy(isLoading = false),
-                                        news = AuthNews.NavigateToYandexEnterPlaylist
-                                )
+                                        MusicServiceType.YANDEX ->
+                                                AuthCommand(
+                                                        state = state.copy(isLoading = false),
+                                                        news = AuthNews.NavigateToOnboarding
+                                                )
+
+                                        MusicServiceType.APPLE ->
+                                                AuthCommand(
+                                                        state = state.copy(isLoading = false),
+                                                        news = AuthNews.NavigateToAppleEnterPlaylist
+                                                )
+                                }
+                        }
                 }
         }
 }

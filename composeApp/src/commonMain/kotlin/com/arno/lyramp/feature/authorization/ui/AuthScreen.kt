@@ -39,8 +39,10 @@ import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
 import com.arno.lyramp.feature.authorization.presentation.spotify.SpotifyAuthHolder
 import com.arno.lyramp.feature.authorization.presentation.spotify.registerSpotifyAuthCallback
+import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthHolder
+import com.arno.lyramp.feature.authorization.presentation.yandex.registerYandexAuthCallback
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
-import com.arno.lyramp.feature.listening_history.ui.ShowListeningHistoryScreen
+import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
 import com.arno.lyramp.util.Log
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.apple_icon
@@ -71,21 +73,33 @@ object AuthorizationScreen : Screen {
                 }
 
                 LaunchedEffect(Unit) {
+                        registerYandexAuthCallback { token, expiresIn ->
+                                YandexAuthHolder.callback = null
+                                screenModel.onEvent(
+                                        AuthEvent.OnAuthCodeReceived(
+                                                service = MusicServiceType.YANDEX,
+                                                code = "${token}_token_expiresIn_${expiresIn}"
+                                        )
+                                )
+                        }
+                }
+
+                LaunchedEffect(Unit) {
                         screenModel.news.collect { effect ->
                                 when (effect) {
-                                        AuthNews.NavigateToHistory -> {
+                                        AuthNews.NavigateToOnboarding -> {
                                                 try {
-                                                        navigator?.push(ShowListeningHistoryScreen)
+                                                        navigator?.push(OnboardingScreen)
                                                 } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "AuthorizationScreen: navigation failed" }
+                                                        Log.logger.e(e) { "AuthorizationScreen: navigation to Onboarding screen failed" }
                                                 }
                                         }
 
-                                        AuthNews.NavigateToYandexEnterPlaylist -> {
+                                        AuthNews.NavigateToAppleEnterPlaylist -> {
                                                 try {
-                                                        navigator?.push(AuthYandexScreen)
+                                                        navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
                                                 } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "AuthorizationScreen: navigation to Yandex screen failed" }
+                                                        Log.logger.e(e) { "AuthorizationScreen: navigation to Apple screen failed" }
                                                 }
                                         }
                                 }

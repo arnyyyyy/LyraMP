@@ -1,41 +1,7 @@
 package com.arno.lyramp.feature.listening_history.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
-
-
-@Serializable
-internal data class YandexPlaylist(
-        val uuid: String? = null,
-        val meta: JsonObject? = null,
-        val items: List<YandexPlaylistItem>? = null
-)
-
-@Serializable
-internal data class YandexPlaylistItem(
-        val id: String? = null,
-        val albumId: Long? = null,
-        val key: String? = null,
-        val data: YandexTrackData? = null
-)
-
-@Serializable
-internal data class YandexTrackData(
-        val id: String? = null,
-        val title: String? = null,
-        val coverUri: String? = null,
-        val artists: List<YandexArtist>? = null,
-        val albums: List<YandexAlbum>? = null
-) {
-        fun toTrack() = title?.let { t ->
-                MusicTrack(
-                        name = t,
-                        artists = artists?.mapNotNull { it.name }.orEmpty(),
-                        albumName = albums?.firstOrNull()?.title,
-                        imageUrl = coverUri
-                )
-        }
-}
 
 @Serializable
 internal data class YandexArtist(
@@ -47,4 +13,80 @@ internal data class YandexArtist(
 internal data class YandexAlbum(
         val id: Long? = null,
         val title: String? = null
+)
+
+@Serializable
+internal data class AccountStatusResponse(
+        val result: AccountResult?
+)
+
+@Serializable
+internal data class AccountResult(
+        val account: YandexAccount?,
+        val plus: YandexPlus?
+)
+
+@Serializable
+internal data class YandexPlus(
+        @SerialName("has_plus")
+        val hasPlus: Boolean = false
+)
+
+
+@Serializable
+internal data class YandexAccount(
+        val uid: String? = null,
+        val login: String? = null,
+        @SerialName("display_name")
+        val displayName: String? = null,
+        @SerialName("full_name")
+        val fullName: String? = null
+)
+
+
+@Serializable
+internal data class LikedTracksResponse(
+        val result: LikedTracksResult?
+)
+
+@Serializable
+internal data class LikedTracksResult(
+        val library: YandexLibrary?
+)
+
+@Serializable
+internal data class YandexLibrary(
+        val tracks: List<YandexTrackItem>?
+)
+
+@Serializable
+internal data class YandexTrackItem(
+        val id: String? = null,
+        @SerialName("albumId")
+        val albumId: String? = null,
+        val timestamp: String? = null,
+        val track: YandexTrack? = null
+)
+
+@Serializable
+internal data class YandexTrack(
+        val id: String? = null,
+        val title: String = "",
+        val artists: List<YandexArtist>? = null,
+        val albums: List<YandexAlbum>? = null
+)
+
+@Serializable
+internal data class TracksResponseWrapper(
+        val invocationInfo: YandexInvocationInfo? = null,
+        val result: List<YandexTrack>? = null
+)
+
+@Serializable
+internal data class YandexInvocationInfo(
+        @SerialName("req-id")
+        val reqId: String? = null,
+        val hostname: String? = null,
+        @SerialName("exec-duration-millis")
+        val execDurationMillis: Int? = null
 )

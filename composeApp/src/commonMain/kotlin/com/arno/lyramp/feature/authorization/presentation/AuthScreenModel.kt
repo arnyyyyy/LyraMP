@@ -26,8 +26,8 @@ class AuthorizationScreenModel(
         fun onEvent(event: AuthEvent) {
                 when (event) {
                         is AuthEvent.OnLoginClick -> {
-                                if (event.service == MusicServiceType.YANDEX) {
-                                        processUpdate(AuthUpdate.SuccessNavigateToYandex)
+                                if (event.service == MusicServiceType.APPLE) {
+                                        processUpdate(AuthUpdate.SuccessNavigate(MusicServiceType.APPLE))
                                         return
                                 }
 
@@ -58,7 +58,7 @@ class AuthorizationScreenModel(
                                                         event.code
                                                 )
                                         }.onSuccess {
-                                                processUpdate(AuthUpdate.SuccessNavigate)
+                                                processUpdate(AuthUpdate.SuccessNavigate(event.service))
                                                 processUpdate(AuthUpdate.Finish)
                                         }.onFailure {
                                                 processUpdate(

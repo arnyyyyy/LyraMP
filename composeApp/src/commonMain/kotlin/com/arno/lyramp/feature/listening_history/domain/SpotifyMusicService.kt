@@ -46,9 +46,4 @@ internal class SpotifyMusicService(
                         return emptyList()
                 }
         }
-
-        override fun isAuthorized(): Boolean {
-                return !authRepo.getAccessToken().isNullOrBlank() || !authRepo.getRefreshToken()
-                        .isNullOrBlank()
-        }
 }
