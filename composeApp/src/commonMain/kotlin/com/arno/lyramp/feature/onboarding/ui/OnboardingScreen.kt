@@ -35,6 +35,8 @@ import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
 import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 object OnboardingScreen : Screen {
@@ -53,7 +55,6 @@ object OnboardingScreen : Screen {
                                 containerColor = Color.Transparent
                         ) { padding ->
                                 Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                                        // Progress bar
                                         StoryProgressBar(
                                                 currentStep = when (state) {
                                                         is OnboardingState.Loading -> {
@@ -117,10 +118,10 @@ private fun LoadingContent(step: OnboardingStep) {
 
                         Text(
                                 text = when (step) {
-                                        OnboardingStep.ENTER_PLAYLIST_URL -> "Инициализация..."
-                                        OnboardingStep.LOADING_HISTORY -> "Загружаем музыку..."
-                                        OnboardingStep.ANALYZING_LANGUAGES -> "Анализируем языки..."
-                                        OnboardingStep.SELECT_LANGUAGES -> "Готово!"
+                                        OnboardingStep.ENTER_PLAYLIST_URL -> stringResource(Res.string.onboarding_loading_init)
+                                        OnboardingStep.LOADING_HISTORY -> stringResource(Res.string.onboarding_loading_history)
+                                        OnboardingStep.ANALYZING_LANGUAGES -> stringResource(Res.string.onboarding_loading_languages)
+                                        OnboardingStep.SELECT_LANGUAGES -> stringResource(Res.string.onboarding_loading_done)
                                 },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
@@ -149,14 +150,14 @@ private fun SuccessContent(
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                         Text(
-                                "Готово!",
+                                stringResource(Res.string.onboarding_success_title),
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
                         )
 
                         Text(
-                                "Проанализировано $tracksCount треков",
+                                stringResource(Res.string.onboarding_tracks_analyzed, tracksCount),
                                 fontSize = 16.sp,
                                 color = Color.Gray
                         )
@@ -164,7 +165,7 @@ private fun SuccessContent(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                                "Найденные языки:",
+                                stringResource(Res.string.onboarding_found_languages),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.DarkGray
@@ -191,7 +192,7 @@ private fun SuccessContent(
                                 shape = RoundedCornerShape(12.dp)
                         ) {
                                 Text(
-                                        "Продолжить",
+                                        stringResource(Res.string.onboarding_continue),
                                         modifier = Modifier.padding(vertical = 8.dp),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -219,7 +220,7 @@ private fun LanguageItem(language: String, count: Int) {
                 )
 
                 Text(
-                        text = "$count треков",
+                        text = stringResource(Res.string.onboarding_tracks_count, count),
                         fontSize = 14.sp,
                         color = Color.Gray
                 )
@@ -241,7 +242,7 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                         Text(
-                                "Ошибка",
+                                stringResource(Res.string.onboarding_error_title),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Red
@@ -261,26 +262,27 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                         ) {
-                                Text("Попробовать снова")
+                                Text(stringResource(Res.string.onboarding_retry))
                         }
                 }
         }
 }
 
+@Composable
 private fun getLanguageName(code: String): String {
         return when (code.lowercase()) {
-                "en" -> "🇬🇧 Английский"
-                "ru" -> "🇷🇺 Русский"
-                "es" -> "🇪🇸 Испанский"
-                "fr" -> "🇫🇷 Французский"
-                "de" -> "🇩🇪 Немецкий"
-                "it" -> "🇮🇹 Итальянский"
-                "pt" -> "🇵🇹 Португальский"
-                "ja" -> "🇯🇵 Японский"
-                "ko" -> "🇰🇷 Корейский"
-                "zh" -> "🇨🇳 Китайский"
-                "hu" -> "🇭🇺 Венгерский"
-                "iw" -> "🇮🇱 Иврит"
+                "en" -> stringResource(Res.string.lang_english)
+                "ru" -> stringResource(Res.string.lang_russian)
+                "es" -> stringResource(Res.string.lang_spanish)
+                "fr" -> stringResource(Res.string.lang_french)
+                "de" -> stringResource(Res.string.lang_german)
+                "it" -> stringResource(Res.string.lang_italian)
+                "pt" -> stringResource(Res.string.lang_portuguese)
+                "ja" -> stringResource(Res.string.lang_japanese)
+                "ko" -> stringResource(Res.string.lang_korean)
+                "zh" -> stringResource(Res.string.lang_chinese)
+                "hu" -> stringResource(Res.string.lang_hungarian)
+                "iw" -> stringResource(Res.string.lang_hebrew)
                 else -> "🌍 $code"
         }
 }
