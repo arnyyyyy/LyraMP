@@ -1,7 +1,6 @@
 package com.arno.lyramp.feature.authorization.repository
 
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.presentation.yandex.launchYandexAuth
 import com.arno.lyramp.util.Log
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -18,19 +17,14 @@ internal class YandexAuthRepository : AuthApiRepository {
 
         override suspend fun provideValidAccessToken(): String? {
                 val token = getAccessToken()
-
-                if (token.isNullOrBlank()) {
-                        return null
-                }
-
-                if (YandexAuthStorage.isTokenValid()) {
-                        return token
-                }
+                if (token.isNullOrBlank()) return null
+                if (YandexAuthStorage.isTokenValid()) return token
                 return null
         }
 
-        override suspend fun initAuthFlow() {
-                launchYandexAuth()
+        // TODO ОГРОМНЫЙ
+        override suspend fun initAuthFlow(): String {
+                return YANDEX_AUTH_URL
         }
 
         override suspend fun handleAuthCallback(code: String) {
@@ -51,11 +45,14 @@ internal class YandexAuthRepository : AuthApiRepository {
         fun saveAccessToken(token: String, expiresIn: Long?) {
                 YandexAuthStorage.accessToken = token
                 YandexAuthStorage.expiresIn = expiresIn?.let { it * 1000 + Clock.System.now().toEpochMilliseconds() }
+                AuthSelectionStorage.lastAuthorizedService = MusicServiceType.YANDEX.name
+        }
 
-                try {
-                        AuthSelectionStorage.lastAuthorizedService = MusicServiceType.YANDEX.name
-                } catch (e: Throwable) {
-                        Log.logger.e(e) { "YandexAuthRepository: token saving failed" }
-                }
+        private companion object {
+                const val YANDEX_AUTH_URL = "https://passport.yandex.ru/auth?origin=music_app" +
+                        "&retpath=https%3A%2F%2Foauth.yandex.ru%2Fauthorize%3Fresponse_type%3Dtoken" +
+                        "%26client_id%3D23cabbbdc6cd418abb4b39c32c41195d%26redirect_uri" +
+                        "%3Dhttps%253A%252F%252Fmusic.yandex.ru%252F%26force_confirm" +
+                        "%3DFalse%26language%3Dru"
         }
 }

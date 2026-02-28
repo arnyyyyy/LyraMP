@@ -10,4 +10,3 @@ internal class AppleAuthRepository : AuthPlaylistRepository {
                 AuthSelectionStorage.lastAuthorizedService = if (url.isNullOrBlank()) null else MusicServiceType.APPLE.name
         }
 }
-

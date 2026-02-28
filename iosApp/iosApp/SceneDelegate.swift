@@ -11,7 +11,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene,
                openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
-            SpotifyRedirectHandlerKt.handleSpotifyRedirectFromSwift(url: url.absoluteString)
+            SpotifyRedirectHandlerKt.handleSpotifyRedirect(url: url.absoluteString)
         }
     }
 
@@ -21,7 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         if let urlContext = connectionOptions.urlContexts.first {
             let url = urlContext.url
-            SpotifyRedirectHandlerKt.handleSpotifyRedirectFromSwift(url: url.absoluteString)
+            SpotifyRedirectHandlerKt.handleSpotifyRedirect(url: url.absoluteString)
         }
     }
 }

@@ -5,8 +5,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.arno.lyramp.feature.authorization.ui.AuthorizationScreen
 import com.arno.lyramp.feature.listening_history.ui.ShowListeningHistoryScreen
-import com.arno.lyramp.feature.authorization.domain.usecase.AppStartDestination
-import com.arno.lyramp.feature.authorization.domain.usecase.AppStartUseCase
+import com.arno.lyramp.feature.authorization.domain.AppStartDestination
+import com.arno.lyramp.feature.authorization.domain.AppStartUseCase
 import org.koin.compose.koinInject
 
 @Composable

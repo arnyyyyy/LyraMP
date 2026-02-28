@@ -1,49 +1,37 @@
 package com.arno.lyramp.feature.listening_history.domain
 
-import com.arno.lyramp.feature.authorization.repository.AuthApiRepository
+import com.arno.lyramp.feature.authorization.repository.SpotifyAuthRepository
 import com.arno.lyramp.feature.listening_history.api.SpotifyMusicApi
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.util.Log
 
 internal class SpotifyMusicService(
-        private val authRepo: AuthApiRepository,
+        private val authRepo: SpotifyAuthRepository,
         private val api: SpotifyMusicApi
 ) : MusicService {
-
         override suspend fun getListeningHistory(limit: Int): List<MusicTrack> {
-                var token = authRepo.provideValidAccessToken() ?: return emptyList()
+                val token = authRepo.provideValidAccessToken() ?: error("AAA")
+                val result = runCatching { api.getLikedTracks(token, limit) }
 
-                try {
-                        return api.savedTracks(token, limit).items.map { savedItem ->
-                                MusicTrack(
-                                        name = savedItem.track.name,
-                                        artists = savedItem.track.artists.map { it.name }
-                                )
-                        }
-                } catch (_: Throwable) {
-                        val refreshedToken = try {
-                                authRepo.refreshAccessToken()
-                        } catch (e: Throwable) {
-                                Log.logger.e(e) { "SpotifyMusicService: refresh failed" }
-                                null
-                        }
-
-                        if (refreshedToken != null) {
-                                token = refreshedToken
-                                return try {
-                                        api.savedTracks(token, limit).items.map { savedItem ->
-                                                MusicTrack(
-                                                        name = savedItem.track.name,
-                                                        artists = savedItem.track.artists.map { it.name }
-                                                )
-                                        }
-                                } catch (e: Throwable) {
-                                        Log.logger.e(e) { "SpotifyMusicService: failed to load tracks after refresh" }
-                                        emptyList()
-                                }
-                        }
-
-                        return emptyList()
+                if (result.isSuccess) {
+                        return result.getOrThrow().items.map {
+                                MusicTrack(name = it.track.name, artists = it.track.artists.map { a -> a.name })
+                        }.take(limit)
                 }
+
+                val refreshedToken = runCatching { authRepo.refreshAccessToken() }
+                        .getOrNull() ?: error("SpotifyMusicService: failed to refresh token")
+
+                return runCatching { api.getLikedTracks(refreshedToken, limit) }
+                        .map { response ->
+                                response.items.map {
+                                        MusicTrack(
+                                                name = it.track.name,
+                                                artists = it.track.artists.map { a -> a.name }
+                                        )
+                                }.take(limit)
+                        }
+                        .onFailure { Log.logger.e(it) { "SpotifyMusicService: failed after token refresh" } }
+                        .getOrThrow()
         }
 }

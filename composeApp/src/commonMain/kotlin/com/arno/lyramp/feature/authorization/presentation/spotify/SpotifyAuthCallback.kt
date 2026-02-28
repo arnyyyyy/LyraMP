@@ -1,12 +1,21 @@
 package com.arno.lyramp.feature.authorization.presentation.spotify
 
-fun interface SpotifyAuthCallback {
-        fun onAuthCodeReceived(code: String)
-}
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 object SpotifyAuthHolder {
-        var callback: SpotifyAuthCallback? = null
+        private val _authCodeFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+        val authCodeFlow: SharedFlow<String> = _authCodeFlow.asSharedFlow()
+
+        fun emit(code: String) {
+                _authCodeFlow.tryEmit(code)
+        }
+
+        @Suppress("unused")
+        fun handleRedirect(url: String) {
+                handleSpotifyRedirect(url)
+        }
 }
 
-expect fun registerSpotifyAuthCallback(callback: SpotifyAuthCallback)
 expect fun handleSpotifyRedirect(url: String)

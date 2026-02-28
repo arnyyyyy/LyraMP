@@ -2,8 +2,7 @@ package com.arno.lyramp.feature.authorization.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.arno.lyramp.feature.authorization.domain.usecase.HandleAuthCallbackUseCase
-import com.arno.lyramp.feature.authorization.domain.usecase.InitAuthUseCase
+import com.arno.lyramp.feature.authorization.domain.AuthService
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,11 +11,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class AuthorizationScreenModel(
-        private val initAuth: InitAuthUseCase,
-        private val handleAuthCallback: HandleAuthCallbackUseCase,
+        private val authService: AuthService,
         private val updateHandler: AuthUpdateHandler = AuthUpdateHandler()
 ) : ScreenModel {
-
         private val _state = MutableStateFlow(AuthState())
         val state: StateFlow<AuthState> = _state
 
@@ -35,8 +32,9 @@ class AuthorizationScreenModel(
 
                                 screenModelScope.launch {
                                         runCatching {
-                                                initAuth(event.service)
-                                        }.onSuccess {
+                                                authService.initAuth(event.service)
+                                        }.onSuccess { url ->
+                                                _news.send(AuthNews.LaunchAuth(url, event.service))
                                                 processUpdate(AuthUpdate.Finish)
                                         }.onFailure {
                                                 processUpdate(
@@ -53,7 +51,7 @@ class AuthorizationScreenModel(
 
                                 screenModelScope.launch {
                                         runCatching {
-                                                handleAuthCallback(
+                                                authService.handleAuthCallback(
                                                         event.service,
                                                         event.code
                                                 )

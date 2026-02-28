@@ -3,9 +3,7 @@ package com.arno.lyramp.di
 import com.arno.lyramp.feature.authorization.api.SpotifyAuthApi
 import com.arno.lyramp.feature.authorization.domain.AuthService
 import com.arno.lyramp.feature.authorization.domain.AuthServiceImpl
-import com.arno.lyramp.feature.authorization.domain.usecase.AppStartUseCase
-import com.arno.lyramp.feature.authorization.domain.usecase.HandleAuthCallbackUseCase
-import com.arno.lyramp.feature.authorization.domain.usecase.InitAuthUseCase
+import com.arno.lyramp.feature.authorization.domain.AppStartUseCase
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.model.SpotifyAuthConfig
 import com.arno.lyramp.feature.authorization.presentation.AuthUpdateHandler
@@ -19,6 +17,7 @@ import org.koin.dsl.module
 val authModule = module {
         single<AuthApiRepository> { get<SpotifyAuthRepository>() }
         single { SpotifyAuthApi(get()) }
+
         single { SpotifyAuthRepository(get(), SpotifyAuthConfig) }
         single { YandexAuthRepository() }
         single { AppleAuthRepository() }
@@ -31,12 +30,8 @@ val authModule = module {
                         )
                 )
         }
-
-        factory { InitAuthUseCase(get()) }
-        factory { HandleAuthCallbackUseCase(get()) }
-
         factory { AppStartUseCase(get<SpotifyAuthRepository>(), get<YandexAuthRepository>(), get<AppleAuthRepository>()) }
 
         factory { AuthUpdateHandler() }
-        factory { AuthorizationScreenModel(get(), get(), get()) }
+        factory { AuthorizationScreenModel(get(), get()) }
 }

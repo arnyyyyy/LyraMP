@@ -1,14 +1,16 @@
 package com.arno.lyramp.feature.authorization.presentation.yandex
 
-expect fun registerYandexAuthCallback(callback: (token: String, expiresIn: Long?) -> Unit)
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+
+data class YandexAuthResult(val token: String, val expiresIn: Long?)
 
 object YandexAuthHolder {
-        var callback: ((token: String, expiresIn: Long?) -> Unit)? = null
-                set(value) {
-                        field = value
-                }
+        private val _authResultFlow = MutableSharedFlow<YandexAuthResult>(extraBufferCapacity = 1)
+        val authResultFlow: SharedFlow<YandexAuthResult> = _authResultFlow.asSharedFlow()
 
-        fun invokeCallback(token: String, expiresIn: Long?) {
-                callback?.invoke(token, expiresIn)
+        fun emit(token: String, expiresIn: Long?) {
+                _authResultFlow.tryEmit(YandexAuthResult(token, expiresIn))
         }
 }

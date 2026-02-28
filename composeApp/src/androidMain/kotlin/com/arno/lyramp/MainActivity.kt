@@ -7,13 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arno.lyramp.feature.authorization.presentation.spotify.handleSpotifyRedirect
 
+//TODO: лучше разобраться с перехватом диплинков
 class MainActivity : ComponentActivity() {
-        companion object {
-                var instance: MainActivity? = null
-        }
 
         override fun onCreate(savedInstanceState: Bundle?) {
-                instance = this
                 enableEdgeToEdge()
                 super.onCreate(savedInstanceState)
 
@@ -21,21 +18,14 @@ class MainActivity : ComponentActivity() {
                         handleSpotifyRedirect(deepLink)
                 }
 
-                setContent {
-                        App()
-                }
+                setContent { App() }
         }
 
         override fun onNewIntent(intent: Intent) {
                 super.onNewIntent(intent)
                 setIntent(intent)
-                intent.data?.toString()?.let { deepLink ->
+                this.intent.data?.toString()?.let { deepLink ->
                         handleSpotifyRedirect(deepLink)
                 }
-        }
-
-        override fun onDestroy() {
-                instance = null
-                super.onDestroy()
         }
 }

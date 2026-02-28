@@ -36,6 +36,8 @@ import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
 import com.arno.lyramp.feature.onboarding.ui.StoryProgressBar
 import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
@@ -118,7 +120,7 @@ fun AuthPlaylistScreenContent(
                                                                 value = playlistUrl,
                                                                 onValueChange = { playlistUrl = it },
                                                                 modifier = Modifier.fillMaxWidth(),
-                                                                label = { Text("Ссылка на плейлист") },
+                                                                label = { Text(stringResource(Res.string.auth_playlist_link_label)) },
                                                                 colors = OutlinedTextFieldDefaults.colors(
                                                                         focusedBorderColor = focusedBorderColor,
                                                                         unfocusedBorderColor = unfocusedBorderColor,
@@ -144,7 +146,7 @@ fun AuthPlaylistScreenContent(
                                                                 enabled = playlistUrl.isNotBlank()
                                                         ) {
                                                                 Text(
-                                                                        "Продолжить",
+                                                                        stringResource(Res.string.auth_continue),
                                                                         modifier = Modifier.padding(vertical = 8.dp),
                                                                         fontSize = 16.sp,
                                                                         fontWeight = FontWeight.SemiBold

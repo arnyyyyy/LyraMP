@@ -1,6 +1,9 @@
 package com.arno.lyramp
 
 import androidx.compose.ui.window.ComposeUIViewController
+import platform.UIKit.UIViewController
 
 @Suppress("unused")
-fun MainViewController() = ComposeUIViewController { App() }
+object MainViewControllerFactory {
+        fun create(): UIViewController = ComposeUIViewController { App() }
+}

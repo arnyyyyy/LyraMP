@@ -37,18 +37,15 @@ import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
 import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
+import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
 import com.arno.lyramp.feature.authorization.presentation.spotify.SpotifyAuthHolder
-import com.arno.lyramp.feature.authorization.presentation.spotify.registerSpotifyAuthCallback
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthHolder
-import com.arno.lyramp.feature.authorization.presentation.yandex.registerYandexAuthCallback
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
 import com.arno.lyramp.util.Log
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.apple_icon
-import lyramp.composeapp.generated.resources.spotify_icon
-import lyramp.composeapp.generated.resources.yandex_icon
+import lyramp.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 object AuthorizationScreen : Screen {
@@ -60,9 +57,9 @@ object AuthorizationScreen : Screen {
 
                 val state by screenModel.state.collectAsState()
 
+                // TODO: подумать, как можно вынести
                 LaunchedEffect(Unit) {
-                        registerSpotifyAuthCallback { code ->
-                                SpotifyAuthHolder.callback = null
+                        SpotifyAuthHolder.authCodeFlow.collect { code ->
                                 screenModel.onEvent(
                                         AuthEvent.OnAuthCodeReceived(
                                                 service = MusicServiceType.SPOTIFY,
@@ -73,12 +70,11 @@ object AuthorizationScreen : Screen {
                 }
 
                 LaunchedEffect(Unit) {
-                        registerYandexAuthCallback { token, expiresIn ->
-                                YandexAuthHolder.callback = null
+                        YandexAuthHolder.authResultFlow.collect { result ->
                                 screenModel.onEvent(
                                         AuthEvent.OnAuthCodeReceived(
                                                 service = MusicServiceType.YANDEX,
-                                                code = "${token}_token_expiresIn_${expiresIn}"
+                                                code = "${result.token}_token_expiresIn_${result.expiresIn}"
                                         )
                                 )
                         }
@@ -91,7 +87,7 @@ object AuthorizationScreen : Screen {
                                                 try {
                                                         navigator?.push(OnboardingScreen)
                                                 } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "AuthorizationScreen: navigation to Onboarding screen failed" }
+                                                        Log.logger.e(e) { "$TAG: navigation to Onboarding screen" }
                                                 }
                                         }
 
@@ -99,7 +95,15 @@ object AuthorizationScreen : Screen {
                                                 try {
                                                         navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
                                                 } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "AuthorizationScreen: navigation to Apple screen failed" }
+                                                        Log.logger.e(e) { "$TAG: navigation to Apple screen" }
+                                                }
+                                        }
+
+                                        is AuthNews.LaunchAuth -> {
+                                                try {
+                                                        launchAuthUrl(effect.url, effect.service)
+                                                } catch (e: Throwable) {
+                                                        Log.logger.e(e) { "$TAG: launch auth failed for ${effect.service}" }
                                                 }
                                         }
                                 }
@@ -139,7 +143,7 @@ object AuthorizationScreen : Screen {
                                                         horizontalAlignment = Alignment.CenterHorizontally,
                                                 ) {
                                                         Text(
-                                                                "Выберите сервис",
+                                                                stringResource(Res.string.auth_select_service),
                                                                 fontSize = 24.sp,
                                                                 fontWeight = FontWeight.Bold,
                                                                 color = Color.DarkGray,
@@ -175,7 +179,7 @@ object AuthorizationScreen : Screen {
                                                         }
 
                                                         Text(
-                                                                "Продолжить без авторизации",
+                                                                stringResource(Res.string.auth_continue_without_auth),
                                                                 fontSize = 16.sp,
                                                                 fontWeight = FontWeight.Bold,
                                                                 color = Color.Gray.copy(alpha = 0.8f),
@@ -212,4 +216,6 @@ object AuthorizationScreen : Screen {
                         Color.Gray.copy(alpha = 0.08f)
                 )
         )
+
+        private const val TAG = "AuthorizationScreen"
 }

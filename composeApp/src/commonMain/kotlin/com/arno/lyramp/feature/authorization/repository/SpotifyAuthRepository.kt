@@ -6,7 +6,6 @@ import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.util.Log
 import com.arno.lyramp.util.generateCodeVerifier
 import com.arno.lyramp.util.toCodeChallengeS256
-import com.arno.lyramp.feature.authorization.presentation.spotify.launchSpotifyAuth
 
 internal class SpotifyAuthRepository(
         private val api: SpotifyAuthApi,
@@ -20,14 +19,9 @@ internal class SpotifyAuthRepository(
 
         override suspend fun refreshAccessToken(): String? {
                 val refreshToken = getRefreshToken() ?: return null
-
-                return try {
-                        val tokenResponse = api.getRefreshToken(refreshToken, authConfig.CLIENT_ID)
-                        saveTokens(tokenResponse.access_token, tokenResponse.refresh_token)
-                        tokenResponse.access_token
-                } catch (_: Throwable) {
-                        null
-                }
+                val tokenResponse = api.getRefreshToken(refreshToken, authConfig.CLIENT_ID)
+                saveTokens(tokenResponse.access_token, tokenResponse.refresh_token)
+                return tokenResponse.access_token
         }
 
         override suspend fun provideValidAccessToken(): String? {
@@ -37,11 +31,17 @@ internal class SpotifyAuthRepository(
                 return refreshAccessToken()
         }
 
-        override suspend fun initAuthFlow() {
+        override suspend fun initAuthFlow(): String {
                 val verifier = generateCodeVerifier()
                 val challenge = verifier.toCodeChallengeS256()
                 SpotifyAuthStorage.codeVerifier = verifier
-                launchSpotifyAuth(challenge) // TODO: вынести из репозитория
+                return "https://accounts.spotify.com/authorize" +
+                        "?client_id=${authConfig.CLIENT_ID}" +
+                        "&response_type=code" +
+                        "&redirect_uri=${authConfig.REDIRECT_URI}" +
+                        "&code_challenge=$challenge" +
+                        "&code_challenge_method=S256" +
+                        "&scope=${authConfig.SCOPE}"
         }
 
         override suspend fun handleAuthCallback(code: String) {

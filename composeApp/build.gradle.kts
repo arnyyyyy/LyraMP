@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.implementation
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -7,10 +5,18 @@ plugins {
         alias(libs.plugins.androidApplication)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
+        alias(libs.plugins.ksp)
+        alias(libs.plugins.androidx.room)
         kotlin("plugin.serialization") version "2.0.20"
 }
 
 kotlin {
+
+        compilerOptions {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+
+
         androidTarget {
                 compilerOptions {
                         jvmTarget.set(JvmTarget.JVM_11)
@@ -35,6 +41,13 @@ kotlin {
                         implementation(libs.androidx.activity.compose)
                         implementation(libs.ktor.client.okhttp)
                         implementation(libs.androidx.browser)
+                        implementation(libs.okhttp)
+                        implementation(libs.androidx.media3.exoplayer)
+                        implementation(libs.androidx.media3.ui)
+                        implementation(libs.androidx.media3.common)
+                        implementation(libs.koin.android)
+                        implementation(libs.androidx.room.sqlite.wrapper)
+
                 }
 
                 iosMain.dependencies {
@@ -69,6 +82,8 @@ kotlin {
                         implementation(libs.korio)
                         implementation(libs.basic.sound)
                         implementation(libs.okio)
+                        implementation(libs.androidx.room.runtime)
+                        implementation(libs.androidx.sqlite.bundled)
                 }
                 commonTest.dependencies {
                         implementation(libs.kotlin.test)
@@ -105,4 +120,11 @@ android {
 
 dependencies {
         debugImplementation(compose.uiTooling)
+        add("kspAndroid", libs.androidx.room.compiler)
+        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+        add("kspIosArm64", libs.androidx.room.compiler)
+}
+
+room {
+        schemaDirectory("$projectDir/schemas")
 }
