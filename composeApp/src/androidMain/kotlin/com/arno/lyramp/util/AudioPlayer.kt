@@ -7,41 +7,26 @@ actual class AudioPlayer {
         private var mediaPlayer: MediaPlayer? = null
 
         actual fun play(filePath: String) {
+                release()
                 try {
-                        stop()
-                        release()
-
                         mediaPlayer = MediaPlayer().apply {
                                 setDataSource(filePath)
                                 prepare()
                                 start()
                         }
-
                 } catch (e: Exception) {
-                        Log.e(TAG, e.message ?: "Play error")
-                        e.printStackTrace()
+                        Log.e(TAG, "Play error: ${e.message}", e)
+                        release()
                 }
         }
 
         actual fun stop() {
-                try {
-                        mediaPlayer?.apply {
-                                if (isPlaying) {
-                                        stop()
-                                }
-                        }
-                } catch (e: Exception) {
-                        Log.e(TAG, e.message ?: "Stop error")
-                }
+                mediaPlayer?.apply { if (isPlaying) stop() }
         }
 
         actual fun release() {
-                try {
-                        mediaPlayer?.release()
-                        mediaPlayer = null
-                } catch (e: Exception) {
-                        Log.e(TAG, e.message ?: "Release error")
-                }
+                mediaPlayer?.release()
+                mediaPlayer = null
         }
 
         private companion object {

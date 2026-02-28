@@ -4,6 +4,5 @@ enum class MusicServiceType {
         SPOTIFY,
         YANDEX,
         APPLE,
-        //        NONE,
-
+        //        NONE, // TODO
 }

@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.translation.presentation
+package com.arno.lyramp.feature.translation.domain
 
 import com.arno.lyramp.feature.translation.model.TranslationResult
 
