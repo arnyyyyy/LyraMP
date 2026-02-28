@@ -2,6 +2,7 @@ package com.arno.lyramp.feature.lyrics.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,9 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun ShowLyricsErrorCard(error: String) {
+internal fun ShowLyricsErrorCard(error: String, onRetry: () -> Unit) {
         Column(
                 modifier = Modifier
                         .fillMaxWidth()
@@ -34,7 +37,7 @@ internal fun ShowLyricsErrorCard(error: String) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                        text = "Текст не найден",
+                        text = stringResource(Res.string.lyrics_not_found),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF2C3E50)
@@ -45,6 +48,17 @@ internal fun ShowLyricsErrorCard(error: String) {
                         fontSize = 14.sp,
                         color = Color(0xFF7F8C8D),
                         textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                        text = stringResource(Res.string.lyrics_retry),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        modifier = Modifier
+                                .background(Color(0xFF4A90E2), RoundedCornerShape(12.dp))
+                                .clickable { onRetry() }
+                                .padding(horizontal = 32.dp, vertical = 12.dp)
                 )
         }
 }

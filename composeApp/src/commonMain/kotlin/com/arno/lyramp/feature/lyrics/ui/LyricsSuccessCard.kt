@@ -41,11 +41,13 @@ internal fun ShowLyricsSuccessCard(lyrics: String) {
                                 if (line.isBlank()) {
                                         Spacer(modifier = Modifier.height(16.dp))
                                 } else {
-                                        val words = line.split(" ")
+                                        val words = line.split(" ").filter { it.isNotEmpty() }
 
                                         FlowRow(
                                                 horizontalArrangement = Arrangement.Start,
-                                                modifier = Modifier.fillMaxWidth()
+                                                verticalArrangement = Arrangement.Top,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                maxItemsInEachRow = Int.MAX_VALUE
                                         ) {
                                                 words.forEach { word ->
                                                         LyricsWord(word)

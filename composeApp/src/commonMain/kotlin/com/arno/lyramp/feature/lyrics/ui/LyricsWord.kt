@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.translation.model.WordInfo
 import com.arno.lyramp.feature.translation.model.TranslationResult
-import com.arno.lyramp.feature.translation.presentation.TranslationState
-import com.arno.lyramp.feature.translation.repository.TranslationRepository
-import com.arno.lyramp.util.AudioPlayer
+import com.arno.lyramp.feature.translation.domain.TranslationState
+import com.arno.lyramp.feature.translation.domain.TranslationRepository
+import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -42,6 +42,7 @@ internal fun LyricsWord(word: String) {
                 fontWeight = FontWeight.Normal,
                 color = Color(0xFF2C3E50),
                 lineHeight = 28.sp,
+                softWrap = true,
                 modifier = Modifier
                         .clickable { if (word.isNotBlank()) showTranslation = true }
                         .padding(end = 5.dp, bottom = 2.dp)
@@ -65,14 +66,13 @@ private fun ShowWordTranslation(
 
         var translationWithLang by remember { mutableStateOf(TranslationResult(null, null)) }
         var isLoadingAudio by remember { mutableStateOf(false) }
-        var currentAudioPlayer by remember { mutableStateOf<AudioPlayer?>(null) }
         var isPlayingSource by remember { mutableStateOf(false) }
+
+        val speechController = remember { TranslationSpeechController() }
 
         DisposableEffect(Unit) {
                 onDispose {
-                        currentAudioPlayer?.stop()
-                        currentAudioPlayer?.release()
-                        translationRepository.stopAudio()
+                        speechController.stop()
                 }
         }
 
@@ -81,7 +81,8 @@ private fun ShowWordTranslation(
                 translationWithLang = when (result) {
                         is TranslationState.Success -> result.translationWithLang
                         is TranslationState.Error -> TranslationResult(
-                                "Ошибка: ${result.message}", null
+                                "Ошибка: ${result.message}",
+                                null
                         )
 
                         else -> TranslationResult("Не найдено", null)
@@ -117,25 +118,31 @@ private fun ShowWordTranslation(
                         Button(
                                 onClick = {
                                         if (isPlayingSource) {
-                                                currentAudioPlayer?.stop()
-                                                currentAudioPlayer?.release()
-                                                currentAudioPlayer = null
+                                                speechController.stop()
                                                 isPlayingSource = false
-                                        } else {
-                                                isLoadingAudio = true
-                                                coroutineScope.launch {
-                                                        val wordInfo = WordInfo(
-                                                                word = word,
-                                                                translation = translationWithLang.translation,
-                                                                sourceLang = translationWithLang.sourceLanguage
-                                                        )
-                                                        val audioPlayer = translationRepository.getAndPlaySourceSpeech(wordInfo)
-                                                        isPlayingSource = audioPlayer != null
-                                                        isLoadingAudio = false
+                                                return@Button
+                                        }
+
+                                        isLoadingAudio = true
+                                        coroutineScope.launch {
+                                                val wordInfo = WordInfo(
+                                                        word = word,
+                                                        translation = translationWithLang.translation,
+                                                        sourceLang = translationWithLang.sourceLanguage
+                                                )
+
+                                                val filePath = translationRepository.getSourceSpeechFilePath(wordInfo)
+                                                if (filePath != null) {
+                                                        speechController.play(filePath)
+                                                        isPlayingSource = true
+                                                } else {
+                                                        isPlayingSource = false
                                                 }
+
+                                                isLoadingAudio = false
                                         }
                                 },
-                                enabled = !isLoadingAudio
+                                enabled = !isLoadingAudio && translationWithLang.translation != null
                         ) {
                                 Text("🔊 ")
                         }

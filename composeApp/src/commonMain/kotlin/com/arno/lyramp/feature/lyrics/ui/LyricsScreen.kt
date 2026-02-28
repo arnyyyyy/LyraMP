@@ -31,25 +31,26 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
-import com.arno.lyramp.feature.lyrics.repository.LyricsGetterRepository
+import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-internal class LyricsScreen(val artist: String, val songName: String) : Screen {
+internal class LyricsScreen(val track: MusicTrack) : Screen {
 
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
-                val lyricsRepository: LyricsGetterRepository = koinInject()
+                val lyricsUseCase: LyricsUseCase = koinInject()
                 val screenModel = LyricsScreenModel(
-                        artist = artist,
-                        song = songName,
-                        lyricsRepository = lyricsRepository,
+                        track = track,
+                        lyricsUseCase = lyricsUseCase,
                 )
                 val uiState by screenModel.uiState.collectAsState()
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                        // Спокойный фон для чтения
                         Box(
                                 modifier = Modifier
                                         .fillMaxSize()
@@ -78,7 +79,6 @@ internal class LyricsScreen(val artist: String, val songName: String) : Screen {
                                                 Row(
                                                         verticalAlignment = Alignment.CenterVertically
                                                 ) {
-                                                        // Кнопка назад
                                                         Box(
                                                                 modifier = Modifier
                                                                         .size(40.dp)
@@ -111,7 +111,7 @@ internal class LyricsScreen(val artist: String, val songName: String) : Screen {
                                                                         modifier = Modifier.weight(1f)
                                                                 ) {
                                                                         Text(
-                                                                                text = songName,
+                                                                                text = track.name,
                                                                                 fontSize = 18.sp,
                                                                                 fontWeight = FontWeight.SemiBold,
                                                                                 color = Color(0xFF2C3E50),
@@ -120,7 +120,7 @@ internal class LyricsScreen(val artist: String, val songName: String) : Screen {
                                                                         )
                                                                         Spacer(modifier = Modifier.height(2.dp))
                                                                         Text(
-                                                                                text = artist,
+                                                                                text = track.artists.firstOrNull() ?: "",
                                                                                 fontSize = 13.sp,
                                                                                 color = Color(0xFF7F8C8D),
                                                                                 maxLines = 1,
@@ -145,7 +145,8 @@ internal class LyricsScreen(val artist: String, val songName: String) : Screen {
 
                                                         is LyricsUiState.Error -> {
                                                                 ShowLyricsErrorCard(
-                                                                        error = state.message
+                                                                        error = state.message,
+                                                                        onRetry = screenModel::loadLyrics
                                                                 )
                                                         }
 
@@ -179,7 +180,7 @@ private fun LoadingContent() {
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                         Text(
-                                text = "Загружаем текст...",
+                                text = stringResource(Res.string.lyrics_loading),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFF2C3E50)
