@@ -1,7 +1,6 @@
-package com.arno.lyramp.feature.listening_history.ui
+package com.arno.lyramp.feature.listening_history.presentation
 
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
-
 
 sealed interface ListeningHistoryUiState {
         data object Loading : ListeningHistoryUiState

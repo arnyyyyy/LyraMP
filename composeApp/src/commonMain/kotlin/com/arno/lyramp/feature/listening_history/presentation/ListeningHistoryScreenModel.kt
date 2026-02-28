@@ -1,47 +1,33 @@
 package com.arno.lyramp.feature.listening_history.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
-import com.arno.lyramp.feature.listening_history.domain.MusicService
-import com.arno.lyramp.feature.listening_history.ui.ListeningHistoryUiState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
+import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Error
+import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Success
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 internal class ListeningHistoryScreenModel(
-        private val musicService: MusicService
+        private val repository: ListeningHistoryRepository
 ) : ScreenModel {
-        private val scope: CoroutineScope = MainScope()
-
         private val _uiState =
                 MutableStateFlow<ListeningHistoryUiState>(ListeningHistoryUiState.Loading)
         val uiState: StateFlow<ListeningHistoryUiState> = _uiState.asStateFlow()
 
         init {
-                loadTracks()
-        }
-
-        fun loadTracks(limit: Int = 20) {
-                scope.launch {
-                        _uiState.value = ListeningHistoryUiState.Loading
-                        try {
-                                val tracks = musicService.getListeningHistory(limit)
-                                _uiState.value = if (tracks.isEmpty()) {
-                                        ListeningHistoryUiState.Empty
-                                } else {
-                                        ListeningHistoryUiState.Success(tracks)
+                screenModelScope.launch {
+                        repository.getListeningHistory()
+                                .catch { e ->
+                                        _uiState.value = Error(e.message ?: "Unknown error")
                                 }
-                        } catch (e: Throwable) {
-                                _uiState.value = ListeningHistoryUiState.Error(e.message ?: "Unknown error")
-                        }
+                                .collect { tracks ->
+                                        _uiState.value = if (tracks.isEmpty()) ListeningHistoryUiState.Empty
+                                        else Success(tracks)
+                                }
                 }
         }
-
-        override fun onDispose() {
-                scope.cancel()
-        }
 }
-

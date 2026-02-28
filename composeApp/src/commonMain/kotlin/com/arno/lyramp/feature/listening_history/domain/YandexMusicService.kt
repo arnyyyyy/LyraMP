@@ -2,48 +2,57 @@ package com.arno.lyramp.feature.listening_history.domain
 
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
+import com.arno.lyramp.feature.listening_history.mapper.YandexTracksMapper
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.util.Log
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class YandexMusicService(
         private val authRepo: YandexAuthRepository,
-        private val httpClient: HttpClient
+        private val api: YandexMusicApi
 ) : MusicService {
+        private val tracksMapper = YandexTracksMapper()
 
-        private val yandexMusicApi by lazy { YandexMusicApi(httpClient) }
-
-        override suspend fun getListeningHistory(limit: Int): List<MusicTrack> {
-                return withContext(Dispatchers.Default) {
+        override suspend fun getListeningHistory(limit: Int): List<MusicTrack> =
+                withContext(Dispatchers.Default) {
                         val token = authRepo.provideValidAccessToken()
-
-                        if (token == null) {
-                                return@withContext emptyList()
-                        }
+                        if (token == null) error("YandexMusicService: No valid access token available!")
 
                         runCatching {
-                                val response = yandexMusicApi.getLikedTracks(token)
-                                Log.logger.d { "YandexMusicService: API response received, tracks count: ${response.result?.library?.tracks?.size ?: 0}" }
+                                val accountStatus = api.getAccountStatus(token)
+                                val userId = accountStatus.result?.account?.uid ?: error("User ID not found")
 
-                                response.result?.library?.tracks.orEmpty()
+                                val likedTracksResponse = api.getLikedTracks(token, userId)
+                                val basicTrackItems = likedTracksResponse.result?.library?.tracks.orEmpty()
+                                if (basicTrackItems.isEmpty()) return@runCatching emptyList()
+
+                                val trackIds = tracksMapper.buildTrackIdsString(basicTrackItems)
+                                if (trackIds.isBlank()) return@runCatching emptyList()
+
+                                val fullTracksResponse = api.getFullTracksInfo(token, trackIds)
+                                val fullTracks = fullTracksResponse.result.orEmpty()
+
+                                val enrichedTrackItems =
+                                        tracksMapper.enrichTracksWithFullInfo(basicTrackItems, fullTracks)
+
+                                enrichedTrackItems
                                         .mapNotNull { trackItem ->
                                                 trackItem.track?.let { track ->
                                                         MusicTrack(
+                                                                id = track.id,
+                                                                albumId = trackItem.albumId ?: track.albums?.firstOrNull()?.id?.toString(),
                                                                 name = track.title,
                                                                 artists = track.artists?.mapNotNull { it.name }.orEmpty(),
-                                                                albumName = null,
-                                                                imageUrl = null
+                                                                albumName = null, imageUrl = null
                                                         )
                                                 }
                                         }
                                         .take(limit)
                         }
                                 .onFailure {
-                                        Log.logger.e(it) { "YandexMusicService: failed to load liked tracks" }
+                                        Log.logger.e(it) { "YandexMusicService:  Failed to load liked tracks" }
                                 }
-                                .getOrDefault(emptyList())
+                                .getOrThrow()
                 }
-        }
 }

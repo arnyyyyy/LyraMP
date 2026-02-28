@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,20 +24,29 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun TrackList(
         tracks: List<MusicTrack>,
-        onTrackClick: (MusicTrack) -> Unit
+        onTrackClick: (MusicTrack) -> Unit,
+        onPracticeClick: ((MusicTrack) -> Unit)? = null,
 ) {
         LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 16.dp),
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
                 items(tracks) { track ->
                         TrackItem(
                                 track = track,
-                                onClick = { onTrackClick(track) }
+                                onLyricsClick = { onTrackClick(track) },
+                                onPracticeClick = if (onPracticeClick != null && track.id != null) {
+                                        { onPracticeClick(track) }
+                                } else null
                         )
                 }
 
@@ -51,14 +59,14 @@ internal fun TrackList(
 @Composable
 private fun TrackItem(
         track: MusicTrack,
-        onClick: () -> Unit
+        onLyricsClick: () -> Unit,
+        onPracticeClick: (() -> Unit)?,
 ) {
         Row(
                 modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White.copy(alpha = 0.95f), RoundedCornerShape(16.dp))
                         .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                        .clickable(onClick = onClick)
                         .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
@@ -101,11 +109,42 @@ private fun TrackItem(
                         }
                 }
 
-                Text(
-                        text = "→",
-                        fontSize = 24.sp,
-                        color = Color(0xFFFFCC00),
-                        fontWeight = FontWeight.Bold
-                )
+                Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                        if (onPracticeClick != null) {
+                                Column(
+                                        modifier = Modifier
+                                                .background(Color(0xFF4A90E2).copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                                .clickable(onClick = onPracticeClick)
+                                                .padding(8.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                        Text(text = "🎧", fontSize = 20.sp) // TODO: подумать мб не наушники
+                                        Text(
+                                                text = stringResource(Res.string.history_track_practice_label),
+                                                fontSize = 10.sp,
+                                                color = Color(0xFF4A90E2),
+                                                fontWeight = FontWeight.SemiBold
+                                        )
+                                }
+                        }
+
+                        Column(
+                                modifier = Modifier
+                                        .background(Color(0xFFFFCC00).copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                                        .clickable(onClick = onLyricsClick)
+                                        .padding(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                                Text(text = "📝", fontSize = 20.sp)
+                                Text(
+                                        text = stringResource(Res.string.history_track_lyrics_label),
+                                        fontSize = 10.sp,
+                                        color = Color(0xFFE6B800),
+                                        fontWeight = FontWeight.SemiBold
+                                )
+                        }
+                }
         }
 }

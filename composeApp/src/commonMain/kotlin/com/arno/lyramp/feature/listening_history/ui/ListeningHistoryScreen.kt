@@ -28,8 +28,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
+import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState
 import com.arno.lyramp.feature.lyrics.ui.LyricsScreen
 import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
+import com.arno.lyramp.feature.listening_practice.ui.ListeningPracticeScreen
+import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
+import lyramp.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 internal object ShowListeningHistoryScreen : Screen {
@@ -58,8 +63,8 @@ internal object ShowListeningHistoryScreen : Screen {
                                                         .fillMaxWidth()
                                                         .padding(horizontal = 4.dp, vertical = 12.dp)
                                         ) {
-                                                Text(
-                                                        text = "Медиатека",
+                                                        Text(
+                                                                text = stringResource(Res.string.history_title),
                                                         fontSize = 36.sp,
                                                         fontWeight = FontWeight.Bold,
                                                         color = Color.White,
@@ -76,28 +81,29 @@ internal object ShowListeningHistoryScreen : Screen {
                                                 }
                                         ) {
                                                 when (val state = uiState) {
-                                                        is ListeningHistoryUiState.Loading -> {
-                                                                LoadingContent()
-                                                        }
-
-                                                        is ListeningHistoryUiState.Empty -> {
-                                                                EmptyContent()
-                                                        }
-
-                                                        is ListeningHistoryUiState.Error -> {
-                                                                ErrorContent(message = state.message)
-                                                        }
+                                                        is ListeningHistoryUiState.Loading -> LoadingContent()
+                                                        is ListeningHistoryUiState.Empty -> EmptyContent()
+                                                        is ListeningHistoryUiState.Error -> ErrorContent(message = state.message)
 
                                                         is ListeningHistoryUiState.Success -> {
                                                                 TrackList(
                                                                         tracks = state.tracks,
                                                                         onTrackClick = { track ->
                                                                                 navigator.push(
-                                                                                        LyricsScreen(
-                                                                                                artist = track.artists.firstOrNull()
-                                                                                                        ?: "",
-                                                                                                songName = track.name
-                                                                                        )
+                                                                                        LyricsScreen(track)
+                                                                                )
+                                                                        },
+                                                                        onPracticeClick = { track ->
+                                                                                val practiceTrack = PracticeTrack(
+                                                                                        id = track.id ?: "",
+                                                                                        albumId = track.albumId,
+                                                                                        name = track.name,
+                                                                                        artists = track.artists,
+                                                                                        albumName = track.albumName,
+                                                                                        imageUrl = track.imageUrl
+                                                                                )
+                                                                                navigator.push(
+                                                                                        ListeningPracticeScreen(practiceTrack)
                                                                                 )
                                                                         }
                                                                 )
@@ -130,7 +136,7 @@ private fun LoadingContent() {
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                         Text(
-                                text = "Загружаем треки...",
+                                text = stringResource(Res.string.history_loading),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.DarkGray
@@ -159,14 +165,14 @@ private fun EmptyContent() {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                                text = "Библиотека пуста",
+                                text = stringResource(Res.string.history_empty_title),
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                                text = "Добавьте песни для изучения",
+                                text = stringResource(Res.string.history_empty_subtitle),
                                 fontSize = 15.sp,
                                 color = Color.Gray
                         )
@@ -193,7 +199,7 @@ private fun ErrorContent(message: String) {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                                text = "Ошибка загрузки",
+                                text = stringResource(Res.string.history_error_title),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFE74C3C)
