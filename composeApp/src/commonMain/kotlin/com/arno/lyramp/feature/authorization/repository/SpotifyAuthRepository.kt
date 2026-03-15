@@ -3,19 +3,23 @@ package com.arno.lyramp.feature.authorization.repository
 import com.arno.lyramp.feature.authorization.api.SpotifyAuthApi
 import com.arno.lyramp.feature.authorization.model.SpotifyAuthConfig
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.russhwolf.settings.Settings
 import com.arno.lyramp.util.Log
 import com.arno.lyramp.util.generateCodeVerifier
 import com.arno.lyramp.util.toCodeChallengeS256
 
 internal class SpotifyAuthRepository(
         private val api: SpotifyAuthApi,
-        private val authConfig: SpotifyAuthConfig
+        private val authConfig: SpotifyAuthConfig,
+        settings: Settings
 ) : AuthApiRepository {
+
+        private val storage = SpotifyAuthStorage(settings)
 
         override val service: MusicServiceType = MusicServiceType.SPOTIFY
 
-        override fun getAccessToken(): String? = SpotifyAuthStorage.accessToken
-        override fun getRefreshToken(): String? = SpotifyAuthStorage.refreshToken
+        override fun getAccessToken(): String? = storage.accessToken
+        override fun getRefreshToken(): String? = storage.refreshToken
 
         override suspend fun refreshAccessToken(): String? {
                 val refreshToken = getRefreshToken() ?: return null
@@ -34,7 +38,7 @@ internal class SpotifyAuthRepository(
         override suspend fun initAuthFlow(): String {
                 val verifier = generateCodeVerifier()
                 val challenge = verifier.toCodeChallengeS256()
-                SpotifyAuthStorage.codeVerifier = verifier
+                storage.codeVerifier = verifier
                 return "https://accounts.spotify.com/authorize" +
                         "?client_id=${authConfig.CLIENT_ID}" +
                         "&response_type=code" +
@@ -45,7 +49,7 @@ internal class SpotifyAuthRepository(
         }
 
         override suspend fun handleAuthCallback(code: String) {
-                val verifier = SpotifyAuthStorage.codeVerifier ?: return
+                val verifier = storage.codeVerifier ?: return
 
                 return try {
                         val tokenResponse = api.getTokenFromCode(
@@ -62,8 +66,8 @@ internal class SpotifyAuthRepository(
         }
 
         private fun saveTokens(accessToken: String, refreshToken: String?) {
-                SpotifyAuthStorage.accessToken = accessToken
-                if (refreshToken != null) SpotifyAuthStorage.refreshToken = refreshToken
+                storage.accessToken = accessToken
+                if (refreshToken != null) storage.refreshToken = refreshToken
                 try {
                         AuthSelectionStorage.lastAuthorizedService = MusicServiceType.SPOTIFY.name
                 } catch (e: Throwable) {
