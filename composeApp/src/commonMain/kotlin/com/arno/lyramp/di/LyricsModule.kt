@@ -1,6 +1,6 @@
 package com.arno.lyramp.di
 
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.lyrics.api.LyricsOvhApi
 import com.arno.lyramp.feature.lyrics.api.YandexLyricsApi
 import com.arno.lyramp.feature.lyrics.domain.LyricsOvhService
@@ -21,7 +21,7 @@ val lyricsModule = module {
 
         single { LyricsUseCase(get()) }
 
-        factory { (track: MusicTrack) ->
+        factory { (track: ListeningHistoryMusicTrack) ->
                 LyricsScreenModel(
                         track = track,
                         lyricsUseCase = get(),

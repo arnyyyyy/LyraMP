@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,21 +25,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import lyramp.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun TrackList(
-        tracks: List<MusicTrack>,
-        onTrackClick: (MusicTrack) -> Unit,
-        onPracticeClick: ((MusicTrack) -> Unit)? = null,
+        tracks: List<ListeningHistoryMusicTrack>,
+        onTrackClick: (ListeningHistoryMusicTrack) -> Unit,
+        onPracticeClick: ((ListeningHistoryMusicTrack) -> Unit)? = null,
+        scrollToTopToken: Int = 0,
 ) {
+        val listState = rememberLazyListState()
+
+        LaunchedEffect(scrollToTopToken) {
+                if (scrollToTopToken > 0) listState.animateScrollToItem(0)
+        }
+
         LazyColumn(
+                state = listState,
                 modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp),
+                        .padding(top = 8.dp)
+                        .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
                 items(tracks) { track ->
@@ -58,7 +69,7 @@ internal fun TrackList(
 
 @Composable
 private fun TrackItem(
-        track: MusicTrack,
+        track: ListeningHistoryMusicTrack,
         onLyricsClick: () -> Unit,
         onPracticeClick: (() -> Unit)?,
 ) {

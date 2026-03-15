@@ -1,10 +1,10 @@
 package com.arno.lyramp.feature.listening_history.mapper
 
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 
 internal class AppleMusicParser {
-        fun parse(html: String): List<MusicTrack> {
-                val tracks = mutableListOf<MusicTrack>()
+        fun parse(html: String): List<ListeningHistoryMusicTrack> {
+                val tracks = mutableListOf<ListeningHistoryMusicTrack>()
                 val image = extractOgImage(html)
 
                 val trackPattern = Regex(
@@ -15,7 +15,7 @@ internal class AppleMusicParser {
                         val name = decode(match.groupValues[1])
                         val artist = decode(match.groupValues[2])
 
-                        tracks += MusicTrack(
+                        tracks += ListeningHistoryMusicTrack(
                                 name = name,
                                 artists = listOfNotNull(artist),
                                 imageUrl = image

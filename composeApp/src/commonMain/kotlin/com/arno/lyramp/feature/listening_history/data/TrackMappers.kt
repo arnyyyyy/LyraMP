@@ -1,21 +1,23 @@
 package com.arno.lyramp.feature.listening_history.data
 
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 
-internal fun MusicTrackEntity.toDomain(): MusicTrack = MusicTrack(
+internal fun ListeningHistoryTrackEntity.toDomain(): ListeningHistoryMusicTrack = ListeningHistoryMusicTrack(
         id = trackId,
         albumId = albumId,
         name = name,
         artists = artists.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         albumName = albumName,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        language = language
 )
 
-internal fun MusicTrack.toEntity(): MusicTrackEntity = MusicTrackEntity(
+internal fun ListeningHistoryMusicTrack.toEntity(): ListeningHistoryTrackEntity = ListeningHistoryTrackEntity(
         trackId = id,
         albumId = albumId,
         name = name,
         artists = artists.joinToString(","),
         albumName = albumName,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        language = language
 )

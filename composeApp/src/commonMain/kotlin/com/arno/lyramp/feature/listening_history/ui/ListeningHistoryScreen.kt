@@ -13,11 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.arno.lyramp.feature.main.ui.LibraryTab
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,70 +45,71 @@ internal object ShowListeningHistoryScreen : Screen {
                 val navigator = LocalNavigator.currentOrThrow
                 val screenModel: ListeningHistoryScreenModel = koinInject()
                 val uiState by screenModel.uiState.collectAsState()
+                val scrollToTopToken by LibraryTab.scrollToTopToken
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
 
-                        Scaffold(
-                                modifier = Modifier.fillMaxSize(),
-                                containerColor = Color.Transparent,
-                                topBar = {}
-                        ) { padding ->
-                                Column(
+                        Column(
+                                modifier = Modifier
+                                        .fillMaxSize()
+                                        .statusBarsPadding()
+                        ) {
+                                Box(
                                         modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(padding)
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 4.dp, vertical = 12.dp)
                                 ) {
-                                        Box(
-                                                modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(horizontal = 4.dp, vertical = 12.dp)
-                                        ) {
-                                                        Text(
-                                                                text = stringResource(Res.string.history_title),
-                                                        fontSize = 36.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = Color.White,
-                                                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                                                )
+                                        Text(
+                                                text = stringResource(Res.string.history_title),
+                                                fontSize = 36.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                                        )
+                                }
+
+                                Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = when (uiState) {
+                                                is ListeningHistoryUiState.Success -> Alignment.TopCenter
+                                                else -> Alignment.Center
                                         }
+                                ) {
+                                        when (val state = uiState) {
+                                                is ListeningHistoryUiState.Loading -> LoadingContent()
+                                                is ListeningHistoryUiState.Empty -> EmptyContent()
+                                                is ListeningHistoryUiState.Error -> ErrorContent(message = state.message)
 
-                                        Box(
-                                                modifier = Modifier
-                                                        .fillMaxSize(),
-                                                contentAlignment = when (uiState) {
-                                                        is ListeningHistoryUiState.Success -> Alignment.TopCenter
-                                                        else -> Alignment.Center
-                                                }
-                                        ) {
-                                                when (val state = uiState) {
-                                                        is ListeningHistoryUiState.Loading -> LoadingContent()
-                                                        is ListeningHistoryUiState.Empty -> EmptyContent()
-                                                        is ListeningHistoryUiState.Error -> ErrorContent(message = state.message)
-
-                                                        is ListeningHistoryUiState.Success -> {
-                                                                TrackList(
-                                                                        tracks = state.tracks,
-                                                                        onTrackClick = { track ->
-                                                                                navigator.push(
-                                                                                        LyricsScreen(track)
-                                                                                )
-                                                                        },
-                                                                        onPracticeClick = { track ->
-                                                                                val practiceTrack = PracticeTrack(
-                                                                                        id = track.id ?: "",
-                                                                                        albumId = track.albumId,
-                                                                                        name = track.name,
-                                                                                        artists = track.artists,
+                                                is ListeningHistoryUiState.Success -> {
+                                                        TrackList(
+                                                                tracks = state.tracks,
+                                                                scrollToTopToken = scrollToTopToken,
+                                                                onTrackClick = { track ->
+                                                                        navigator.push(
+                                                                                LyricsScreen(
+                                                                                        trackId = track.id,
+                                                                                        trackName = track.name,
+                                                                                        trackArtistsJoined = track.artists.joinToString(", "),
                                                                                         albumName = track.albumName,
                                                                                         imageUrl = track.imageUrl
                                                                                 )
-                                                                                navigator.push(
-                                                                                        ListeningPracticeScreen(practiceTrack)
-                                                                                )
-                                                                        }
-                                                                )
-                                                        }
+                                                                        )
+                                                                },
+                                                                onPracticeClick = { track ->
+                                                                        val practiceTrack = PracticeTrack(
+                                                                                id = track.id ?: "",
+                                                                                albumId = track.albumId,
+                                                                                name = track.name,
+                                                                                artists = track.artists,
+                                                                                albumName = track.albumName,
+                                                                                imageUrl = track.imageUrl
+                                                                        )
+                                                                        navigator.push(
+                                                                                ListeningPracticeScreen(practiceTrack)
+                                                                        )
+                                                                }
+                                                        )
                                                 }
                                         }
                                 }
@@ -127,9 +129,7 @@ private fun LoadingContent() {
                         .padding(40.dp),
                 contentAlignment = Alignment.Center
         ) {
-                Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(
                                 modifier = Modifier.size(48.dp),
                                 color = Color(0xFF4A90E2)
@@ -156,13 +156,8 @@ private fun EmptyContent() {
                         .padding(40.dp),
                 contentAlignment = Alignment.Center
         ) {
-                Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                        Text(
-                                text = "📖",
-                                fontSize = 64.sp
-                        )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "📖", fontSize = 64.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                                 text = stringResource(Res.string.history_empty_title),
@@ -190,13 +185,8 @@ private fun ErrorContent(message: String) {
                         .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
                         .padding(28.dp)
         ) {
-                Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                        Text(
-                                text = "⚠️",
-                                fontSize = 48.sp
-                        )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "⚠️", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                                 text = stringResource(Res.string.history_error_title),

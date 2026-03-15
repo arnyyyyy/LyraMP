@@ -3,11 +3,12 @@ package com.arno.lyramp.feature.listening_history.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "music_tracks")
-data class MusicTrackEntity(
+@Entity(tableName = "listening_history_tracks")
+data class ListeningHistoryTrackEntity(
         @PrimaryKey(autoGenerate = true) val localId: Long = 0,
         val trackId: String?,
         val albumId: String?,
+        val language: String?,
         val name: String,
         val artists: String,
         val albumName: String?,

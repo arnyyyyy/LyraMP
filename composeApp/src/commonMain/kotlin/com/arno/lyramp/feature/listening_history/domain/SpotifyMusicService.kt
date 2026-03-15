@@ -2,20 +2,20 @@ package com.arno.lyramp.feature.listening_history.domain
 
 import com.arno.lyramp.feature.authorization.repository.SpotifyAuthRepository
 import com.arno.lyramp.feature.listening_history.api.SpotifyMusicApi
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.util.Log
 
 internal class SpotifyMusicService(
         private val authRepo: SpotifyAuthRepository,
         private val api: SpotifyMusicApi
 ) : MusicService {
-        override suspend fun getListeningHistory(limit: Int): List<MusicTrack> {
+        override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
                 val token = authRepo.provideValidAccessToken() ?: error("AAA")
                 val result = runCatching { api.getLikedTracks(token, limit) }
 
                 if (result.isSuccess) {
                         return result.getOrThrow().items.map {
-                                MusicTrack(name = it.track.name, artists = it.track.artists.map { a -> a.name })
+                                ListeningHistoryMusicTrack(name = it.track.name, artists = it.track.artists.map { a -> a.name })
                         }.take(limit)
                 }
 
@@ -25,7 +25,7 @@ internal class SpotifyMusicService(
                 return runCatching { api.getLikedTracks(refreshedToken, limit) }
                         .map { response ->
                                 response.items.map {
-                                        MusicTrack(
+                                        ListeningHistoryMusicTrack(
                                                 name = it.track.name,
                                                 artists = it.track.artists.map { a -> a.name }
                                         )

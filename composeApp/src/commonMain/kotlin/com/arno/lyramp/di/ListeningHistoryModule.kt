@@ -12,6 +12,7 @@ import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.domain.YandexMusicService
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val listeningHistoryModule = module {
@@ -41,10 +42,10 @@ val listeningHistoryModule = module {
                 }
         }
 
-        single<ListeningHistoryDatabase> { getListeningHistoryDatabase(get()) }
-        single { get<ListeningHistoryDatabase>().musicTrackDao() }
+        single<ListeningHistoryDatabase> { getListeningHistoryDatabase(get(named("listening_history"))) }
+        single { get<ListeningHistoryDatabase>().listeningHistoryDao() }
 
         single { ListeningHistoryRepository(musicService = get(), dao = get()) }
 
-        factory { ListeningHistoryScreenModel(repository = get()) }
+        single { ListeningHistoryScreenModel(repository = get()) }
 }

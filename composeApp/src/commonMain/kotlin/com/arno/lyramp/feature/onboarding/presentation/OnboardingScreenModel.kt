@@ -2,6 +2,7 @@ package com.arno.lyramp.feature.onboarding.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 import com.arno.lyramp.feature.listening_history.domain.MusicService
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
 
 internal class OnboardingScreenModel(
         private val musicService: MusicService,
-        private val analyzeLanguages: AnalyzeLanguagesUseCase
+        private val analyzeLanguages: AnalyzeLanguagesUseCase,
+        private val repository: ListeningHistoryRepository
 ) : ScreenModel {
         private val _state = MutableStateFlow<OnboardingState>(Loading(OnboardingStep.LOADING_HISTORY))
         val state: StateFlow<OnboardingState> = _state.asStateFlow()
@@ -29,7 +31,7 @@ internal class OnboardingScreenModel(
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)
-                                val tracks = musicService.getListeningHistory(limit = 35)
+                                val tracks = musicService.getListeningHistory(limit = 200)
 
                                 if (tracks.isEmpty()) {
                                         _state.value = Error("Не удалось загрузить треки")
@@ -37,12 +39,16 @@ internal class OnboardingScreenModel(
                                 }
 
                                 _state.value = Loading(OnboardingStep.ANALYZING_LANGUAGES)
-                                val languages = analyzeLanguages(tracks)
+                                val result = analyzeLanguages(tracks)
+
+                                if (result.trackLanguages.isNotEmpty()) {
+                                        repository.saveTrackLanguages(result.trackLanguages)
+                                }
 
                                 _state.value = Success(
                                         step = OnboardingStep.SELECT_LANGUAGES,
                                         tracks = tracks,
-                                        languages = languages
+                                        languages = result.languages
                                 )
 
                         } catch (e: Exception) {

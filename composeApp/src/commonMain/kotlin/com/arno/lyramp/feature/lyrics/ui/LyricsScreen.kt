@@ -33,7 +33,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.koin.getScreenModel
-import com.arno.lyramp.feature.listening_history.model.MusicTrack
+import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
 import lyramp.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -51,7 +51,7 @@ internal class LyricsScreen(
                 val navigator = LocalNavigator.currentOrThrow
 
                 val track = remember {
-                        MusicTrack(
+                        ListeningHistoryMusicTrack(
                                 id = trackId,
                                 name = trackName,
                                 artists = trackArtistsJoined.split(", ").filter { it.isNotBlank() },

@@ -6,5 +6,5 @@ import org.koin.dsl.module
 
 val onboardingModule = module {
         single { AnalyzeLanguagesUseCase(get()) }
-        factory { OnboardingScreenModel(get(), get()) }
+        factory { OnboardingScreenModel(get(), get(), get()) }
 }
