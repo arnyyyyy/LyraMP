@@ -142,6 +142,14 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
                 seekTo(newPosition)
         }
 
+        actual fun setPlaybackSpeed(speed: Float) {
+                try {
+                        exoPlayer?.setPlaybackSpeed(speed)
+                } catch (e: Exception) {
+                        Log.e(TAG, "setPlaybackSpeed: ${e.message}")
+                }
+        }
+
         actual fun release() {
                 cleanAll()
                 scope.cancel()

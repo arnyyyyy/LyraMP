@@ -11,11 +11,15 @@ class TranslationSpeechController {
                 currentPlayer = null
         }
 
-        fun play(filePath: String): AudioPlayer {
+        fun play(filePath: String, onCompletion: () -> Unit = {}) {
                 stop()
-                return AudioPlayer().also {
-                        it.play(filePath)
+                AudioPlayer().also {
+                        it.play(filePath, onCompletion)
                         currentPlayer = it
                 }
+        }
+
+        fun setPlaybackSpeed(speed: Float) {
+                currentPlayer?.setPlaybackSpeed(speed)
         }
 }

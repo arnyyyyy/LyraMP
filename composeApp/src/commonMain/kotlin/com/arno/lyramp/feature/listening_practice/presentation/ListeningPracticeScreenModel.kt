@@ -33,7 +33,9 @@ internal class ListeningPracticeScreenModel(
                 val correctCount: Int = 0,
                 val incorrectCount: Int = 0,
                 val practiceMode: PracticeMode = PracticeMode.FULL_SONG,
-                val currentLineIsPlaying: Boolean = false
+                val currentLineIsPlaying: Boolean = false,
+                val isSlowMode: Boolean = false,
+                val lastAnsweredLine: LyricLine? = null
         )
 
         private val practiceState = MutableStateFlow(PracticeState())
@@ -88,7 +90,9 @@ internal class ListeningPracticeScreenModel(
                                                 correctCount = state.correctCount,
                                                 incorrectCount = state.incorrectCount,
                                                 practiceMode = state.practiceMode,
-                                                currentLineIsPlaying = state.currentLineIsPlaying
+                                                currentLineIsPlaying = state.currentLineIsPlaying,
+                                                isSlowMode = state.isSlowMode,
+                                                lastAnsweredLine = state.lastAnsweredLine
                                         )
                                 }
                         }
@@ -134,14 +138,17 @@ internal class ListeningPracticeScreenModel(
                         incorrectCount = state.incorrectCount,
                         practiceMode = state.practiceMode,
                         hasTimecodes = hasTimecodes,
-                        currentLineIsPlaying = state.currentLineIsPlaying
+                        currentLineIsPlaying = state.currentLineIsPlaying,
+                        isSlowMode = state.isSlowMode,
+                        lastAnsweredLine = state.lastAnsweredLine
                 )
         }
 
         fun onSwitchMode(mode: PracticeMode) {
                 linePlaybackJob?.cancel()
                 player.pause()
-                practiceState.update { it.copy(practiceMode = mode, currentLineIsPlaying = false, userInput = "") }
+                player.setPlaybackSpeed(1.0f)
+                practiceState.update { it.copy(practiceMode = mode, currentLineIsPlaying = false, userInput = "", isSlowMode = false, lastAnsweredLine = null) }
                 if (mode == PracticeMode.RANDOM_LINE) {
                         pickRandomLine()
                 }
@@ -178,7 +185,7 @@ internal class ListeningPracticeScreenModel(
                 practiceState.update { it.copy(currentLineIsPlaying = true) }
 
                 linePlaybackJob = screenModelScope.launch {
-                        delay(duration)
+                        delay((duration * if (practiceState.value.isSlowMode) 1.4f else 1.0f).toLong())
                         player.pause()
                         practiceState.update { it.copy(currentLineIsPlaying = false) }
                 }
@@ -192,8 +199,13 @@ internal class ListeningPracticeScreenModel(
                 }
         }
 
-        fun onMoveBackClick() = player.rewind(5000)
+        fun onToggleSlowMode() {
+                val newSlowMode = !practiceState.value.isSlowMode
+                practiceState.update { it.copy(isSlowMode = newSlowMode) }
+                player.setPlaybackSpeed(if (newSlowMode) 0.7f else 1.0f)
+        }
 
+        fun onMoveBackClick() = player.rewind(5000)
 
         fun onMoveForwardClick() {
                 val newPosition = (player.currentPositionMs.value + 5000).coerceAtMost(player.durationMs.value)
@@ -217,7 +229,8 @@ internal class ListeningPracticeScreenModel(
                                         userInput = "",
                                         correctCount = newCorrect,
                                         incorrectCount = newIncorrect,
-                                        currentLineIsPlaying = false
+                                        currentLineIsPlaying = false,
+                                        lastAnsweredLine = updatedLine
                                 )
                         }
                         pickRandomLine()
@@ -288,7 +301,8 @@ internal class ListeningPracticeScreenModel(
                                 userInput = "",
                                 correctCount = 0,
                                 incorrectCount = 0,
-                                currentLineIsPlaying = false
+                                currentLineIsPlaying = false,
+                                lastAnsweredLine = null
                         )
                 }
                 if (practiceState.value.practiceMode == PracticeMode.RANDOM_LINE) pickRandomLine()

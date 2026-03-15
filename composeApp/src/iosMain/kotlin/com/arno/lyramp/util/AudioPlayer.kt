@@ -8,16 +8,19 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioPlayer
+import platform.AVFAudio.AVAudioPlayerDelegateProtocol
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
 import platform.Foundation.NSError
 import platform.Foundation.NSLog
 import platform.Foundation.NSURL
+import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual class AudioPlayer {
         private var audioPlayer: AVAudioPlayer? = null
+        private var delegate: CompletionDelegate? = null
 
         init {
                 memScoped<Unit> {
@@ -40,9 +43,10 @@ actual class AudioPlayer {
                 }
         }
 
-        actual fun play(filePath: String) {
+        actual fun play(filePath: String, onCompletion: () -> Unit) {
                 audioPlayer?.stop()
                 audioPlayer = null
+                delegate = null
 
                 val url = NSURL.fileURLWithPath(filePath)
 
@@ -56,6 +60,9 @@ actual class AudioPlayer {
                                 return
                         }
 
+                        val completionDelegate = CompletionDelegate(onCompletion)
+                        delegate = completionDelegate
+                        player.delegate = completionDelegate
                         audioPlayer = player
                         player.prepareToPlay()
                         player.play()
@@ -69,9 +76,25 @@ actual class AudioPlayer {
         actual fun release() {
                 audioPlayer?.stop()
                 audioPlayer = null
+                delegate = null
+        }
+
+        actual fun setPlaybackSpeed(speed: Float) {
+                audioPlayer?.let {
+                        it.enableRate = true
+                        it.rate = speed
+                }
         }
 
         private companion object {
                 const val TAG = "AudioPlayer.iOS"
+        }
+
+        private class CompletionDelegate(
+                private val onCompletion: () -> Unit,
+        ) : NSObject(), AVAudioPlayerDelegateProtocol {
+                override fun audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully: Boolean) {
+                        onCompletion()
+                }
         }
 }

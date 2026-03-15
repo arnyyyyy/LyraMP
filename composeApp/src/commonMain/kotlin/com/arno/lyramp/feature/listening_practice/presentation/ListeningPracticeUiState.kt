@@ -5,7 +5,7 @@ import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 
 internal sealed interface ListeningPracticeUiState {
-        data object Loading : ListeningPracticeUiState
+        object Loading : ListeningPracticeUiState
 
         data class Ready(
                 val track: PracticeTrack,
@@ -19,7 +19,9 @@ internal sealed interface ListeningPracticeUiState {
                 val incorrectCount: Int,
                 val practiceMode: PracticeMode,
                 val hasTimecodes: Boolean,
-                val currentLineIsPlaying: Boolean = false
+                val currentLineIsPlaying: Boolean = false,
+                val isSlowMode: Boolean = false,
+                val lastAnsweredLine: LyricLine? = null
         ) : ListeningPracticeUiState
 
         data class Completed(

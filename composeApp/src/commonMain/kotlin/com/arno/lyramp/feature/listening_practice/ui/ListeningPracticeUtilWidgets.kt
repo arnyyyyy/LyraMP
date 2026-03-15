@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.core.ui.SlowModeButton
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
 import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.util.formatTime
@@ -38,7 +39,9 @@ internal fun PlayerControls(
         durationMs: Long,
         onPlayPause: () -> Unit,
         onRewind: () -> Unit,
-        onFastForward: () -> Unit
+        onFastForward: () -> Unit,
+        isSlowMode: Boolean = false,
+        onToggleSlowMode: () -> Unit = {}
 ) {
         Column(
                 modifier = Modifier
@@ -131,6 +134,13 @@ internal fun PlayerControls(
                         ) {
                                 Text(text = "⏩", fontSize = 20.sp)
                         }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        SlowModeButton(
+                                isSlowMode = isSlowMode,
+                                onClick = onToggleSlowMode
+                        )
                 }
         }
 }

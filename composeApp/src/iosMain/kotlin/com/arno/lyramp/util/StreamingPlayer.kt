@@ -34,6 +34,7 @@ import platform.AVFoundation.duration
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVFoundation.seekToTime
+import platform.AVFoundation.setRate
 import platform.AVFoundation.timeControlStatus
 import platform.CoreMedia.CMTimeMake
 import platform.CoreMedia.CMTimeGetSeconds
@@ -181,6 +182,18 @@ actual class StreamingPlayer {
         actual fun rewind(milliseconds: Long) {
                 val newPosition = (_currentPositionMs.value - milliseconds).coerceAtLeast(0)
                 seekTo(newPosition)
+        }
+
+        actual fun setPlaybackSpeed(speed: Float) {
+                scope.launch {
+                        avPlayer?.let { player ->
+                                player.setRate(speed)
+                                if (speed > 0f) {
+                                        _isPlaying.value = true
+                                        startPositionUpdates()
+                                }
+                        }
+                }
         }
 
         actual fun release() {

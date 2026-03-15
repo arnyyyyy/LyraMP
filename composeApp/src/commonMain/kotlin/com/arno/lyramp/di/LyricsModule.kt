@@ -1,11 +1,13 @@
 package com.arno.lyramp.di
 
+import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.api.LyricsOvhApi
 import com.arno.lyramp.feature.lyrics.api.YandexLyricsApi
 import com.arno.lyramp.feature.lyrics.domain.LyricsOvhService
 import com.arno.lyramp.feature.lyrics.domain.LyricsServiceFactory
 import com.arno.lyramp.feature.lyrics.domain.YandexLyricsService
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
+import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
 import org.koin.dsl.module
 
 val lyricsModule = module {
@@ -18,4 +20,13 @@ val lyricsModule = module {
         single { LyricsServiceFactory(get(), get()) }
 
         single { LyricsUseCase(get()) }
+
+        factory { (track: MusicTrack) ->
+                LyricsScreenModel(
+                        track = track,
+                        lyricsUseCase = get(),
+                        translationRepository = get(),
+                        learnWordsRepository = get()
+                )
+        }
 }

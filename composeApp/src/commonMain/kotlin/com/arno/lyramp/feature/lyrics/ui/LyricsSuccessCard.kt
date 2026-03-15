@@ -19,7 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun ShowLyricsSuccessCard(lyrics: String) {
+internal fun ShowLyricsSuccessCard(
+        lyricsLines: List<List<String>>,
+        popupState: WordPopupState,
+        onEvent: (LyricsEvent) -> Unit,
+) {
         val scrollState = rememberScrollState()
 
         Column(
@@ -35,13 +39,11 @@ internal fun ShowLyricsSuccessCard(lyrics: String) {
                                 .verticalScroll(scrollState)
                                 .padding(horizontal = 8.dp)
                 ) {
-                        val lines = lyrics.split("\n")
-
-                        lines.forEachIndexed { index, line ->
-                                if (line.isBlank()) {
+                        lyricsLines.forEachIndexed { lineIndex, words ->
+                                if (words.isEmpty()) {
                                         Spacer(modifier = Modifier.height(16.dp))
                                 } else {
-                                        val words = line.split(" ").filter { it.isNotEmpty() }
+                                        val lyricLine = words.joinToString(" ")
 
                                         FlowRow(
                                                 horizontalArrangement = Arrangement.Start,
@@ -49,8 +51,15 @@ internal fun ShowLyricsSuccessCard(lyrics: String) {
                                                 modifier = Modifier.fillMaxWidth(),
                                                 maxItemsInEachRow = Int.MAX_VALUE
                                         ) {
-                                                words.forEach { word ->
-                                                        LyricsWord(word)
+                                                words.forEachIndexed { wordIndex, word ->
+                                                        LyricsWord(
+                                                                word = word,
+                                                                lyricLine = lyricLine,
+                                                                lineIndex = lineIndex,
+                                                                wordIndex = wordIndex,
+                                                                popupState = popupState,
+                                                                onEvent = onEvent,
+                                                        )
                                                 }
                                         }
 

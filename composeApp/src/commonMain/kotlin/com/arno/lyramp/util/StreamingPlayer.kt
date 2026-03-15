@@ -14,5 +14,6 @@ expect class StreamingPlayer() {
         fun pause()
         fun seekTo(positionMs: Long)
         fun rewind(milliseconds: Long)
+        fun setPlaybackSpeed(speed: Float)
         fun release()
 }

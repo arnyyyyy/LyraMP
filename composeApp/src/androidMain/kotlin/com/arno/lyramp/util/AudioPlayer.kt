@@ -6,11 +6,12 @@ import android.util.Log
 actual class AudioPlayer {
         private var mediaPlayer: MediaPlayer? = null
 
-        actual fun play(filePath: String) {
+        actual fun play(filePath: String, onCompletion: () -> Unit) {
                 release()
                 try {
                         mediaPlayer = MediaPlayer().apply {
                                 setDataSource(filePath)
+                                setOnCompletionListener { onCompletion() }
                                 prepare()
                                 start()
                         }
@@ -27,6 +28,16 @@ actual class AudioPlayer {
         actual fun release() {
                 mediaPlayer?.release()
                 mediaPlayer = null
+        }
+
+        actual fun setPlaybackSpeed(speed: Float) {
+                try {
+                        mediaPlayer?.let {
+                                it.playbackParams = it.playbackParams.setSpeed(speed)
+                        }
+                } catch (e: Exception) {
+                        Log.e(TAG, "setPlaybackSpeed: ${e.message}")
+                }
         }
 
         private companion object {

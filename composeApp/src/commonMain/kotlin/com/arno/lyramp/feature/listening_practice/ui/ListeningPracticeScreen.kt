@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,27 +28,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeScreenModel
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
-import com.arno.lyramp.feature.listening_practice.domain.ListeningPracticeUseCase
-import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
 internal class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
 
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
-                val repository: ListeningPracticeUseCase = koinInject()
 
-                val screenModel = remember {
-                        ListeningPracticeScreenModel(
-                                track = track,
-                                repository = repository
-                        )
-                }
+                val screenModel = getScreenModel<ListeningPracticeScreenModel> { parametersOf(track) }
+
                 val uiState by screenModel.uiState.collectAsState()
 
                 DisposableEffect(Unit) {
@@ -151,7 +145,8 @@ internal class ListeningPracticeScreen(private val track: PracticeTrack) : Scree
                                                                         onCheck = screenModel::onCheckLine,
                                                                         onSkip = screenModel::onSkipLine,
                                                                         onSwitchMode = screenModel::onSwitchMode,
-                                                                        onPlayCurrentLine = screenModel::onPlayCurrentLineClick
+                                                                        onPlayCurrentLine = screenModel::onPlayCurrentLineClick,
+                                                                        onToggleSlowMode = screenModel::onToggleSlowMode
                                                                 )
                                                         }
 

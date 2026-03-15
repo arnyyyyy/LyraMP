@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +29,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import com.arno.lyramp.core.ui.SlowModeButton
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
 import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
@@ -93,7 +98,8 @@ internal fun ReadyContent(
         onCheck: () -> Unit,
         onSkip: () -> Unit,
         onSwitchMode: (PracticeMode) -> Unit,
-        onPlayCurrentLine: () -> Unit
+        onPlayCurrentLine: () -> Unit,
+        onToggleSlowMode: () -> Unit
 ) {
         Column(
                 modifier = Modifier
@@ -145,72 +151,80 @@ internal fun ReadyContent(
                                 onPlayCurrentLine = onPlayCurrentLine,
                                 onUserInputChange = onUserInputChange,
                                 onCheck = onCheck,
-                                onSkip = onSkip
+                                onSkip = onSkip,
+                                onToggleSlowMode = onToggleSlowMode
                         )
                 } else {
-                        PlayerControls(
-                                isPlaying = state.isPlaying,
-                                currentPositionMs = state.currentPositionMs,
-                                durationMs = state.durationMs,
-                                onPlayPause = onPlayPause,
-                                onRewind = onRewind,
-                                onFastForward = onFastForward
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(
-                                modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                        ) {
-                                PreviousLines(
-                                        lines = state.lines,
-                                        currentIndex = state.currentLineIndex
+                        Column(modifier = Modifier.fillMaxSize().imePadding()) {
+                                PlayerControls(
+                                        isPlaying = state.isPlaying,
+                                        currentPositionMs = state.currentPositionMs,
+                                        durationMs = state.durationMs,
+                                        onPlayPause = onPlayPause,
+                                        onRewind = onRewind,
+                                        onFastForward = onFastForward,
+                                        isSlowMode = state.isSlowMode,
+                                        onToggleSlowMode = onToggleSlowMode
                                 )
-                        }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
 
-                        OutlinedTextField(
-                                value = state.userInput,
-                                onValueChange = onUserInputChange,
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(stringResource(Res.string.practice_input_label)) },
-                                placeholder = { Text(stringResource(Res.string.practice_input_placeholder)) },
-                                colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color(0xFFF9F9F9),
-                                        unfocusedContainerColor = Color(0xFFF9F9F9),
-                                        focusedIndicatorColor = Color(0xFF4A90E2),
-                                        unfocusedIndicatorColor = Color(0xFFE8E8E8)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                                OutlinedButton(
-                                        onClick = onSkip,
-                                        modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.outlinedButtonColors(
-                                                contentColor = Color(0xFF7F8C8D)
+                                Box(
+                                        modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f)
+                                ) {
+                                        PreviousLines(
+                                                lines = state.lines,
+                                                currentIndex = state.currentLineIndex
                                         )
-                                ) {
-                                        Text(stringResource(Res.string.practice_skip))
                                 }
-                                Button(
-                                        onClick = onCheck,
-                                        modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF4A90E2)
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                OutlinedTextField(
+                                        value = state.userInput,
+                                        onValueChange = onUserInputChange,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = { Text(stringResource(Res.string.practice_input_label)) },
+                                        placeholder = { Text(stringResource(Res.string.practice_input_placeholder)) },
+                                        colors = TextFieldDefaults.colors(
+                                                focusedContainerColor = Color(0xFFF9F9F9),
+                                                unfocusedContainerColor = Color(0xFFF9F9F9),
+                                                focusedIndicatorColor = Color(0xFF4A90E2),
+                                                unfocusedIndicatorColor = Color(0xFFE8E8E8)
                                         ),
-                                        enabled = state.userInput.isNotBlank()
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default),
+                                        keyboardActions = KeyboardActions(onDone = { if (state.userInput.isNotBlank()) onCheck() else onSkip() }),
+                                        singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                        Text(stringResource(Res.string.practice_check))
+                                        OutlinedButton(
+                                                onClick = onSkip,
+                                                modifier = Modifier.weight(1f),
+                                                colors = ButtonDefaults.outlinedButtonColors(
+                                                        contentColor = Color(0xFF7F8C8D)
+                                                )
+                                        ) {
+                                                Text(stringResource(Res.string.practice_skip))
+                                        }
+                                        Button(
+                                                onClick = onCheck,
+                                                modifier = Modifier.weight(1f),
+                                                colors = ButtonDefaults.buttonColors(
+                                                        containerColor = Color(0xFF4A90E2)
+                                                ),
+                                                enabled = state.userInput.isNotBlank()
+                                        ) {
+                                                Text(stringResource(Res.string.practice_check))
+                                        }
                                 }
                         }
                 }
@@ -268,9 +282,10 @@ private fun RandomLineContent(
         onPlayCurrentLine: () -> Unit,
         onUserInputChange: (String) -> Unit,
         onCheck: () -> Unit,
-        onSkip: () -> Unit
+        onSkip: () -> Unit,
+        onToggleSlowMode: () -> Unit
 ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().imePadding()) {
                 Box(
                         modifier = Modifier
                                 .fillMaxWidth()
@@ -285,43 +300,44 @@ private fun RandomLineContent(
                                         fontSize = 40.sp
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                        text = stringResource(Res.string.practice_line_hint),
-                                        fontSize = 14.sp,
-                                        color = Color(0xFF5A7A9D),
-                                        textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(20.dp))
-                                Button(
-                                        onClick = onPlayCurrentLine,
-                                        shape = RoundedCornerShape(24.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (state.currentLineIsPlaying) Color(0xFF34C759) else Color(0xFF4A90E2),
-                                                contentColor = Color.White
-                                        )
+
+                                Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                        Text(
-                                                text = if (state.currentLineIsPlaying) stringResource(Res.string.practice_playing) else stringResource(Res.string.practice_listen_line),
-                                                fontSize = 15.sp,
-                                                fontWeight = FontWeight.Medium
+                                        Button(
+                                                onClick = onPlayCurrentLine,
+                                                shape = RoundedCornerShape(24.dp),
+                                                colors = ButtonDefaults.buttonColors(
+                                                        containerColor = if (state.currentLineIsPlaying) Color(0xFF34C759) else Color(0xFF4A90E2),
+                                                        contentColor = Color.White
+                                                )
+                                        ) {
+                                                Text(
+                                                        text = if (state.currentLineIsPlaying) stringResource(Res.string.practice_playing) else stringResource(Res.string.practice_listen_line),
+                                                        fontSize = 15.sp,
+                                                        fontWeight = FontWeight.Medium
+                                                )
+                                        }
+                                        SlowModeButton(
+                                                isSlowMode = state.isSlowMode,
+                                                onClick = onToggleSlowMode
                                         )
                                 }
                         }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
-
-                val answeredLines = state.lines.filter {
-                        it.checkResult != LineCheckResult.PENDING
-                }
-                if (answeredLines.isNotEmpty()) {
-                        Text(
-                                text = stringResource(Res.string.practice_previous_count, answeredLines.size),
-                                fontSize = 12.sp,
-                                color = Color(0xFF7F8C8D)
+                val lastAnswered = state.lastAnsweredLine
+                if (lastAnswered != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        ListeningPracticeLineStat(
+                                text = lastAnswered.text,
+                                userInput = lastAnswered.userInput,
+                                isCorrect = lastAnswered.checkResult == LineCheckResult.CORRECT
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 OutlinedTextField(
                         value = state.userInput,
@@ -335,10 +351,13 @@ private fun RandomLineContent(
                                 focusedIndicatorColor = Color(0xFF4A90E2),
                                 unfocusedIndicatorColor = Color(0xFFE8E8E8)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default),
+                        keyboardActions = KeyboardActions(onDone = { if (state.userInput.isNotBlank()) onCheck() else onSkip() }),
+                        singleLine = true
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                         modifier = Modifier.fillMaxWidth(),

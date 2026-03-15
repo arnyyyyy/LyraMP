@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,24 +32,38 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.koin.getScreenModel
 import com.arno.lyramp.feature.listening_history.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
-import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import lyramp.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
-internal class LyricsScreen(val track: MusicTrack) : Screen {
-
+internal class LyricsScreen(
+        private val trackId: String?,
+        private val trackName: String,
+        private val trackArtistsJoined: String,
+        private val albumName: String? = null,
+        private val imageUrl: String? = null
+) : Screen {
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
-                val lyricsUseCase: LyricsUseCase = koinInject()
-                val screenModel = LyricsScreenModel(
-                        track = track,
-                        lyricsUseCase = lyricsUseCase,
-                )
+
+                val track = remember {
+                        MusicTrack(
+                                id = trackId,
+                                name = trackName,
+                                artists = trackArtistsJoined.split(", ").filter { it.isNotBlank() },
+                                albumName = albumName,
+                                imageUrl = imageUrl
+                        )
+                }
+
+                val screenModel = getScreenModel<LyricsScreenModel> { parametersOf(track) }
+
                 val uiState by screenModel.uiState.collectAsState()
+                val popupState by screenModel.popupState.collectAsState()
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         Box(
@@ -151,7 +166,11 @@ internal class LyricsScreen(val track: MusicTrack) : Screen {
                                                         }
 
                                                         is LyricsUiState.Success -> {
-                                                                ShowLyricsSuccessCard(lyrics = state.lyrics)
+                                                                ShowLyricsSuccessCard(
+                                                                        lyricsLines = state.lyricsLines,
+                                                                        popupState = popupState,
+                                                                        onEvent = screenModel::onEvent,
+                                                                )
                                                         }
                                                 }
                                         }
