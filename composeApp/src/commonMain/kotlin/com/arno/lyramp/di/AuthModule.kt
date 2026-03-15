@@ -18,8 +18,8 @@ val authModule = module {
         single<AuthApiRepository> { get<SpotifyAuthRepository>() }
         single { SpotifyAuthApi(get()) }
 
-        single { SpotifyAuthRepository(get(), SpotifyAuthConfig) }
-        single { YandexAuthRepository() }
+        single { SpotifyAuthRepository(get(), SpotifyAuthConfig, get(secureSettingsQualifier)) }
+        single { YandexAuthRepository(get(secureSettingsQualifier)) }
         single { AppleAuthRepository() }
 
         single<AuthService> {

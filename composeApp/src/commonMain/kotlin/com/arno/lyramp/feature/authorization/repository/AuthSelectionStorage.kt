@@ -6,10 +6,11 @@ internal object AuthSelectionStorage {
         private val settings = Settings()
 
         var lastAuthorizedService: String?
-                get() = settings.getStringOrNull("last_authorized_service")
+                get() = settings.getStringOrNull(LAST_SERVICE_KEY)
                 set(value) {
-                        if (value == null) settings.remove("last_authorized_service")
-                        else settings.putString("last_authorized_service", value)
+                        if (value == null) settings.remove(LAST_SERVICE_KEY)
+                        else settings.putString(LAST_SERVICE_KEY, value)
                 }
-}
 
+        private const val LAST_SERVICE_KEY = "last_authorized_service"
+}

@@ -1,15 +1,18 @@
 package com.arno.lyramp.feature.authorization.repository
 
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.russhwolf.settings.Settings
 import com.arno.lyramp.util.Log
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-internal class YandexAuthRepository : AuthApiRepository {
+internal class YandexAuthRepository(settings: Settings) : AuthApiRepository {
+
+        private val storage = YandexAuthStorage(settings)
 
         override val service: MusicServiceType = MusicServiceType.YANDEX
 
-        override fun getAccessToken(): String? = YandexAuthStorage.accessToken
+        override fun getAccessToken(): String? = storage.accessToken
 
         override fun getRefreshToken(): String? = getAccessToken()
 
@@ -18,7 +21,7 @@ internal class YandexAuthRepository : AuthApiRepository {
         override suspend fun provideValidAccessToken(): String? {
                 val token = getAccessToken()
                 if (token.isNullOrBlank()) return null
-                if (YandexAuthStorage.isTokenValid()) return token
+                if (storage.isTokenValid()) return token
                 return null
         }
 
@@ -43,8 +46,8 @@ internal class YandexAuthRepository : AuthApiRepository {
 
         @OptIn(ExperimentalTime::class)
         fun saveAccessToken(token: String, expiresIn: Long?) {
-                YandexAuthStorage.accessToken = token
-                YandexAuthStorage.expiresIn = expiresIn?.let { it * 1000 + Clock.System.now().toEpochMilliseconds() }
+                storage.accessToken = token
+                storage.expiresIn = expiresIn?.let { it * 1000 + Clock.System.now().toEpochMilliseconds() }
                 AuthSelectionStorage.lastAuthorizedService = MusicServiceType.YANDEX.name
         }
 
