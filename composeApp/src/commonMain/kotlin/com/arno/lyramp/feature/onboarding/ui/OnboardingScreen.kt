@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.feature.listening_history.ui.ShowListeningHistoryScreen
+import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
@@ -81,7 +81,7 @@ object OnboardingScreen : Screen {
                                                         is OnboardingState.Success -> SuccessContent(
                                                                 languages = currentState.languages,
                                                                 tracksCount = currentState.tracks.size,
-                                                                onContinue = { navigator?.push(ShowListeningHistoryScreen) }
+                                                                onContinue = { navigator?.replaceAll(MainScreen) }
                                                         )
 
                                                         is OnboardingState.Error -> ErrorContent(

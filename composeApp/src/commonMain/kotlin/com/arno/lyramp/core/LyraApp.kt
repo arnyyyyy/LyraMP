@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.arno.lyramp.feature.authorization.ui.AuthorizationScreen
-import com.arno.lyramp.feature.listening_history.ui.ShowListeningHistoryScreen
+import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.authorization.domain.AppStartDestination
 import com.arno.lyramp.feature.authorization.domain.AppStartUseCase
 import org.koin.compose.koinInject
@@ -15,7 +15,7 @@ fun LyraApp() {
         val startDestination = appStartUseCase()
 
         val initialScreen = when (startDestination) {
-                is AppStartDestination.ShowListeningHistory -> ShowListeningHistoryScreen
+                is AppStartDestination.ShowListeningHistory -> MainScreen
                 is AppStartDestination.Authorization -> AuthorizationScreen
         }
 

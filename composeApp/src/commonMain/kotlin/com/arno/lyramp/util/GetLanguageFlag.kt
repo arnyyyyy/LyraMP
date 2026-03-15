@@ -1,0 +1,34 @@
+package com.arno.lyramp.util
+
+fun getLanguageFlag(languageCode: String): String {
+        return when (languageCode.lowercase()) {
+                "en" -> "🇬🇧"
+                "es" -> "🇪🇸"
+                "fr" -> "🇫🇷"
+                "de" -> "🇩🇪"
+                "it" -> "🇮🇹"
+                "pt" -> "🇵🇹"
+                "ru" -> "🇷🇺"
+                "ja" -> "🇯🇵"
+                "ko" -> "🇰🇷"
+                "zh" -> "🇨🇳"
+                "ar" -> "🇸🇦"
+                "tr" -> "🇹🇷"
+                "pl" -> "🇵🇱"
+                "nl" -> "🇳🇱"
+                "sv" -> "🇸🇪"
+                "da" -> "🇩🇰"
+                "fi" -> "🇫🇮"
+                "no" -> "🇳🇴"
+                "cs" -> "🇨🇿"
+                "uk" -> "🇺🇦"
+                "el" -> "🇬🇷"
+                "he" -> "🇮🇱"
+                "hi" -> "🇮🇳"
+                "th" -> "🇹🇭"
+                "vi" -> "🇻🇳"
+                "id" -> "🇮🇩"
+                "ms" -> "🇲🇾"
+                else -> "🌐"
+        }
+}
