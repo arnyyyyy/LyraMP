@@ -25,8 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.story_generator.presentation.StoryUiState
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.story_generate
+import lyramp.composeapp.generated.resources.select_all
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -42,19 +47,14 @@ internal fun ChooseWordsContent(
                         .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//                Text(
-//                        text = "Выберите слова для истории",
-//                        fontSize = 18.sp,
-//                        fontWeight = FontWeight.SemiBold,
-//                        color = Color.White,
-//                        modifier = Modifier.padding(bottom = 8.dp)
-//                )
-
                 Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.padding(bottom = 16.dp)
                 ) {
-                        SmallChipButton(text = "Выбрать все", onClick = onToggleSelectAll)
+                        SmallChipButton(
+                                text = stringResource(Res.string.select_all),
+                                onClick = onToggleSelectAll
+                        )
                 }
 
                 FlowRow(
@@ -74,7 +74,7 @@ internal fun ChooseWordsContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 StoryButton(
-                        text = "✨ Сгенерировать историю",
+                        text = stringResource(Res.string.story_generate),
                         onClick = onGenerate,
                         modifier = Modifier.fillMaxWidth(),
                         enabled = state.selectedWords.isNotEmpty()
@@ -90,9 +90,9 @@ private fun WordChip(
         isSelected: Boolean,
         onClick: () -> Unit
 ) {
-        val bgColor = if (isSelected) Color(0xFF4A90E2) else Color.White.copy(alpha = 0.15f)
-        val borderColor = if (isSelected) Color(0xFF4A90E2) else Color.White.copy(alpha = 0.3f)
-        val textColor = if (isSelected) Color.White else Color.White.copy(alpha = 0.9f)
+        val bgColor = if (isSelected) LyraColors.GlassSurface.copy(alpha = 0.6f) else LyraColors.GlassSurface
+        val borderColor = if (isSelected) Color.White.copy(alpha = 0.6f) else LyraColors.GlassBorder
+        val textColor = Color.White
 
         Box(
                 modifier = Modifier
@@ -122,7 +122,7 @@ private fun SmallChipButton(text: String, onClick: () -> Unit) {
         Box(
                 modifier = Modifier
                         .clickable(onClick = onClick)
-                        .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                        .background(LyraColors.GlassSurface, RoundedCornerShape(16.dp))
                         .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
                 Text(text = text, fontSize = 13.sp, color = Color.White)

@@ -32,7 +32,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.arno.lyramp.core.ui.SlowModeButton
+import com.arno.lyramp.ui.theme.LyraColors
+import com.arno.lyramp.ui.SlowModeButton
+import com.arno.lyramp.ui.theme.LyraColorScheme
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.know
+import lyramp.composeapp.generated.resources.learn
+import lyramp.composeapp.generated.resources.loading_dots
+import lyramp.composeapp.generated.resources.not_found
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun LyricsWord(
@@ -52,7 +60,7 @@ internal fun LyricsWord(
                         text = word,
                         fontSize = 17.sp,
                         fontWeight = if (isPopupVisible) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isPopupVisible) Color(0xFF4A90E2) else Color(0xFF2C3E50),
+                        color = if (isPopupVisible) LyraColorScheme.primary else LyraColorScheme.onSurface,
                         lineHeight = 28.sp,
                         softWrap = true,
                         modifier = Modifier
@@ -66,10 +74,7 @@ internal fun LyricsWord(
                 )
 
                 if (isPopupVisible) {
-                        WordTranslationPopup(
-                                state = popupState,
-                                onEvent = onEvent,
-                        )
+                        WordTranslationPopup(state = popupState, onEvent = onEvent)
                 }
         }
 }
@@ -89,8 +94,8 @@ private fun WordTranslationPopup(
                         modifier = Modifier
                                 .widthIn(min = 200.dp, max = 280.dp)
                                 .shadow(8.dp, RoundedCornerShape(12.dp))
-                                .background(Color.White, RoundedCornerShape(12.dp))
-                                .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(12.dp))
+                                .background(LyraColorScheme.surface, RoundedCornerShape(12.dp))
+                                .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(12.dp))
                                 .padding(16.dp)
                 ) {
                         if (state.isTranslating) {
@@ -101,16 +106,16 @@ private fun WordTranslationPopup(
                                         CircularProgressIndicator(
                                                 modifier = Modifier.size(14.dp),
                                                 strokeWidth = 2.dp,
-                                                color = Color(0xFF4A90E2)
+                                                color = LyraColorScheme.primary
                                         )
-                                        Text(text = "...", fontSize = 13.sp, color = Color(0xFF7F8C8D))
+                                        Text(text = stringResource(Res.string.loading_dots), fontSize = 13.sp, color = LyraColorScheme.onSurfaceVariant)
                                 }
                         } else {
                                 Text(
-                                        text = state.translationResult.translation ?: "Не найдено",
+                                        text = state.translationResult.translation ?: stringResource(Res.string.not_found),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF2C3E50),
+                                        color = LyraColorScheme.onSurface,
                                         textAlign = TextAlign.Start
                                 )
                         }
@@ -130,7 +135,7 @@ private fun WordTranslationPopup(
                                         shape = CircleShape,
                                         contentPadding = PaddingValues(0.dp),
                                         colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (state.isPlayingAudio) Color(0xFF34C759) else Color(0xFF4A90E2),
+                                                containerColor = if (state.isPlayingAudio) LyraColors.Correct else LyraColorScheme.primary,
                                                 contentColor = Color.White
                                         ),
                                         enabled = !state.isLoadingAudio && !state.isTranslating
@@ -160,10 +165,10 @@ private fun WordTranslationPopup(
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
                                         shape = RoundedCornerShape(8.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(
-                                                contentColor = Color(0xFF7F8C8D)
+                                                contentColor = LyraColorScheme.onSurfaceVariant
                                         )
                                 ) {
-                                        Text(text = "Знаю", fontSize = 12.sp)
+                                        Text(text = stringResource(Res.string.know), fontSize = 12.sp)
                                 }
 
                                 Button(
@@ -172,11 +177,11 @@ private fun WordTranslationPopup(
                                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
                                         shape = RoundedCornerShape(8.dp),
                                         colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF4A90E2)
+                                                containerColor = LyraColorScheme.primary
                                         ),
                                         enabled = !state.isTranslating && state.translationResult.translation != null
                                 ) {
-                                        Text(text = "Учить", fontSize = 12.sp)
+                                        Text(text = stringResource(Res.string.learn), fontSize = 12.sp)
                                 }
                         }
                 }

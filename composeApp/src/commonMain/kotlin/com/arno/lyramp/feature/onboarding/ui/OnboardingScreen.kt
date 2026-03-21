@@ -30,21 +30,43 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
 import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
-import lyramp.composeapp.generated.resources.*
+import cafe.adriel.voyager.koin.getScreenModel
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.continue_next
+import lyramp.composeapp.generated.resources.done
+import lyramp.composeapp.generated.resources.lang_chinese
+import lyramp.composeapp.generated.resources.lang_english
+import lyramp.composeapp.generated.resources.lang_french
+import lyramp.composeapp.generated.resources.lang_german
+import lyramp.composeapp.generated.resources.lang_hebrew
+import lyramp.composeapp.generated.resources.lang_hungarian
+import lyramp.composeapp.generated.resources.lang_italian
+import lyramp.composeapp.generated.resources.lang_japanese
+import lyramp.composeapp.generated.resources.lang_korean
+import lyramp.composeapp.generated.resources.lang_portuguese
+import lyramp.composeapp.generated.resources.lang_russian
+import lyramp.composeapp.generated.resources.lang_spanish
+import lyramp.composeapp.generated.resources.error
+import lyramp.composeapp.generated.resources.found_languages
+import lyramp.composeapp.generated.resources.loading_history
+import lyramp.composeapp.generated.resources.loading_init
+import lyramp.composeapp.generated.resources.lang_analyze
+import lyramp.composeapp.generated.resources.analyzed_res
+import lyramp.composeapp.generated.resources.tracks_count
+import lyramp.composeapp.generated.resources.retry
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 
 object OnboardingScreen : Screen {
-
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.current
-                val screenModel: OnboardingScreenModel = koinInject()
+                val screenModel = getScreenModel<OnboardingScreenModel>()
                 val state by screenModel.state.collectAsState()
 
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -102,47 +124,40 @@ private fun LoadingContent(step: OnboardingStep) {
                 modifier = Modifier
                         .widthIn(max = 400.dp)
                         .fillMaxWidth(0.85f)
-                        .background(Color.White.copy(alpha = 0.95f), RoundedCornerShape(20.dp))
-                        .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
-                        .padding(40.dp),
-                contentAlignment = Alignment.Center
+                        .background(LyraColors.GlassCardSurface, RoundedCornerShape(20.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(20.dp))
+                        .padding(28.dp)
         ) {
                 Column(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                        CircularProgressIndicator(
-                                modifier = Modifier.size(48.dp),
-                                color = Color(0xFFFFCC00)
-                        )
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp), color = LyraColors.Accent)
 
                         Text(
                                 text = when (step) {
-                                        OnboardingStep.ENTER_PLAYLIST_URL -> stringResource(Res.string.onboarding_loading_init)
-                                        OnboardingStep.LOADING_HISTORY -> stringResource(Res.string.onboarding_loading_history)
-                                        OnboardingStep.ANALYZING_LANGUAGES -> stringResource(Res.string.onboarding_loading_languages)
-                                        OnboardingStep.SELECT_LANGUAGES -> stringResource(Res.string.onboarding_loading_done)
+                                        OnboardingStep.ENTER_PLAYLIST_URL -> stringResource(Res.string.loading_init)
+                                        OnboardingStep.LOADING_HISTORY -> stringResource(Res.string.loading_history)
+                                        OnboardingStep.ANALYZING_LANGUAGES -> stringResource(Res.string.lang_analyze)
+                                        OnboardingStep.SELECT_LANGUAGES -> stringResource(Res.string.done)
                                 },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color.DarkGray
+                                color = LyraColors.AccentOnAccent
                         )
                 }
         }
 }
 
 @Composable
-private fun SuccessContent(
-        languages: Map<String, Int>,
-        tracksCount: Int,
-        onContinue: () -> Unit
-) {
+private fun SuccessContent(languages: Map<String, Int>, tracksCount: Int, onContinue: () -> Unit) {
         Box(
                 modifier = Modifier
                         .widthIn(max = 500.dp)
-                        .fillMaxWidth(0.9f)
-                        .background(Color.White.copy(alpha = 0.95f), RoundedCornerShape(20.dp))
-                        .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                        .fillMaxWidth(fraction = 0.9f)
+                        .background(LyraColors.GlassCardSurface, RoundedCornerShape(20.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(20.dp))
                         .padding(28.dp)
         ) {
                 Column(
@@ -150,34 +165,32 @@ private fun SuccessContent(
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                         Text(
-                                stringResource(Res.string.onboarding_success_title),
+                                stringResource(Res.string.done),
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = LyraColors.OnGlassCard
                         )
 
                         Text(
-                                stringResource(Res.string.onboarding_tracks_analyzed, tracksCount),
+                                stringResource(Res.string.analyzed_res, tracksCount),
                                 fontSize = 16.sp,
-                                color = Color.Gray
+                                color = LyraColors.OnGlassCardSecondary
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                                stringResource(Res.string.onboarding_found_languages),
+                                stringResource(Res.string.found_languages),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color.DarkGray
+                                color = LyraColors.OnGlassCard
                         )
 
                         Column(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                                languages.forEach { (lang, count) ->
-                                        LanguageItem(language = lang, count = count)
-                                }
+                                languages.forEach { (lang, count) -> LanguageItem(language = lang, count = count) }
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -186,13 +199,13 @@ private fun SuccessContent(
                                 onClick = onContinue,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFFFCC00),
-                                        contentColor = Color.DarkGray
+                                        containerColor = LyraColors.Accent,
+                                        contentColor = LyraColors.AccentOnAccent
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                         ) {
                                 Text(
-                                        stringResource(Res.string.onboarding_continue),
+                                        stringResource(Res.string.continue_next),
                                         modifier = Modifier.padding(vertical = 8.dp),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -207,22 +220,22 @@ private fun LanguageItem(language: String, count: Int) {
         Row(
                 modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                        .background(LyraColors.CardSurfaceAlt, RoundedCornerShape(8.dp))
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
         ) {
                 Text(
                         text = getLanguageName(language),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                        fontSize = 16.sp, fontWeight = FontWeight.Medium,
+                        color = LyraColors.OnGlassCard
                 )
-
                 Text(
-                        text = stringResource(Res.string.onboarding_tracks_count, count),
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        text = stringResource(
+                                Res.string.tracks_count,
+                                count
+                        ), fontSize = 14.sp,
+                        color = LyraColors.OnGlassCardSecondary
                 )
         }
 }
@@ -233,36 +246,34 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
                 modifier = Modifier
                         .widthIn(max = 400.dp)
                         .fillMaxWidth(0.85f)
-                        .background(Color.White.copy(alpha = 0.95f), RoundedCornerShape(20.dp))
-                        .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                        .background(LyraColors.GlassCardSurface, RoundedCornerShape(20.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(20.dp))
                         .padding(28.dp)
         ) {
                 Column(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                         Text(
-                                stringResource(Res.string.onboarding_error_title),
+                                stringResource(Res.string.error),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Red
+                                color = LyraColors.ErrorText
                         )
-
                         Text(
-                                message,
-                                fontSize = 16.sp,
-                                color = Color.Gray
+                                message, fontSize = 16.sp,
+                                color = LyraColors.OnGlassCardSecondary
                         )
-
                         Button(
                                 onClick = onRetry,
                                 colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFFFCC00),
-                                        contentColor = Color.DarkGray
+                                        containerColor = LyraColors.Accent,
+                                        contentColor = LyraColors.AccentOnAccent
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                         ) {
-                                Text(stringResource(Res.string.onboarding_retry))
+                                Text(stringResource(Res.string.retry))
                         }
                 }
         }

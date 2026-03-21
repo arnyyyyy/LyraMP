@@ -21,16 +21,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
+import com.arno.lyramp.ui.theme.LyraColorScheme
 import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.words_chevron
+import lyramp.composeapp.generated.resources.chevron
 import lyramp.composeapp.generated.resources.words_mode_cards
-import lyramp.composeapp.generated.resources.words_mode_cards_icon
+import lyramp.composeapp.generated.resources.books_icon
 import lyramp.composeapp.generated.resources.words_mode_learn
-import lyramp.composeapp.generated.resources.words_mode_learn_icon
+import lyramp.composeapp.generated.resources.pencil_icon
 import lyramp.composeapp.generated.resources.words_mode_stories
-import lyramp.composeapp.generated.resources.words_mode_stories_icon
+import lyramp.composeapp.generated.resources.star_icon
 import lyramp.composeapp.generated.resources.words_mode_test
-import lyramp.composeapp.generated.resources.words_mode_test_icon
+import lyramp.composeapp.generated.resources.test_icon
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -46,31 +47,25 @@ internal fun ModeSelectionContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
                 ModeCard(
-                        icon = stringResource(Res.string.words_mode_cards_icon),
+                        icon = stringResource(Res.string.books_icon),
                         title = stringResource(Res.string.words_mode_cards),
-                        backgroundColor = Color.White,
-                        textColor = Color(0xFF1C1C1E),
                         onClick = { onSelectMode(LearningMode.CARDS) }
                 )
 
                 ModeCard(
-                        icon = stringResource(Res.string.words_mode_learn_icon),
+                        icon = stringResource(Res.string.pencil_icon),
                         title = stringResource(Res.string.words_mode_learn),
-                        backgroundColor = Color.White,
-                        textColor = Color(0xFF1C1C1E),
                         onClick = { onSelectMode(LearningMode.CRAM) }
                 )
 
                 ModeCard(
-                        icon = stringResource(Res.string.words_mode_test_icon),
+                        icon = stringResource(Res.string.test_icon),
                         title = stringResource(Res.string.words_mode_test),
-                        backgroundColor = Color.White,
-                        textColor = Color(0xFF1C1C1E),
                         onClick = { onSelectMode(LearningMode.TEST) }
                 )
 
                 ModeCard(
-                        icon = stringResource(Res.string.words_mode_stories_icon),
+                        icon = stringResource(Res.string.star_icon),
                         title = stringResource(Res.string.words_mode_stories),
                         backgroundColor = Color.White.copy(alpha = 0.15f),
                         textColor = Color.White,
@@ -85,8 +80,8 @@ internal fun ModeSelectionContent(
 private fun ModeCard(
         icon: String,
         title: String,
-        backgroundColor: Color,
-        textColor: Color,
+        backgroundColor: Color = LyraColorScheme.surface,
+        textColor: Color = LyraColorScheme.onSurface,
         onClick: () -> Unit
 ) {
         Box(
@@ -103,20 +98,16 @@ private fun ModeCard(
                 ) {
                         Text(text = icon, fontSize = 28.sp)
 
-                        Column(
+                        Text(
+                                text = title,
                                 modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                                Text(
-                                        text = title,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = textColor
-                                )
-                        }
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = textColor
+                        )
 
                         Text(
-                                text = stringResource(Res.string.words_chevron),
+                                text = stringResource(Res.string.chevron),
                                 fontSize = 22.sp,
                                 color = textColor.copy(alpha = 0.35f),
                                 fontWeight = FontWeight.Light

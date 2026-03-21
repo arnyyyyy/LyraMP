@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +31,7 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabDisposable
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import com.arno.lyramp.ui.theme.LyraColors
 
 internal object MainScreen : Screen {
 
@@ -40,18 +40,12 @@ internal object MainScreen : Screen {
                 TabNavigator(
                         tab = LibraryTab,
                         tabDisposable = {
-                                TabDisposable(
-                                        navigator = it,
-                                        tabs = listOf(LibraryTab, WordsTab)
-                                )
+                                TabDisposable(navigator = it, tabs = listOf(LibraryTab, WordsTab))
                         }
                 ) {
                         Box(modifier = Modifier.fillMaxSize()) {
                                 CurrentTab()
-
-                                NavBar(
-                                        modifier = Modifier.align(Alignment.BottomCenter)
-                                )
+                                NavBar(modifier = Modifier.align(Alignment.BottomCenter))
                         }
                 }
         }
@@ -69,20 +63,16 @@ private fun tabNavigatorFor(tab: Tab): Pair<Navigator?, MutableState<Int>?> =
 @Composable
 private fun NavBar(modifier: Modifier = Modifier) {
         val tabNavigator = LocalTabNavigator.current
-        val borderColor = Color(0xFFE0E0E0)
 
-        val tabs = listOf(
-                NavTabData(LibraryTab, "🎵"),
-                NavTabData(WordsTab, "📚")
-        )
+        val tabs = listOf(NavTabData(LibraryTab, "🎵"), NavTabData(WordsTab, "📚"))
 
         Box(
                 modifier = modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFF9F9F9).copy(alpha = 0.94f))
+                        .background(LyraColors.NavBarBg.copy(alpha = 0.94f))
                         .drawBehind {
                                 drawLine(
-                                        color = borderColor,
+                                        color = LyraColors.NavBarBorder,
                                         start = Offset(0f, 0f),
                                         end = Offset(size.width, 0f),
                                         strokeWidth = 0.5.dp.toPx()
@@ -91,31 +81,19 @@ private fun NavBar(modifier: Modifier = Modifier) {
                         .navigationBarsPadding()
         ) {
                 Row(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                         tabs.forEach { tabData ->
-                                NavItem(
-                                        tab = tabData.tab,
-                                        icon = tabData.icon,
-                                        tabNavigator = tabNavigator
-                                )
+                                NavItem(tab = tabData.tab, icon = tabData.icon, tabNavigator = tabNavigator)
                         }
                 }
         }
 }
 
 @Composable
-private fun NavItem(
-        tab: Tab,
-        icon: String,
-        tabNavigator: TabNavigator
-) {
+private fun NavItem(tab: Tab, icon: String, tabNavigator: TabNavigator) {
         val selected = tabNavigator.current == tab
-        val activeColor = Color(0xFFFC3C44) // TODO
-        val inactiveColor = Color(0xFF8E8E93) // TODO
 
         Column(
                 modifier = Modifier
@@ -143,16 +121,13 @@ private fun NavItem(
                         modifier = Modifier.size(if (selected) 28.dp else 26.dp),
                         contentAlignment = Alignment.Center
                 ) {
-                        Text(
-                                text = icon,
-                                fontSize = if (selected) 22.sp else 20.sp
-                        )
+                        Text(text = icon, fontSize = if (selected) 22.sp else 20.sp)
                 }
                 Text(
                         text = tab.options.title,
                         fontSize = 10.sp,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (selected) activeColor else inactiveColor,
+                        color = if (selected) LyraColors.NavActive else LyraColors.NavInactive,
                         lineHeight = 12.sp,
                         letterSpacing = (-0.1).sp
                 )

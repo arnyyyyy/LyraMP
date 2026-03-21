@@ -1,6 +1,7 @@
 package com.arno.lyramp.di
 
 val appModules = listOf(
+        secureStorageModule,
         networkModule,
         authModule,
         listeningDatabaseModule,
@@ -9,5 +10,8 @@ val appModules = listOf(
         lyricsModule,
         translationModule,
         onboardingModule,
-        listeningPracticeModule
+        listeningPracticeModule,
+        learnWordsDatabaseModule,
+        learnWordsModule,
+        storyGeneratorModule
 )

@@ -11,7 +11,8 @@ internal sealed interface LearnWordsUiState {
                 val currentIndex: Int,
                 val totalCount: Int,
                 val correctCount: Int,
-                val incorrectCount: Int
+                val incorrectCount: Int,
+                val isLoadingAudio: Boolean = false
         ) : LearnWordsUiState
 
         data class Cram(

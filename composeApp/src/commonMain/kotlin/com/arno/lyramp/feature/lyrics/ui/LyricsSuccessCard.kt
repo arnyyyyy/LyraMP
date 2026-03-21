@@ -15,11 +15,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.arno.lyramp.ui.theme.LyraColorScheme
 
 @Composable
-internal fun ShowLyricsSuccessCard(
+internal fun LyricsSuccessCard(
         lyricsLines: List<List<String>>,
         popupState: WordPopupState,
         onEvent: (LyricsEvent) -> Unit,
@@ -29,8 +29,8 @@ internal fun ShowLyricsSuccessCard(
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(16.dp))
+                        .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
+                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(16.dp))
                         .padding(24.dp)
         ) {
                 Column(

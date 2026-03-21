@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,18 +38,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.data.WordSource
-import com.arno.lyramp.feature.learn_words.presentation.WordInfo
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
-import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
+import com.arno.lyramp.feature.learn_words.presentation.WordInfo
+import com.arno.lyramp.ui.PlayAudioButton
 import kotlinx.coroutines.launch
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.know_ticked
+import lyramp.composeapp.generated.resources.learn_ticked
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -59,7 +63,8 @@ internal fun CardsModeContent(
         state: LearnWordsUiState.Cards,
         onSwipe: (Long, Boolean) -> Unit,
         onToggleImportance: (Long, Boolean) -> Unit,
-        onRequestSpeech: suspend (WordInfo) -> String?
+        isLoadingAudio: Boolean,
+        onPlayAudio: (WordInfo) -> Unit
 ) {
         val words = state.words
         val currentIndex = state.currentIndex
@@ -92,7 +97,8 @@ internal fun CardsModeContent(
                 ) {
                         SwipeCard(
                                 word = currentWord,
-                                onRequestSpeech = onRequestSpeech,
+                                isLoadingAudio = isLoadingAudio,
+                                onPlayAudio = { onPlayAudio(currentWord) },
                                 onToggleImportance = { onToggleImportance(currentWord.id, currentWord.isImportant) },
                                 onSwipe = onSwipe,
                         )
@@ -106,7 +112,8 @@ internal fun CardsModeContent(
 @Composable
 private fun SwipeCard(
         word: WordInfo,
-        onRequestSpeech: suspend (WordInfo) -> String?,
+        isLoadingAudio: Boolean,
+        onPlayAudio: () -> Unit,
         onToggleImportance: () -> Unit,
         onSwipe: (Long, Boolean) -> Unit,
 ) {
@@ -118,7 +125,7 @@ private fun SwipeCard(
         val rotation by animateFloatAsState(
                 targetValue = if (isFlipped) 180f else 0f,
                 animationSpec = tween(durationMillis = 400),
-                label = "card_flip"
+                label = "card_rotation"
         )
 
         val maxTiltAngle = 5f
@@ -126,14 +133,12 @@ private fun SwipeCard(
         val tiltAngle = (offsetX.value / maxOffset) * maxTiltAngle
 
         val swipeAlpha = (offsetX.value.absoluteValue / 300f).coerceIn(0f, 0.6f)
-        val swipeColor = if (offsetX.value < 0) Color(0xFF34C759) else Color(0xFFFF3B30)
+        val swipeColor = if (offsetX.value < 0) LyraColors.Correct else LyraColors.Incorrect
 
         Box(
                 modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer {
-                                rotationZ = tiltAngle
-                        }
+                        .graphicsLayer { rotationZ = tiltAngle }
                         .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                         .pointerInput(word.id) {
                                 detectDragGestures(
@@ -142,26 +147,18 @@ private fun SwipeCard(
                                                 if (offsetX.value.absoluteValue > threshold) {
                                                         coroutineScope.launch {
                                                                 val target = if (offsetX.value > 0) 1000f else -1000f
-                                                                offsetX.animateTo(
-                                                                        targetValue = target,
-                                                                        animationSpec = tween(200)
-                                                                )
+                                                                offsetX.animateTo(targetValue = target, animationSpec = tween(200))
                                                                 onSwipe(word.id, offsetX.value < 0)
-
                                                                 isFlipped = false
                                                                 offsetX.snapTo(0f)
                                                         }
                                                 } else {
-                                                        coroutineScope.launch {
-                                                                offsetX.animateTo(0f, tween(300))
-                                                        }
+                                                        coroutineScope.launch { offsetX.animateTo(0f, tween(300)) }
                                                 }
                                         }
                                 ) { change, dragAmount ->
                                         change.consume()
-                                        coroutineScope.launch {
-                                                offsetX.snapTo(offsetX.value + dragAmount.x)
-                                        }
+                                        coroutineScope.launch { offsetX.snapTo(offsetX.value + dragAmount.x) }
                                 }
                         }
                         .clickable { isFlipped = !isFlipped }
@@ -177,7 +174,8 @@ private fun SwipeCard(
                 ) {
                         WordCard(
                                 word = word,
-                                onRequestSpeech = onRequestSpeech,
+                                isLoadingAudio = isLoadingAudio,
+                                onPlayAudio = onPlayAudio,
                                 onToggleImportance = onToggleImportance,
                                 isFront = rotation <= 90f
                         )
@@ -190,12 +188,12 @@ private fun SwipeCard(
                                         .alpha(swipeAlpha)
                                         .background(swipeColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                         )
-                        Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(
-                                        text = if (offsetX.value < 0) "✓ Знаю" else "📖 Учить",
+                                        text = stringResource(
+                                                if (offsetX.value < 0) Res.string.know_ticked
+                                                else Res.string.learn_ticked
+                                        ),
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = swipeColor.copy(alpha = swipeAlpha * 1.5f)
@@ -208,7 +206,8 @@ private fun SwipeCard(
 @Composable
 private fun WordCard(
         word: WordInfo,
-        onRequestSpeech: suspend (WordInfo) -> String?,
+        isLoadingAudio: Boolean,
+        onPlayAudio: () -> Unit,
         onToggleImportance: () -> Unit,
         isFront: Boolean
 ) {
@@ -221,16 +220,15 @@ private fun WordCard(
                         .fillMaxSize(0.75f)
                         .graphicsLayer { rotationY = if (isFront) 0f else 180f }
                         .background(
-                                if (isFront) Color.White else Color(0xFFF2F2F7),
+                                if (isFront) Color.White else LyraColors.CardSurfaceAlt,
                                 RoundedCornerShape(20.dp)
                         )
                         .padding(28.dp)
         ) {
-
                 if (isFront) {
                         PlayAudioButton(
-                                word = word,
-                                onRequestSpeech = onRequestSpeech,
+                                isLoading = isLoadingAudio,
+                                onClick = onPlayAudio,
                                 modifier = Modifier.align(Alignment.TopEnd)
                         )
 
@@ -243,13 +241,10 @@ private fun WordCard(
                                         Box(
                                                 modifier = Modifier
                                                         .size(36.dp)
-                                                        .background(Color(0xFFF2F2F7), CircleShape)
+                                                        .background(LyraColors.CardSurfaceAlt, CircleShape)
                                                         .clickable {
-                                                                shownSourceIndex = if (shownSourceIndex < sources.size - 1) {
-                                                                        shownSourceIndex + 1
-                                                                } else {
-                                                                        -1
-                                                                }
+                                                                shownSourceIndex = if (shownSourceIndex < sources.size - 1)
+                                                                        shownSourceIndex + 1 else -1
                                                         },
                                                 contentAlignment = Alignment.Center
                                         ) {
@@ -263,10 +258,8 @@ private fun WordCard(
                                 Box(
                                         modifier = Modifier
                                                 .size(36.dp)
-                                                .background(Color(0xFFF2F2F7), CircleShape)
-                                                .clickable {
-                                                        onToggleImportance()
-                                                },
+                                                .background(LyraColors.CardSurfaceAlt, CircleShape)
+                                                .clickable { onToggleImportance() },
                                         contentAlignment = Alignment.Center
                                 ) {
                                         Text(
@@ -287,7 +280,7 @@ private fun WordCard(
                                         text = word.word,
                                         fontSize = 30.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1C1C1E),
+                                        color = LyraColors.TextPrimary,
                                         textAlign = TextAlign.Center
                                 )
 
@@ -307,7 +300,7 @@ private fun WordCard(
                                         text = word.translation,
                                         fontSize = 26.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1C1C1E),
+                                        color = LyraColors.TextPrimary,
                                         textAlign = TextAlign.Center
                                 )
                         }
@@ -325,7 +318,7 @@ private fun SourceHint(source: WordSource) {
                         Text(
                                 text = "\"${source.lyricLine}\"",
                                 fontSize = 12.sp,
-                                color = Color(0xFFAEAEB2),
+                                color = LyraColors.TextSubtle,
                                 textAlign = TextAlign.Center,
                                 lineHeight = 16.sp
                         )
@@ -333,50 +326,10 @@ private fun SourceHint(source: WordSource) {
                 Text(
                         text = "${source.trackName} - ${source.artists}",
                         fontSize = 11.sp,
-                        color = Color(0xFFC7C7CC),
+                        color = LyraColors.TextPlaceholder,
                         textAlign = TextAlign.Center,
                         maxLines = 1
                 )
         }
 }
 
-@Composable
-private fun PlayAudioButton(
-        word: WordInfo,
-        onRequestSpeech: suspend (WordInfo) -> String?,
-        modifier: Modifier = Modifier
-) {
-        val speechController = remember { TranslationSpeechController() }
-        val coroutineScope = rememberCoroutineScope()
-        var isLoadingAudio by remember { mutableStateOf(false) }
-
-        Box(
-                modifier = modifier
-                        .size(36.dp)
-                        .background(Color(0xFFF2F2F7), CircleShape)
-                        .clickable(enabled = !isLoadingAudio) {
-                                isLoadingAudio = true
-
-                                coroutineScope.launch {
-                                        val filePath = onRequestSpeech(word)
-
-                                        if (filePath != null) {
-                                                speechController.play(filePath)
-                                        }
-
-                                        isLoadingAudio = false
-                                }
-                        },
-                contentAlignment = Alignment.Center
-        ) {
-                if (isLoadingAudio) {
-                        CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 1.5.dp,
-                                color = Color(0xFF8E8E93)
-                        )
-                } else {
-                        Text("🔊", fontSize = 16.sp)
-                }
-        }
-}

@@ -20,13 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
-import lyramp.composeapp.generated.resources.*
+import com.arno.lyramp.ui.theme.LyraColorScheme
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.lyrics
+import lyramp.composeapp.generated.resources.practice
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -76,8 +79,8 @@ private fun TrackItem(
         Row(
                 modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White.copy(alpha = 0.95f), RoundedCornerShape(16.dp))
-                        .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                        .background(LyraColorScheme.surface.copy(alpha = 0.95f), RoundedCornerShape(16.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(16.dp))
                         .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
@@ -89,14 +92,12 @@ private fun TrackItem(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(
-                        modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                         Text(
                                 text = track.name,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color.Black,
+                                color = LyraColorScheme.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                         )
@@ -104,7 +105,7 @@ private fun TrackItem(
                         Text(
                                 text = track.artists.joinToString(", "),
                                 fontSize = 14.sp,
-                                color = Color.Gray,
+                                color = LyraColorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                         )
@@ -113,29 +114,30 @@ private fun TrackItem(
                                 Text(
                                         text = albumName,
                                         fontSize = 12.sp,
-                                        color = Color.LightGray,
+                                        color = LyraColorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                 )
                         }
                 }
 
-                Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (onPracticeClick != null) {
                                 Column(
                                         modifier = Modifier
-                                                .background(Color(0xFF4A90E2).copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                                .background(
+                                                        LyraColorScheme.primary.copy(alpha = 0.1f),
+                                                        RoundedCornerShape(8.dp)
+                                                )
                                                 .clickable(onClick = onPracticeClick)
                                                 .padding(8.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                         Text(text = "🎧", fontSize = 20.sp) // TODO: подумать мб не наушники
                                         Text(
-                                                text = stringResource(Res.string.history_track_practice_label),
+                                                text = stringResource(Res.string.practice),
                                                 fontSize = 10.sp,
-                                                color = Color(0xFF4A90E2),
+                                                color = LyraColorScheme.primary,
                                                 fontWeight = FontWeight.SemiBold
                                         )
                                 }
@@ -143,16 +145,16 @@ private fun TrackItem(
 
                         Column(
                                 modifier = Modifier
-                                        .background(Color(0xFFFFCC00).copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                                        .background(LyraColors.TrackLyricsChip.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
                                         .clickable(onClick = onLyricsClick)
                                         .padding(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                                 Text(text = "📝", fontSize = 20.sp)
                                 Text(
-                                        text = stringResource(Res.string.history_track_lyrics_label),
+                                        text = stringResource(Res.string.lyrics),
                                         fontSize = 10.sp,
-                                        color = Color(0xFFE6B800),
+                                        color = LyraColors.TrackLyricsText,
                                         fontWeight = FontWeight.SemiBold
                                 )
                         }

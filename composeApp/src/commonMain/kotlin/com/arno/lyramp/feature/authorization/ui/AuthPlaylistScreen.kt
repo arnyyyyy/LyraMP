@@ -29,14 +29,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.repository.AuthPlaylistRepository
 import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
 import com.arno.lyramp.feature.onboarding.ui.StoryProgressBar
 import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
-import lyramp.composeapp.generated.resources.*
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.auth_playlist_link_label
+import lyramp.composeapp.generated.resources.continue_next
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -47,7 +48,15 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
                 when (service) {
                         MusicServiceType.APPLE -> {
                                 val repo: AppleAuthRepository = koinInject()
-                                AuthPlaylistScreenContent(service = service, repo = repo, navigator = navigator)
+                                AuthPlaylistScreenContent(
+                                        title = "Apple Music",
+                                        initialUrl = repo.getPlaylistUrl() ?: "",
+                                        buttonColor = LyraColors.AppleMusic,
+                                        onContinue = { url ->
+                                                repo.savePlaylistUrl(url.takeIf { it.isNotBlank() })
+                                                navigator?.push(OnboardingScreen)
+                                        }
+                                )
                         }
 
                         else -> { /* No-op */
@@ -57,52 +66,31 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
 }
 
 @Composable
-fun AuthPlaylistScreenContent(
-        service: MusicServiceType,
-        repo: AuthPlaylistRepository,
-        navigator: Navigator?
+private fun AuthPlaylistScreenContent(
+        title: String,
+        initialUrl: String,
+        buttonColor: Color,
+        onContinue: (String) -> Unit
 ) {
-        val title = when (service) {
-                MusicServiceType.APPLE -> "Apple Music"
-                else -> ""
-        }
-
-        val cardBgColor = Color.White
-        val titleColor = Color.Black
-        val focusedBorderColor = Color.Gray
-        val unfocusedBorderColor = Color.Gray
-        val buttonContainerColor = Color(0xFFFF0436)
-
-
-        var playlistUrl by remember { mutableStateOf(repo.getPlaylistUrl() ?: "") }
+        var playlistUrl by remember { mutableStateOf(initialUrl) }
 
         Box(modifier = Modifier.fillMaxSize()) {
                 OnboardingBackground(modifier = Modifier.fillMaxSize())
 
                 Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        containerColor = Color.Transparent
+                        modifier = Modifier.fillMaxSize(), containerColor = Color.Transparent
                 ) { padding ->
                         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                                StoryProgressBar(
-                                        currentStep = 0,
-                                        totalSteps = 4
-                                )
+                                StoryProgressBar(currentStep = 0, totalSteps = 4)
 
-                                Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                ) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                         Box(
                                                 modifier = Modifier
                                                         .widthIn(max = 400.dp)
                                                         .fillMaxWidth(0.85f)
-                                                        .background(
-                                                                color = cardBgColor,
-                                                                shape = RoundedCornerShape(20.dp)
-                                                        )
-                                                        .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
-                                                        .padding(horizontal = 28.dp, vertical = 32.dp)
+                                                        .background(LyraColors.GlassCardSurface, RoundedCornerShape(20.dp))
+                                                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(20.dp))
+                                                        .padding(28.dp)
                                         ) {
                                                 Column(
                                                         modifier = Modifier.fillMaxWidth(),
@@ -110,10 +98,7 @@ fun AuthPlaylistScreenContent(
                                                         horizontalAlignment = Alignment.CenterHorizontally,
                                                 ) {
                                                         Text(
-                                                                title,
-                                                                fontSize = 24.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = titleColor
+                                                                title, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = LyraColors.OnGlassCard
                                                         )
 
                                                         OutlinedTextField(
@@ -122,31 +107,28 @@ fun AuthPlaylistScreenContent(
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 label = { Text(stringResource(Res.string.auth_playlist_link_label)) },
                                                                 colors = OutlinedTextFieldDefaults.colors(
-                                                                        focusedBorderColor = focusedBorderColor,
-                                                                        unfocusedBorderColor = unfocusedBorderColor,
-                                                                        focusedLabelColor = focusedBorderColor,
-                                                                        unfocusedLabelColor = unfocusedBorderColor,
-                                                                        cursorColor = focusedBorderColor
+                                                                        focusedBorderColor = LyraColors.OnGlassCardSecondary,
+                                                                        unfocusedBorderColor = LyraColors.OnGlassCardSecondary,
+                                                                        focusedLabelColor = LyraColors.OnGlassCardSecondary,
+                                                                        unfocusedLabelColor = LyraColors.OnGlassCardSecondary,
+                                                                        cursorColor = LyraColors.OnGlassCardSecondary
                                                                 ),
                                                                 shape = RoundedCornerShape(12.dp),
                                                                 singleLine = true
                                                         )
 
                                                         Button(
-                                                                onClick = {
-                                                                        repo.savePlaylistUrl(playlistUrl.takeIf { it.isNotBlank() })
-                                                                        navigator?.push(OnboardingScreen)
-                                                                },
+                                                                onClick = { onContinue(playlistUrl) },
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 colors = ButtonDefaults.buttonColors(
-                                                                        containerColor = buttonContainerColor,
+                                                                        containerColor = buttonColor,
                                                                         contentColor = Color.White
                                                                 ),
                                                                 shape = RoundedCornerShape(12.dp),
                                                                 enabled = playlistUrl.isNotBlank()
                                                         ) {
                                                                 Text(
-                                                                        stringResource(Res.string.auth_continue),
+                                                                        stringResource(Res.string.continue_next),
                                                                         modifier = Modifier.padding(vertical = 8.dp),
                                                                         fontSize = 16.sp,
                                                                         fontWeight = FontWeight.SemiBold

@@ -6,7 +6,8 @@ import com.arno.lyramp.feature.learn_words.data.LanguagePreferencesRepository
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.translation.domain.TranslationRepository
-import com.arno.lyramp.feature.translation.model.WordInfo
+import com.arno.lyramp.feature.translation.model.WordInfo as TranslationWordInfo
+import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -28,6 +29,8 @@ internal class LearnWordsScreenModel(
                 val correctCount: Int = 0,
                 val incorrectCount: Int = 0,
         )
+
+        private val speechController = TranslationSpeechController()
 
         private val _internalState = MutableStateFlow(InternalState())
 
@@ -293,9 +296,37 @@ internal class LearnWordsScreenModel(
                 }
         }
 
-        suspend fun getSourceSpeechFilePath(wordInfo: WordInfo): String? {
-                return withContext(Dispatchers.IO) {
-                        translationRepository.getSourceSpeechFilePath(wordInfo)
+        fun playAudio(word: WordInfo) {
+                val wordInfo = TranslationWordInfo(
+                        word = word.word,
+                        translation = word.translation,
+                        sourceLang = word.sourceLang
+                )
+                val state = _uiState.value
+                if (state is LearnWordsUiState.Cards && state.isLoadingAudio) return
+
+                if (state is LearnWordsUiState.Cards) {
+                        _uiState.value = state.copy(isLoadingAudio = true)
                 }
+
+                screenModelScope.launch {
+                        try {
+                                val filePath = withContext(Dispatchers.IO) {
+                                        translationRepository.getSourceSpeechFilePath(wordInfo)
+                                }
+                                if (filePath != null) {
+                                        speechController.play(filePath)
+                                }
+                        } finally {
+                                val current = _uiState.value
+                                if (current is LearnWordsUiState.Cards) {
+                                        _uiState.value = current.copy(isLoadingAudio = false)
+                                }
+                        }
+                }
+        }
+
+        override fun onDispose() {
+                speechController.stop()
         }
 }

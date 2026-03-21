@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,67 +29,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.ImeAction
-import com.arno.lyramp.core.ui.SlowModeButton
+import com.arno.lyramp.ui.theme.LyraColors
+import com.arno.lyramp.ui.SlowModeButton
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
+import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
-import lyramp.composeapp.generated.resources.*
+import com.arno.lyramp.ui.theme.LyraColorScheme
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.check
+import lyramp.composeapp.generated.resources.correct_count
+import lyramp.composeapp.generated.resources.correct_ticked
+import lyramp.composeapp.generated.resources.correct_stat
+import lyramp.composeapp.generated.resources.incorrect_count
+import lyramp.composeapp.generated.resources.incorrect_ticked
+import lyramp.composeapp.generated.resources.practice_input
+import lyramp.composeapp.generated.resources.practice_input_placeholder
+import lyramp.composeapp.generated.resources.practice_line_counter
+import lyramp.composeapp.generated.resources.practice_listen_line
+import lyramp.composeapp.generated.resources.full_song
+import lyramp.composeapp.generated.resources.random_song
+import lyramp.composeapp.generated.resources.practice_playing
+import lyramp.composeapp.generated.resources.practice_skip
+import lyramp.composeapp.generated.resources.user_ans
 import org.jetbrains.compose.resources.stringResource
-
-@Composable
-internal fun LoadingContent() {
-        Box(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(16.dp))
-                        .padding(40.dp),
-                contentAlignment = Alignment.Center
-        ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(
-                                modifier = Modifier.size(48.dp),
-                                color = Color(0xFF4A90E2)
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                        Text(
-                                text = stringResource(Res.string.practice_loading),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF2C3E50)
-                        )
-                }
-        }
-}
-
-@Composable
-internal fun ErrorContent(message: String) {
-        Box(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFFFFCDD2), RoundedCornerShape(16.dp))
-                        .padding(32.dp),
-                contentAlignment = Alignment.Center
-        ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "❌", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                                text = message,
-                                fontSize = 16.sp,
-                                color = Color(0xFFD32F2F),
-                                textAlign = TextAlign.Center
-                        )
-                }
-        }
-}
 
 @Composable
 internal fun ReadyContent(
@@ -104,8 +73,8 @@ internal fun ReadyContent(
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(16.dp))
+                        .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
+                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(16.dp))
                         .padding(24.dp)
         ) {
                 Row(
@@ -115,29 +84,26 @@ internal fun ReadyContent(
                 ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Text(
-                                        text = "✓ ${state.correctCount}",
+                                        text = stringResource(Res.string.correct_count, state.correctCount),
                                         fontSize = 14.sp,
-                                        color = Color(0xFF4CAF50),
+                                        color = LyraColors.Success,
                                         fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                        text = "✗ ${state.incorrectCount}",
+                                        text = stringResource(Res.string.incorrect_count, state.incorrectCount),
                                         fontSize = 14.sp,
-                                        color = Color(0xFFF44336),
+                                        color = LyraColors.Incorrect,
                                         fontWeight = FontWeight.SemiBold
                                 )
                         }
 
                         if (state.hasTimecodes) {
-                                ModeSwitcher(
-                                        currentMode = state.practiceMode,
-                                        onSwitchMode = onSwitchMode
-                                )
+                                ModeSwitcher(currentMode = state.practiceMode, onSwitchMode = onSwitchMode)
                         } else {
                                 Text(
                                         text = stringResource(Res.string.practice_line_counter, state.currentLineIndex + 1, state.lines.size),
                                         fontSize = 14.sp,
-                                        color = Color(0xFF7F8C8D),
+                                        color = LyraColorScheme.onSurfaceVariant,
                                         fontWeight = FontWeight.Medium
                                 )
                         }
@@ -169,86 +135,92 @@ internal fun ReadyContent(
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                Box(
-                                        modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(1f)
-                                ) {
-                                        PreviousLines(
-                                                lines = state.lines,
-                                                currentIndex = state.currentLineIndex
-                                        )
+                                Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                        PreviousLines(lines = state.lines, currentIndex = state.currentLineIndex)
                                 }
 
                                 Spacer(modifier = Modifier.height(20.dp))
 
-                                OutlinedTextField(
-                                        value = state.userInput,
-                                        onValueChange = onUserInputChange,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = { Text(stringResource(Res.string.practice_input_label)) },
-                                        placeholder = { Text(stringResource(Res.string.practice_input_placeholder)) },
-                                        colors = TextFieldDefaults.colors(
-                                                focusedContainerColor = Color(0xFFF9F9F9),
-                                                unfocusedContainerColor = Color(0xFFF9F9F9),
-                                                focusedIndicatorColor = Color(0xFF4A90E2),
-                                                unfocusedIndicatorColor = Color(0xFFE8E8E8)
-                                        ),
-                                        shape = RoundedCornerShape(12.dp),
-                                        keyboardOptions = KeyboardOptions(imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default),
-                                        keyboardActions = KeyboardActions(onDone = { if (state.userInput.isNotBlank()) onCheck() else onSkip() }),
-                                        singleLine = true
+                                InputAndButtons(
+                                        userInput = state.userInput,
+                                        onUserInputChange = onUserInputChange,
+                                        onCheck = onCheck,
+                                        onSkip = onSkip
                                 )
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                        OutlinedButton(
-                                                onClick = onSkip,
-                                                modifier = Modifier.weight(1f),
-                                                colors = ButtonDefaults.outlinedButtonColors(
-                                                        contentColor = Color(0xFF7F8C8D)
-                                                )
-                                        ) {
-                                                Text(stringResource(Res.string.practice_skip))
-                                        }
-                                        Button(
-                                                onClick = onCheck,
-                                                modifier = Modifier.weight(1f),
-                                                colors = ButtonDefaults.buttonColors(
-                                                        containerColor = Color(0xFF4A90E2)
-                                                ),
-                                                enabled = state.userInput.isNotBlank()
-                                        ) {
-                                                Text(stringResource(Res.string.practice_check))
-                                        }
-                                }
                         }
                 }
         }
 }
 
 @Composable
-private fun ModeSwitcher(
-        currentMode: PracticeMode,
-        onSwitchMode: (PracticeMode) -> Unit
+private fun InputAndButtons(
+        userInput: String,
+        onUserInputChange: (String) -> Unit,
+        onCheck: () -> Unit,
+        onSkip: () -> Unit,
 ) {
+        OutlinedTextField(
+                value = userInput,
+                onValueChange = onUserInputChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(Res.string.practice_input)) },
+                placeholder = { Text(stringResource(Res.string.practice_input_placeholder)) },
+                colors = TextFieldDefaults.colors(
+                        focusedContainerColor = LyraColorScheme.surfaceVariant,
+                        unfocusedContainerColor = LyraColorScheme.surfaceVariant,
+                        focusedIndicatorColor = LyraColorScheme.primary,
+                        unfocusedIndicatorColor = LyraColorScheme.outline
+                ),
+                shape = RoundedCornerShape(12.dp),
+
+                keyboardOptions = KeyboardOptions(
+                        imeAction = if (userInput.isNotBlank()) ImeAction.Done
+                        else ImeAction.Default
+                ),
+                keyboardActions = KeyboardActions(
+                        onDone = {
+                                if (userInput.isNotBlank()) onCheck()
+                                else onSkip()
+                        }),
+                singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(
+                        onClick = onSkip,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = LyraColorScheme.onSurfaceVariant)
+                ) {
+                        Text(stringResource(Res.string.practice_skip))
+                }
+                Button(
+                        onClick = onCheck,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = LyraColorScheme.primary),
+                        enabled = userInput.isNotBlank()
+                ) {
+                        Text(stringResource(Res.string.check))
+                }
+        }
+}
+
+@Composable
+private fun ModeSwitcher(currentMode: PracticeMode, onSwitchMode: (PracticeMode) -> Unit) {
         Row(
                 modifier = Modifier
-                        .background(Color(0xFFF0F0F0), RoundedCornerShape(20.dp))
+                        .background(LyraColorScheme.surfaceVariant, RoundedCornerShape(20.dp))
                         .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
                 ModeTab(
-                        label = stringResource(Res.string.practice_mode_full_song),
+                        label = stringResource(Res.string.full_song),
                         isSelected = currentMode == PracticeMode.FULL_SONG,
                         onClick = { onSwitchMode(PracticeMode.FULL_SONG) }
                 )
                 ModeTab(
-                        label = stringResource(Res.string.practice_mode_random),
+                        label = stringResource(Res.string.random_song),
                         isSelected = currentMode == PracticeMode.RANDOM_LINE,
                         onClick = { onSwitchMode(PracticeMode.RANDOM_LINE) }
                 )
@@ -256,20 +228,16 @@ private fun ModeSwitcher(
 }
 
 @Composable
-private fun ModeTab(
-        label: String,
-        isSelected: Boolean,
-        onClick: () -> Unit
-) {
+private fun ModeTab(label: String, isSelected: Boolean, onClick: () -> Unit) {
         Button(
                 onClick = onClick,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isSelected) Color(0xFF4A90E2) else Color.Transparent,
-                        contentColor = if (isSelected) Color.White else Color(0xFF7F8C8D)
+                        containerColor = if (isSelected) LyraColorScheme.primary else Color.Transparent,
+                        contentColor = if (isSelected) LyraColorScheme.onPrimary else LyraColorScheme.onSurfaceVariant
                 ),
                 modifier = Modifier.height(32.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                 elevation = ButtonDefaults.buttonElevation(0.dp)
         ) {
                 Text(text = label, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal)
@@ -289,16 +257,13 @@ private fun RandomLineContent(
                 Box(
                         modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFF0F5FF), RoundedCornerShape(16.dp))
-                                .border(1.dp, Color(0xFFD0E4FF), RoundedCornerShape(16.dp))
+                                .background(LyraColors.HighlightBg, RoundedCornerShape(16.dp))
+                                .border(1.dp, LyraColors.HighlightBorder, RoundedCornerShape(16.dp))
                                 .padding(24.dp),
                         contentAlignment = Alignment.Center
                 ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                        text = "🎵",
-                                        fontSize = 40.sp
-                                )
+                                Text(text = "🎵", fontSize = 40.sp)
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(
@@ -309,20 +274,19 @@ private fun RandomLineContent(
                                                 onClick = onPlayCurrentLine,
                                                 shape = RoundedCornerShape(24.dp),
                                                 colors = ButtonDefaults.buttonColors(
-                                                        containerColor = if (state.currentLineIsPlaying) Color(0xFF34C759) else Color(0xFF4A90E2),
+                                                        containerColor = if (state.currentLineIsPlaying) LyraColors.Correct
+                                                        else LyraColorScheme.primary,
                                                         contentColor = Color.White
                                                 )
                                         ) {
                                                 Text(
-                                                        text = if (state.currentLineIsPlaying) stringResource(Res.string.practice_playing) else stringResource(Res.string.practice_listen_line),
+                                                        text = if (state.currentLineIsPlaying) stringResource(Res.string.practice_playing)
+                                                        else stringResource(Res.string.practice_listen_line),
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                 )
                                         }
-                                        SlowModeButton(
-                                                isSlowMode = state.isSlowMode,
-                                                onClick = onToggleSlowMode
-                                        )
+                                        SlowModeButton(isSlowMode = state.isSlowMode, onClick = onToggleSlowMode)
                                 }
                         }
                 }
@@ -330,58 +294,69 @@ private fun RandomLineContent(
                 val lastAnswered = state.lastAnsweredLine
                 if (lastAnswered != null) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        ListeningPracticeLineStat(
+                        AnswerResultRow(
+                                isCorrect = lastAnswered.checkResult == LineCheckResult.CORRECT,
                                 text = lastAnswered.text,
                                 userInput = lastAnswered.userInput,
-                                isCorrect = lastAnswered.checkResult == LineCheckResult.CORRECT
+                                correctLabel = stringResource(Res.string.correct_ticked),
+                                incorrectLabel = stringResource(Res.string.incorrect_ticked),
+                                correctPrefix = stringResource(Res.string.correct_stat, lastAnswered.text),
+                                userWrotePrefix = stringResource(Res.string.user_ans, lastAnswered.userInput)
                         )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                OutlinedTextField(
-                        value = state.userInput,
-                        onValueChange = onUserInputChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(Res.string.practice_input_label)) },
-                        placeholder = { Text(stringResource(Res.string.practice_input_placeholder)) },
-                        colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFFF9F9F9),
-                                unfocusedContainerColor = Color(0xFFF9F9F9),
-                                focusedIndicatorColor = Color(0xFF4A90E2),
-                                unfocusedIndicatorColor = Color(0xFFE8E8E8)
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default),
-                        keyboardActions = KeyboardActions(onDone = { if (state.userInput.isNotBlank()) onCheck() else onSkip() }),
-                        singleLine = true
+                InputAndButtons(
+                        userInput = state.userInput,
+                        onUserInputChange = onUserInputChange,
+                        onCheck = onCheck,
+                        onSkip = onSkip
                 )
+        }
+}
 
-                Spacer(modifier = Modifier.height(12.dp))
+//TODO:
+@Composable
+private fun PreviousLines(lines: List<LyricLine>, currentIndex: Int) {
+        if (currentIndex == 0) return
 
-                Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                        OutlinedButton(
-                                onClick = onSkip,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color(0xFF7F8C8D)
-                                )
-                        ) {
-                                Text(stringResource(Res.string.practice_skip))
+        val scrollState = rememberScrollState()
+
+        Column(
+                modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState, reverseScrolling = true)
+        ) {
+                lines.take(currentIndex).forEach { line ->
+                        when (line.checkResult) {
+                                LineCheckResult.CORRECT -> {
+                                        AnswerResultRow(
+                                                isCorrect = true,
+                                                text = line.text,
+                                                userInput = line.userInput,
+                                                correctLabel = stringResource(Res.string.correct_ticked),
+                                                incorrectLabel = stringResource(Res.string.incorrect_ticked),
+                                                correctPrefix = stringResource(Res.string.correct_stat, line.text),
+                                                userWrotePrefix = stringResource(Res.string.user_ans, line.userInput)
+                                        )
+                                }
+
+                                LineCheckResult.INCORRECT -> {
+                                        AnswerResultRow(
+                                                isCorrect = false,
+                                                text = line.text,
+                                                userInput = line.userInput,
+                                                correctLabel = stringResource(Res.string.correct_ticked),
+                                                incorrectLabel = stringResource(Res.string.incorrect_ticked),
+                                                correctPrefix = stringResource(Res.string.correct_stat, line.text),
+                                                userWrotePrefix = stringResource(Res.string.user_ans, line.userInput)
+                                        )
+                                }
+
+                                else -> {}
                         }
-                        Button(
-                                onClick = onCheck,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF4A90E2)
-                                ),
-                                enabled = state.userInput.isNotBlank()
-                        ) {
-                                Text(stringResource(Res.string.practice_check))
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                 }
         }
 }

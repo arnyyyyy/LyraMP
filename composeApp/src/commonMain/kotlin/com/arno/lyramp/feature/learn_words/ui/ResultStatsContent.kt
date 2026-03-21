@@ -19,14 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
+import com.arno.lyramp.ui.LyraFilledButton
+import com.arno.lyramp.ui.theme.LyraColorScheme
 import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.words_check_mark
+import lyramp.composeapp.generated.resources.check_icon
+import lyramp.composeapp.generated.resources.correct
 import lyramp.composeapp.generated.resources.words_completed_title
-import lyramp.composeapp.generated.resources.words_cross_mark
-import lyramp.composeapp.generated.resources.words_label_correct
-import lyramp.composeapp.generated.resources.words_label_incorrect
-import lyramp.composeapp.generated.resources.words_restart
+import lyramp.composeapp.generated.resources.cross_icon
+import lyramp.composeapp.generated.resources.errors_num
+import lyramp.composeapp.generated.resources.repeat
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -49,8 +52,8 @@ internal fun CompletedContent(state: LearnWordsUiState.Completed, onRestart: () 
                 Box(
                         modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color.White, RoundedCornerShape(16.dp))
-                                .border(1.dp, Color.Black.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
+                                .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
+                                .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(16.dp))
                                 .padding(24.dp)
                 ) {
                         Column(
@@ -67,19 +70,21 @@ internal fun CompletedContent(state: LearnWordsUiState.Completed, onRestart: () 
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                                Text(text = stringResource(Res.string.words_check_mark), fontSize = 20.sp, color = Color(0xFF34C759))
                                                 Text(
-                                                        text = stringResource(Res.string.words_label_correct),
+                                                        text = stringResource(Res.string.check_icon),
+                                                        fontSize = 20.sp, color = LyraColors.Correct
+                                                )
+                                                Text(
+                                                        text = stringResource(Res.string.correct),
                                                         fontSize = 16.sp,
                                                         fontWeight = FontWeight.Medium,
-                                                        color = Color(0xFF2C3E50)
+                                                        color = LyraColorScheme.onSurface
                                                 )
                                         }
                                         Text(
                                                 text = "${state.correctCount}",
-                                                fontSize = 20.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF34C759)
+                                                fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                                                color = LyraColors.Correct
                                         )
                                 }
 
@@ -93,29 +98,28 @@ internal fun CompletedContent(state: LearnWordsUiState.Completed, onRestart: () 
                                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                                         verticalAlignment = Alignment.CenterVertically
                                                 ) {
-                                                        Text(text = stringResource(Res.string.words_cross_mark), fontSize = 20.sp, color = Color(0xFFFF3B30))
                                                         Text(
-                                                                text = stringResource(Res.string.words_label_incorrect),
+                                                                text = stringResource(Res.string.cross_icon),
+                                                                fontSize = 20.sp, color = LyraColors.Incorrect
+                                                        )
+                                                        Text(
+                                                                text = stringResource(Res.string.errors_num),
                                                                 fontSize = 16.sp,
                                                                 fontWeight = FontWeight.Medium,
-                                                                color = Color(0xFF2C3E50)
+                                                                color = LyraColorScheme.onSurface
                                                         )
                                                 }
-                                                Text(
-                                                        text = "${state.incorrectCount}",
-                                                        fontSize = 20.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = Color(0xFFFF3B30)
-                                                )
+                                                Text(text = "${state.incorrectCount}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = LyraColors.Incorrect)
                                         }
                                 }
                         }
                 }
 
-                PrimaryButton(
-                        text = stringResource(Res.string.words_restart),
+                LyraFilledButton(
+                        text = stringResource(Res.string.repeat),
                         onClick = onRestart,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        containerColor = LyraColorScheme.surface, contentColor = LyraColorScheme.onSurface, height = 65.dp,
                 )
         }
 }

@@ -21,15 +21,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
 import com.arno.lyramp.feature.learn_words.presentation.TestVariant
+import com.arno.lyramp.ui.LyraFilledButton
+import com.arno.lyramp.ui.theme.LyraColorScheme
 import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.words_check_mark
-import lyramp.composeapp.generated.resources.words_cross_mark
-import lyramp.composeapp.generated.resources.words_finish_short
-import lyramp.composeapp.generated.resources.words_next
-import lyramp.composeapp.generated.resources.words_test_question_ft
-import lyramp.composeapp.generated.resources.words_test_question_tf
+import lyramp.composeapp.generated.resources.check_icon
+import lyramp.composeapp.generated.resources.cross_icon
+import lyramp.composeapp.generated.resources.finish
+import lyramp.composeapp.generated.resources.next
+import lyramp.composeapp.generated.resources.choose_translation
+import lyramp.composeapp.generated.resources.choose_word
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -66,8 +69,8 @@ internal fun TestModeContent(
                         modifier = Modifier.padding(top = 16.dp, bottom = 4.dp).align(Alignment.Start),
                         text = stringResource(
                                 when (state.variant) {
-                                        TestVariant.FOREIGN_TO_TRANSLATION -> Res.string.words_test_question_ft
-                                        TestVariant.TRANSLATION_TO_FOREIGN -> Res.string.words_test_question_tf
+                                        TestVariant.FOREIGN_TO_TRANSLATION -> Res.string.choose_translation
+                                        TestVariant.TRANSLATION_TO_FOREIGN -> Res.string.choose_word
                                 }
                         ),
                         color = Color.White,
@@ -94,13 +97,15 @@ internal fun TestModeContent(
                 }
 
                 if (state.isAnswered) {
-                        PrimaryButton(
-                                text = if (state.currentIndex + 1 >= state.totalCount) stringResource(Res.string.words_finish_short)
-                                else stringResource(Res.string.words_next),
+                        LyraFilledButton(
+                                text = if (state.currentIndex + 1 >= state.totalCount)
+                                        stringResource(Res.string.finish)
+                                else stringResource(Res.string.next),
                                 onClick = { onNext() },
                                 modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 35.dp)
+                                        .padding(top = 16.dp, bottom = 35.dp),
+                                containerColor = LyraColorScheme.surface, contentColor = LyraColorScheme.onSurface, height = 65.dp,
                         )
                 } else {
                         Spacer(modifier = Modifier.height(66.dp))
@@ -120,17 +125,17 @@ private fun TestOptionItem(
         val isCorrectAnswer = state.options[index] == state.correctAnswer
 
         val backgroundColor = when {
-                !isAnswered -> Color.White
-                isSelected && state.isCorrect -> Color(0xFF34C759)
-                isSelected && !state.isCorrect -> Color(0xFFFF3B30)
-                !isSelected && isCorrectAnswer -> Color(0xFF34C759).copy(alpha = 0.15f)
-                else -> Color.White
+                !isAnswered -> LyraColorScheme.surface
+                isSelected && state.isCorrect -> LyraColors.Correct
+                isSelected && !state.isCorrect -> LyraColors.Incorrect
+                !isSelected && isCorrectAnswer -> LyraColors.Correct.copy(alpha = 0.15f)
+                else -> LyraColorScheme.surface
         }
         val textColor = when {
-                !isAnswered -> Color(0xFF1C1C1E)
+                !isAnswered -> LyraColors.TextPrimary
                 isSelected -> Color.White
-                isCorrectAnswer -> Color(0xFF34C759)
-                else -> Color(0xFF8E8E93)
+                isCorrectAnswer -> LyraColors.Correct
+                else -> LyraColors.NavInactive
         }
 
         Box(
@@ -146,23 +151,17 @@ private fun TestOptionItem(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                        Text(
-                                text = option,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = textColor,
-                                modifier = Modifier.weight(1f)
-                        )
+                        Text(text = option, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = textColor, modifier = Modifier.weight(1f))
                         if (isAnswered) {
                                 when {
                                         isSelected && state.isCorrect ->
-                                                Text(text = stringResource(Res.string.words_check_mark), fontSize = 18.sp, color = Color.White)
+                                                Text(text = stringResource(Res.string.check_icon), fontSize = 18.sp, color = Color.White)
 
                                         isSelected && !state.isCorrect ->
-                                                Text(text = stringResource(Res.string.words_cross_mark), fontSize = 18.sp, color = Color.White)
+                                                Text(text = stringResource(Res.string.cross_icon), fontSize = 18.sp, color = Color.White)
 
                                         isCorrectAnswer ->
-                                                Text(text = stringResource(Res.string.words_check_mark), fontSize = 18.sp, color = Color(0xFF34C759))
+                                                Text(text = stringResource(Res.string.check_icon), fontSize = 18.sp, color = LyraColors.Correct)
                                 }
                         }
                 }

@@ -16,8 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,17 +28,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.presentation.CheckResult
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
+import com.arno.lyramp.ui.LyraFilledButton
+import com.arno.lyramp.ui.theme.LyraColorScheme
 import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.words_check_mark
-import lyramp.composeapp.generated.resources.words_cross_mark
-import lyramp.composeapp.generated.resources.words_finish_short
-import lyramp.composeapp.generated.resources.words_learn_check
-import lyramp.composeapp.generated.resources.words_learn_correct
-import lyramp.composeapp.generated.resources.words_learn_incorrect
-import lyramp.composeapp.generated.resources.words_learn_placeholder
-import lyramp.composeapp.generated.resources.words_next
+import lyramp.composeapp.generated.resources.check_icon
+import lyramp.composeapp.generated.resources.cross_icon
+import lyramp.composeapp.generated.resources.finish
+import lyramp.composeapp.generated.resources.check
+import lyramp.composeapp.generated.resources.correct
+import lyramp.composeapp.generated.resources.correct_answer_is
+import lyramp.composeapp.generated.resources.translation
+import lyramp.composeapp.generated.resources.next
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -48,8 +51,6 @@ internal fun CramModeContent(
         onCheck: () -> Unit,
         onNext: () -> Unit
 ) {
-        val result = state.result
-
         Column(
                 modifier = Modifier
                         .fillMaxSize()
@@ -66,12 +67,7 @@ internal fun CramModeContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                        contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                         Column(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -81,46 +77,53 @@ internal fun CramModeContent(
 
                                 Spacer(modifier = Modifier.height(20.dp))
 
-                                OutlinedTextField(
-                                        value = state.userInput,
-                                        onValueChange = { onInputChange(it) },
+
+                                Box(
                                         modifier = Modifier
                                                 .fillMaxWidth()
-                                                .background(Color.White, RoundedCornerShape(12.dp)),
-                                        textStyle = TextStyle(
-                                                fontSize = 20.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF1C1C1E),
-                                                textAlign = TextAlign.Center
-                                        ),
-                                        placeholder = {
-                                                Text(
-                                                        text = stringResource(Res.string.words_learn_placeholder),
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        textAlign = TextAlign.Center,
-                                                        color = Color(0xFFC7C7CC),
-                                                        fontSize = 18.sp
+                                                .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
+                                                .padding(20.dp),
+                                        contentAlignment = Alignment.Center
+                                ) {
+                                        OutlinedTextField(
+                                                value = state.userInput,
+                                                onValueChange = { onInputChange(it) },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                textStyle = TextStyle(
+                                                        fontSize = 20.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = LyraColors.TextPrimary,
+                                                        textAlign = TextAlign.Center
+                                                ),
+                                                placeholder = {
+                                                        Text(
+                                                                text = stringResource(Res.string.translation),
+                                                                modifier = Modifier.fillMaxWidth(),
+                                                                textAlign = TextAlign.Center,
+                                                                color = LyraColors.TextPlaceholder,
+                                                                fontSize = 18.sp
+                                                        )
+                                                },
+                                                shape = RoundedCornerShape(12.dp),
+                                                keyboardOptions = KeyboardOptions(
+                                                        imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default
+                                                ),
+                                                keyboardActions = KeyboardActions(
+                                                        onDone = { if (state.userInput.isNotBlank()) onCheck() }
+                                                ),
+                                                colors = OutlinedTextFieldDefaults.colors(
+                                                        focusedContainerColor = LyraColorScheme.surface,
+                                                        unfocusedContainerColor = LyraColorScheme.surface,
+                                                        focusedBorderColor = Color.Transparent,
+                                                        unfocusedBorderColor = Color.Transparent
                                                 )
-                                        },
-                                        singleLine = true,
-                                        shape = RoundedCornerShape(12.dp),
-                                        keyboardOptions = KeyboardOptions(
-                                                imeAction = if (state.userInput.isNotBlank()) ImeAction.Done else ImeAction.Default
-                                        ),
-                                        keyboardActions = KeyboardActions(
-                                                onDone = { if (state.userInput.isNotBlank()) onCheck() }
-                                        ),
-                                        colors = TextFieldDefaults.colors(
-                                                focusedContainerColor = Color.White,
-                                                unfocusedContainerColor = Color.White,
-                                                focusedIndicatorColor = Color(0xFF1C1C1E),
-                                                unfocusedIndicatorColor = Color(0xFFE5E5EA)
                                         )
-                                )
+                                }
+
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                when (result) {
+                                when (state.result) {
                                         null -> Spacer(modifier = Modifier.height(20.dp))
                                         CheckResult.CORRECT -> AnswerFeedback(isCorrect = true, correctAnswer = state.word.word)
                                         CheckResult.INCORRECT -> AnswerFeedback(isCorrect = false, correctAnswer = state.word.word)
@@ -128,42 +131,39 @@ internal fun CramModeContent(
                         }
                 }
 
-                Row(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp)
-                ) {
-                        if (result == null) {
-                                PrimaryButton(
-                                        text = stringResource(Res.string.words_learn_check),
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                        if (state.result == null) {
+                                LyraFilledButton(
+                                        text = stringResource(Res.string.check),
                                         onClick = { onCheck() },
                                         modifier = Modifier.weight(1f),
+                                        containerColor = LyraColorScheme.surface,
+                                        contentColor = LyraColorScheme.onSurface,
+                                        height = 65.dp,
                                 )
                         } else {
-                                PrimaryButton(
-                                        text = if (state.currentIndex + 1 >= state.totalCount) stringResource(Res.string.words_finish_short)
-                                        else stringResource(Res.string.words_next),
+                                LyraFilledButton(
+                                        text = if (state.currentIndex + 1 >= state.totalCount) stringResource(Res.string.finish)
+                                        else stringResource(Res.string.next),
                                         onClick = { onNext() },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        containerColor = LyraColorScheme.surface,
+                                        contentColor = LyraColorScheme.onSurface,
+                                        height = 65.dp,
                                 )
                         }
                 }
         }
 }
 
-
 @Composable
-private fun AnswerFeedback(
-        isCorrect: Boolean,
-        correctAnswer: String,
-        modifier: Modifier = Modifier
-) {
-        val bgColor = if (isCorrect) Color(0xFF34C759).copy(alpha = 0.12f) else Color(0xFFFF3B30).copy(alpha = 0.10f)
-        val accentColor = if (isCorrect) Color(0xFF34C759) else Color(0xFFFF3B30)
-        val icon = if (isCorrect) stringResource(Res.string.words_check_mark) else stringResource(Res.string.words_cross_mark)
+private fun AnswerFeedback(isCorrect: Boolean, correctAnswer: String) {
+        val bgColor = if (isCorrect) LyraColors.Correct.copy(alpha = 0.12f) else LyraColors.Incorrect.copy(alpha = 0.10f)
+        val accentColor = if (isCorrect) LyraColors.Correct else LyraColors.Incorrect
+        val icon = if (isCorrect) stringResource(Res.string.check_icon) else stringResource(Res.string.cross_icon)
 
         Box(
-                modifier = modifier
+                modifier = Modifier
                         .fillMaxWidth()
                         .background(bgColor, RoundedCornerShape(10.dp))
                         .padding(14.dp),
@@ -176,7 +176,7 @@ private fun AnswerFeedback(
                         ) {
                                 Text(text = icon, fontSize = 18.sp, color = accentColor)
                                 Text(
-                                        text = stringResource(Res.string.words_learn_correct),
+                                        text = stringResource(Res.string.correct),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = accentColor
@@ -189,18 +189,12 @@ private fun AnswerFeedback(
                         ) {
                                 Text(text = icon, fontSize = 18.sp, color = accentColor)
                                 Text(
-                                        text = stringResource(Res.string.words_learn_incorrect),
+                                        text = stringResource(Res.string.correct_answer_is),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = accentColor
                                 )
-
-                                Text(
-                                        text = correctAnswer,
-                                        fontSize = 17.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = accentColor
-                                )
+                                Text(text = correctAnswer, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = accentColor)
                         }
                 }
         }

@@ -47,6 +47,7 @@ kotlin {
                         implementation(libs.androidx.media3.common)
                         implementation(libs.koin.android)
                         implementation(libs.androidx.room.sqlite.wrapper)
+                        implementation(libs.androidx.security.crypto)
 
                 }
 
@@ -60,14 +61,17 @@ kotlin {
                         implementation(compose.runtime)
                         implementation(compose.foundation)
                         implementation(compose.material3)
+                        implementation(compose.materialIconsExtended)
                         implementation(compose.ui)
                         implementation(compose.components.resources)
                         implementation(compose.components.uiToolingPreview)
                         implementation(libs.androidx.lifecycle.viewmodelCompose)
                         implementation(libs.androidx.lifecycle.runtimeCompose)
                         implementation(libs.voyager.navigator)
+                        implementation(libs.voyager.tab.navigator)
                         implementation(libs.voyager.screenmodel)
                         implementation(libs.voyager.transitions)
+                        implementation(libs.voyager.koin)
                         implementation(libs.ktor.client.core)
                         implementation(libs.ktor.client.content.negotiation)
                         implementation(libs.ktor.serialization.kotlinx.json)
@@ -84,6 +88,7 @@ kotlin {
                         implementation(libs.okio)
                         implementation(libs.androidx.room.runtime)
                         implementation(libs.androidx.sqlite.bundled)
+                        implementation(libs.llamatik)
                 }
                 commonTest.dependencies {
                         implementation(libs.kotlin.test)

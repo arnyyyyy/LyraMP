@@ -24,9 +24,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
-import lyramp.composeapp.generated.resources.*
+import com.arno.lyramp.ui.theme.LyraColorScheme
+import lyramp.composeapp.generated.resources.Res
+import lyramp.composeapp.generated.resources.accuracy
+import lyramp.composeapp.generated.resources.back
+import lyramp.composeapp.generated.resources.practice_completed
+import lyramp.composeapp.generated.resources.correct
+import lyramp.composeapp.generated.resources.correct_ticked
+import lyramp.composeapp.generated.resources.correct_stat
+import lyramp.composeapp.generated.resources.incorrect
+import lyramp.composeapp.generated.resources.incorrect_ticked
+import lyramp.composeapp.generated.resources.result
+import lyramp.composeapp.generated.resources.user_ans
+import lyramp.composeapp.generated.resources.retry
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -40,8 +53,8 @@ internal fun ListeningPracticeCompletedScreen(
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(16.dp))
+                        .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
+                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(16.dp))
                         .padding(24.dp)
         ) {
                 Column(
@@ -51,25 +64,23 @@ internal fun ListeningPracticeCompletedScreen(
                         Text(text = "🎉", fontSize = 64.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                                text = stringResource(Res.string.practice_completed_title),
+                                text = stringResource(Res.string.practice_completed),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2C3E50)
+                                color = LyraColorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        Row(
-                                horizontalArrangement = Arrangement.spacedBy(24.dp)
-                        ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                 StatCard(
-                                        label = stringResource(Res.string.practice_correct_label),
+                                        label = stringResource(Res.string.correct),
                                         value = state.correctCount,
-                                        color = Color(0xFF4CAF50)
+                                        color = LyraColors.Success
                                 )
                                 StatCard(
-                                        label = stringResource(Res.string.practice_incorrect_label),
+                                        label = stringResource(Res.string.incorrect),
                                         value = state.incorrectCount,
-                                        color = Color(0xFFF44336)
+                                        color = LyraColors.Incorrect
                                 )
                         }
 
@@ -78,10 +89,10 @@ internal fun ListeningPracticeCompletedScreen(
                         val total = state.correctCount + state.incorrectCount
                         val percentage = if (total > 0) (state.correctCount * 100 / total) else 0
                         Text(
-                                text = stringResource(Res.string.practice_accuracy, percentage),
+                                text = stringResource(Res.string.accuracy, percentage),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF4A90E2)
+                                color = LyraColorScheme.primary
                         )
                 }
 
@@ -93,20 +104,24 @@ internal fun ListeningPracticeCompletedScreen(
                                 .verticalScroll(scrollState)
                 ) {
                         Text(
-                                text = stringResource(Res.string.practice_results_header),
+                                text = stringResource(Res.string.result),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF2C3E50),
+                                color = LyraColorScheme.onSurface,
                                 modifier = Modifier.padding(bottom = 12.dp)
                         )
 
                         state.lines.forEach { line ->
                                 when (line.checkResult) {
                                         LineCheckResult.CORRECT, LineCheckResult.INCORRECT -> {
-                                                LineResultCard(
+                                                AnswerResultRow(
+                                                        isCorrect = line.checkResult == LineCheckResult.CORRECT,
                                                         text = line.text,
                                                         userInput = line.userInput,
-                                                        isCorrect = line.checkResult == LineCheckResult.CORRECT
+                                                        correctLabel = stringResource(Res.string.correct_ticked),
+                                                        incorrectLabel = stringResource(Res.string.incorrect_ticked),
+                                                        correctPrefix = stringResource(Res.string.correct_stat, line.text),
+                                                        userWrotePrefix = stringResource(Res.string.user_ans, line.userInput)
                                                 )
                                                 Spacer(modifier = Modifier.height(8.dp))
                                         }
@@ -122,42 +137,31 @@ internal fun ListeningPracticeCompletedScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                        OutlinedButton(
-                                onClick = onBack,
-                                modifier = Modifier.weight(1f)
-                        ) {
-                                Text(stringResource(Res.string.practice_back))
+                        OutlinedButton(onClick = onBack, modifier = Modifier.weight(1f)) {
+                                Text(stringResource(Res.string.back))
                         }
                         Button(
                                 onClick = onRestart,
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF4A90E2)
+                                        containerColor = LyraColorScheme.primary
                                 )
                         ) {
-                                Text(stringResource(Res.string.practice_restart))
+                                Text(stringResource(Res.string.retry))
                         }
                 }
         }
 }
 
 @Composable
-internal fun StatCard(label: String, value: Int, color: Color) {
+private fun StatCard(label: String, value: Int, color: Color) {
         Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                         .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
-                Text(
-                        text = value.toString(),
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = color
-                )
-                Text(
-                        text = label,
-                        fontSize = 13.sp,
-                        color = Color(0xFF7F8C8D))
+                Text(text = value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = color)
+                Text(text = label, fontSize = 13.sp, color = LyraColorScheme.onSurfaceVariant)
         }
 }

@@ -47,5 +47,5 @@ val listeningHistoryModule = module {
 
         single { ListeningHistoryRepository(musicService = get(), dao = get()) }
 
-        single { ListeningHistoryScreenModel(repository = get()) }
+        factory { ListeningHistoryScreenModel(repository = get()) }
 }
