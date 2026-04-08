@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -29,35 +31,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.arno.lyramp.ui.EmptyStateCard
-import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
-import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
-import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
-import com.arno.lyramp.feature.story_generator.ui.StoryGeneratorVoyagerScreen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
+import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
+import com.arno.lyramp.feature.learn_words.presentation.ChooseModeUiState
+import com.arno.lyramp.core.navigation.ScreenFactory
+import com.arno.lyramp.ui.OnboardingBackground
+import com.arno.lyramp.ui.EmptyStateCard
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.util.getLanguageFlag
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.nav_words
-import lyramp.composeapp.generated.resources.notebook_icon
-import lyramp.composeapp.generated.resources.words_empty_subtitle
-import lyramp.composeapp.generated.resources.words_empty_title
-import lyramp.composeapp.generated.resources.words_loading
+import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.nav_words
+import com.arno.lyramp.feature.learn_words.resources.notebook_icon
+import com.arno.lyramp.feature.learn_words.resources.words_empty_subtitle
+import com.arno.lyramp.feature.learn_words.resources.words_empty_title
+import com.arno.lyramp.feature.learn_words.resources.words_loading
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
-internal object LearnWordsScreen : Screen {
+internal object ChooseModeScreen : Screen {
         @Composable
         override fun Content() {
-                val screenModel = getScreenModel<LearnWordsScreenModel>()
-
+                val screenModel = getScreenModel<ChooseModeScreenModel>()
                 val uiState by screenModel.uiState.collectAsState()
-
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
+                val screenFactory: ScreenFactory = koinInject()
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
@@ -82,7 +85,7 @@ internal object LearnWordsScreen : Screen {
                                                 )
                                         }
 
-                                        if (uiState is LearnWordsUiState.ModeSelection && availableLanguages.isNotEmpty()) {
+                                        if (uiState is ChooseModeUiState.ModeSelection && availableLanguages.isNotEmpty()) {
                                                 LanguageSelector(
                                                         selectedLanguage = selectedLanguage,
                                                         availableLanguages = availableLanguages,
@@ -93,21 +96,14 @@ internal object LearnWordsScreen : Screen {
 
                                 Box(
                                         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
-                                        contentAlignment = when (uiState) {
-                                                is LearnWordsUiState.Loading,
-                                                is LearnWordsUiState.Empty,
-                                                is LearnWordsUiState.ModeSelection,
-                                                is LearnWordsUiState.Completed -> Alignment.Center
-
-                                                else -> Alignment.TopCenter
-                                        }
+                                        contentAlignment = Alignment.Center
                                 ) {
                                         when (val state = uiState) {
-                                                is LearnWordsUiState.Loading -> {
+                                                is ChooseModeUiState.Loading -> {
                                                         LoadingCard(message = stringResource(Res.string.words_loading))
                                                 }
 
-                                                is LearnWordsUiState.Empty -> {
+                                                is ChooseModeUiState.Empty -> {
                                                         EmptyStateCard(
                                                                 icon = stringResource(Res.string.notebook_icon),
                                                                 title = stringResource(Res.string.words_empty_title),
@@ -115,42 +111,59 @@ internal object LearnWordsScreen : Screen {
                                                         )
                                                 }
 
-                                                is LearnWordsUiState.ModeSelection -> {
-                                                        ModeSelectionContent(
-                                                                onSelectMode = { mode -> screenModel.onSelectMode(mode) },
-                                                                onNavigateToStories = { navigator.push(StoryGeneratorVoyagerScreen) }
-                                                        )
-                                                }
+                                                is ChooseModeUiState.ModeSelection -> {
+                                                        val isEnglish = selectedLanguage == "en"
+                                                        val isYandex = AuthSelectionStorage.lastAuthorizedService == "YANDEX"
 
-                                                is LearnWordsUiState.Cards -> {
-                                                        CardsModeContent(
-                                                                state = state,
-                                                                onSwipe = { wordId, isKnown -> screenModel.onCardSwipe(wordId, isKnown) },
-                                                                onToggleImportance = { wordId, isImportant -> screenModel.onToggleImportance(wordId, isImportant) },
-                                                                isLoadingAudio = state.isLoadingAudio,
-                                                                onPlayAudio = { wordInfo -> screenModel.playAudio(wordInfo) }
-                                                        )
-                                                }
-
-                                                is LearnWordsUiState.Cram -> {
-                                                        CramModeContent(
-                                                                state = state,
-                                                                onInputChange = { screenModel.onLearnInputChange(it) },
-                                                                onCheck = { screenModel.onLearnCheck() },
-                                                                onNext = { screenModel.onLearnNext() }
-                                                        )
-                                                }
-
-                                                is LearnWordsUiState.Test -> {
-                                                        TestModeContent(
-                                                                state = state,
-                                                                onSelectOption = { screenModel.onTestSelectOption(it) },
-                                                                onNext = { screenModel.onTestNext() }
-                                                        )
-                                                }
-
-                                                is LearnWordsUiState.Completed -> {
-                                                        CompletedContent(state = state, onRestart = { screenModel.onRestart() })
+                                                        if (state.cefrGroups != null && state.cefrGroups.isNotEmpty()) {
+                                                                Column(
+                                                                        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                                                                ) {
+                                                                        CefrGroupSelectionContent(
+                                                                                groups = state.cefrGroups,
+                                                                                onSelectGroup = { group ->
+                                                                                        navigator.push(
+                                                                                                CefrFilteredModeScreen(
+                                                                                                        cefrGroup = group,
+                                                                                                        language = selectedLanguage,
+                                                                                                        wordCount = state.cefrGroups[group] ?: 0
+                                                                                                )
+                                                                                        )
+                                                                                }
+                                                                        )
+                                                                        ModeSelectionContent(
+                                                                                onSelectMode = { selectedMode ->
+                                                                                        navigator.push(
+                                                                                                LearnWordsScreen(
+                                                                                                        mode = selectedMode,
+                                                                                                        language = selectedLanguage,
+                                                                                                        cefrGroup = null
+                                                                                                )
+                                                                                        )
+                                                                                },
+                                                                                onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
+                                                                                onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
+                                                                                onNavigateToSuggestions = { navigator.push(screenFactory.wordSuggestionsScreen()) },
+                                                                                showExtraction = isEnglish,
+                                                                                showSuggestions = isEnglish && isYandex,
+                                                                                wordCount = state.words.size
+                                                                        )
+                                                                }
+                                                        } else {
+                                                                ModeSelectionContent(
+                                                                        onSelectMode = { selectedMode ->
+                                                                                navigator.push(LearnWordsScreen(mode = selectedMode, language = selectedLanguage, cefrGroup = null))
+                                                                        },
+                                                                        onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
+                                                                        onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
+                                                                        onNavigateToSuggestions = { navigator.push(screenFactory.wordSuggestionsScreen()) },
+                                                                        showExtraction = isEnglish,
+                                                                        showSuggestions = isEnglish && isYandex,
+                                                                        wordCount = state.words.size
+                                                                )
+                                                        }
                                                 }
                                         }
                                 }

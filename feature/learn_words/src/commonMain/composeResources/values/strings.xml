@@ -1,0 +1,51 @@
+<resources>
+    <string name="nav_words">Слова</string>
+
+    <string name="words_loading">Загружаем слова...</string>
+    <string name="words_empty_title">Нет слов для изучения</string>
+    <string name="words_empty_subtitle">Добавьте слова из текстов песен</string>
+    <string name="words_count_summary">📖 %1$d слов для изучения</string>
+    <string name="words_mode_section_study">Режимы изучения</string>
+    <string name="words_mode_section_music">Из Вашей музыки</string>
+    <string name="words_mode_cards">Карточки</string>
+    <string name="words_mode_learn">Заучивание</string>
+    <string name="words_mode_test">Тест</string>
+    <string name="words_mode_stories">Истории</string>
+    <string name="extraction_card_title">Слова из песен</string>
+    <string name="suggestions_card_title">Выучить альбом</string>
+
+    <string name="know_ticked">✓ Знаю</string>
+    <string name="learn_ticked">📖 Учить</string>
+
+    <string name="translation">перевод</string>
+    <string name="check">Проверить</string>
+    <string name="finish">Завершить</string>
+    <string name="next">Далее</string>
+    <string name="check_icon">✓</string>
+    <string name="cross_icon">✗</string>
+    <string name="correct">Правильно</string>
+    <string name="correct_answer_is">Правильный ответ:</string>
+
+    <string name="choose_translation">Выберите перевод:</string>
+    <string name="choose_word">Выберите слово:</string>
+
+    <string name="counter_ratio">%1$d / %2$d</string>
+    <string name="score_compact">✓ %1$d  ✗ %2$d</string>
+
+    <string name="words_completed_title">Все карточки пройдены!</string>
+    <string name="errors_num">Ошибок</string>
+    <string name="repeat">Повторить</string>
+
+    <string name="cefr_title">Уровень сложности</string>
+    <string name="cefr_beginner">Начальный</string>
+    <string name="cefr_intermediate">Средний</string>
+    <string name="cefr_advanced">Продвинутый</string>
+    <string name="cefr_words_count">%1$d слов</string>
+    <string name="chevron">›</string>
+
+    <string name="books_icon">📚</string>
+    <string name="pencil_icon">✏️</string>
+    <string name="test_icon">🎯</string>
+    <string name="star_icon">✨</string>
+    <string name="notebook_icon">📖</string>
+</resources>

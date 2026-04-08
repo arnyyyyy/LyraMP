@@ -21,3 +21,7 @@ node_modules/
 /composeApp/src/androidMain/kotlin/com/arno/lyramp/feature/authorization/model/SpotifyAuthConfig.kt
 /composeApp/src/commonMain/kotlin/com/arno/lyramp/core/Secrets.kt
 /composeApp/release/*
+/core/src/commonMain/kotlin/com/arno/lyramp/Secrets.kt
+/core/src/commonMain/kotlin/com/arno/lyramp/core/Secrets.kt
+/feature/authorization/src/androidMain/kotlin/com/arno/lyramp/feature/authorization/model/SpotifyAuthConfig.kt
+/feature/authorization/src/iosMain/kotlin/com/arno/lyramp/feature/authorization/model/SpotifyAuthConfig.kt

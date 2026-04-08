@@ -33,15 +33,15 @@ import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.check_icon
-import lyramp.composeapp.generated.resources.cross_icon
-import lyramp.composeapp.generated.resources.finish
-import lyramp.composeapp.generated.resources.check
-import lyramp.composeapp.generated.resources.correct
-import lyramp.composeapp.generated.resources.correct_answer_is
-import lyramp.composeapp.generated.resources.translation
-import lyramp.composeapp.generated.resources.next
+import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.check
+import com.arno.lyramp.feature.learn_words.resources.check_icon
+import com.arno.lyramp.feature.learn_words.resources.correct
+import com.arno.lyramp.feature.learn_words.resources.correct_answer_is
+import com.arno.lyramp.feature.learn_words.resources.cross_icon
+import com.arno.lyramp.feature.learn_words.resources.finish
+import com.arno.lyramp.feature.learn_words.resources.next
+import com.arno.lyramp.feature.learn_words.resources.translation
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

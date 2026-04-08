@@ -27,7 +27,10 @@ data class LearnWordEntity @OptIn(ExperimentalTime::class) constructor(
         val sourcesJson: String = "",
         val isKnown: Boolean = false,
         val isImportant: Boolean = false,
-        val timestamp: Long = Clock.System.now().toEpochMilliseconds()
+        val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
+        val progress: Float = 0f,
+        val albumId: String? = null,
+        val trackIndex: Int? = null
 ) {
         fun parseSources(): List<WordSource> =
                 if (sourcesJson.isBlank() || sourcesJson == "[]") emptyList()

@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.onboarding.ui
+package com.arno.lyramp.ui
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun StoryProgressBar(
+fun StoryProgressBar(
         currentStep: Int,
         totalSteps: Int,
         modifier: Modifier = Modifier

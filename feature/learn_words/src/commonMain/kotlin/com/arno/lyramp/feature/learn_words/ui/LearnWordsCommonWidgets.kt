@@ -19,10 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.counter_ratio
+import com.arno.lyramp.feature.learn_words.resources.score_compact
 import com.arno.lyramp.ui.theme.LyraColorScheme
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.score_compact
-import lyramp.composeapp.generated.resources.counter_ratio
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

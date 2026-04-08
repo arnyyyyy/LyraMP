@@ -2,9 +2,6 @@ package com.arno.lyramp.feature.learn_words.presentation
 
 internal sealed interface LearnWordsUiState {
         data object Loading : LearnWordsUiState
-        data object Empty : LearnWordsUiState
-
-        data class ModeSelection(val words: List<WordInfo>) : LearnWordsUiState
 
         data class Cards(
                 val words: List<WordInfo>,

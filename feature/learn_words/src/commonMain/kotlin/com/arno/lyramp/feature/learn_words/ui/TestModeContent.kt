@@ -23,16 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
 import com.arno.lyramp.feature.learn_words.presentation.TestVariant
+import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.check_icon
+import com.arno.lyramp.feature.learn_words.resources.choose_translation
+import com.arno.lyramp.feature.learn_words.resources.choose_word
+import com.arno.lyramp.feature.learn_words.resources.cross_icon
+import com.arno.lyramp.feature.learn_words.resources.finish
+import com.arno.lyramp.feature.learn_words.resources.next
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.check_icon
-import lyramp.composeapp.generated.resources.cross_icon
-import lyramp.composeapp.generated.resources.finish
-import lyramp.composeapp.generated.resources.next
-import lyramp.composeapp.generated.resources.choose_translation
-import lyramp.composeapp.generated.resources.choose_word
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -20,6 +20,9 @@ interface LearnWordDao {
         @Query("SELECT COUNT(*) FROM learn_words")
         suspend fun count(): Int
 
+        @Query("SELECT * FROM learn_words WHERE id = :id LIMIT 1")
+        suspend fun findById(id: Long): LearnWordEntity?
+
         @Query("SELECT * FROM learn_words WHERE word = :word AND sourceLang IS :sourceLang LIMIT 1")
         suspend fun findByWordAndLang(word: String, sourceLang: String?): LearnWordEntity?
 
@@ -37,4 +40,16 @@ interface LearnWordDao {
 
         @Query("DELETE FROM learn_words")
         suspend fun deleteAll()
+
+        @Query("UPDATE learn_words SET progress = :progress WHERE id = :id")
+        suspend fun updateProgress(id: Long, progress: Float)
+
+        @Query("SELECT * FROM learn_words WHERE albumId = :albumId ORDER BY trackIndex ASC, word ASC")
+        suspend fun getByAlbumId(albumId: String): List<LearnWordEntity>
+
+        @Query("SELECT * FROM learn_words WHERE albumId = :albumId AND trackIndex = :trackIndex ORDER BY word ASC")
+        suspend fun getByAlbumIdAndTrackIndex(albumId: String, trackIndex: Int): List<LearnWordEntity>
+
+        @Query("SELECT COUNT(*) FROM learn_words WHERE albumId = :albumId AND trackIndex = :trackIndex AND progress >= 1.0")
+        suspend fun countLearnedByAlbumAndTrack(albumId: String, trackIndex: Int): Int
 }

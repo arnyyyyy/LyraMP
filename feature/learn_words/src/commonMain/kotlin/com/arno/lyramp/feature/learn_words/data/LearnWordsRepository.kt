@@ -1,9 +1,10 @@
 package com.arno.lyramp.feature.learn_words.data
 
+import com.arno.lyramp.core.domain.WordSaver
 import kotlinx.coroutines.flow.Flow
 
-class LearnWordsRepository(private val dao: LearnWordDao) {
-        suspend fun saveWord(
+class LearnWordsRepository(private val dao: LearnWordDao) : WordSaver {
+        override suspend fun saveWord(
                 word: String,
                 translation: String,
                 sourceLang: String?,
@@ -40,6 +41,10 @@ class LearnWordsRepository(private val dao: LearnWordDao) {
         }
 
         fun getAllWords(): Flow<List<LearnWordEntity>> = dao.getAllAsFlow()
+
+        suspend fun getById(id: Long): LearnWordEntity? = dao.findById(id)
+
+        suspend fun updateProgress(id: Long, progress: Float) = dao.updateProgress(id, progress)
 
         suspend fun markAsKnown(id: Long, isKnown: Boolean) = dao.updateKnown(id, isKnown)
 
