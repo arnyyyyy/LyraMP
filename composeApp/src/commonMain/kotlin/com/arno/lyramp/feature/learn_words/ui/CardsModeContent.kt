@@ -45,11 +45,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.data.WordSource
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
 import com.arno.lyramp.feature.learn_words.presentation.WordInfo
 import com.arno.lyramp.ui.PlayAudioButton
+import com.arno.lyramp.ui.theme.LyraColors
 import kotlinx.coroutines.launch
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.know_ticked

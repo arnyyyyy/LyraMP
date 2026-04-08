@@ -29,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
 import com.arno.lyramp.feature.onboarding.ui.StoryProgressBar
-import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
+import com.arno.lyramp.ui.OnboardingBackground
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.auth_playlist_link_label
 import lyramp.composeapp.generated.resources.continue_next

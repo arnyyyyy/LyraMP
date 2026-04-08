@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.story_generator.presentation.StoryUiState
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.story_generate
 import lyramp.composeapp.generated.resources.select_all

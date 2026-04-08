@@ -8,12 +8,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.arno.lyramp.ui.MainFeatureScaffold
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeScreenModel
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
 import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LoadingCard
+import com.arno.lyramp.ui.MainFeatureScaffold
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.practice_loading
 import org.jetbrains.compose.resources.stringResource

@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.onboarding.ui.background
+package com.arno.lyramp.ui
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState

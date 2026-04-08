@@ -91,7 +91,7 @@ fun ErrorCard(
                 contentAlignment = Alignment.Center
         ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "⚠️", fontSize = 48.sp) //❌
+                        Text(text = "⚠️", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                                 text = message,
@@ -206,7 +206,6 @@ fun MainFeatureScaffold(
                 Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         containerColor = Color.Transparent,
-//                        contentWindowInsets = WindowInsets(0)
                 ) { paddingValues ->
                         Column(
                                 modifier = Modifier
@@ -233,6 +232,26 @@ fun MainFeatureScaffold(
         }
 }
 
+
+@Composable
+fun BackButton(
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+) {
+        IconButton(
+                onClick = onClick,
+                modifier = modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.15f), CircleShape)
+        ) {
+                Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                )
+        }
+}
 
 @Composable
 fun ScreenTopBar(

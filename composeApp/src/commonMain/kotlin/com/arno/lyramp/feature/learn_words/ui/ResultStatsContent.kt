@@ -19,10 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.check_icon
 import lyramp.composeapp.generated.resources.correct

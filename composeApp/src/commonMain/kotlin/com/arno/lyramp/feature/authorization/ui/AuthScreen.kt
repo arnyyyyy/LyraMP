@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
@@ -48,6 +47,7 @@ import com.arno.lyramp.util.Log
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import cafe.adriel.voyager.koin.getScreenModel
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.apple_icon
 import lyramp.composeapp.generated.resources.auth_continue_without_auth

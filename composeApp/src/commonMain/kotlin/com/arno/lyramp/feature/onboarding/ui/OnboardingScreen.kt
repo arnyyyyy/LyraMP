@@ -30,13 +30,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
-import com.arno.lyramp.feature.onboarding.ui.background.OnboardingBackground
+import com.arno.lyramp.ui.OnboardingBackground
 import cafe.adriel.voyager.koin.getScreenModel
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.continue_next
 import lyramp.composeapp.generated.resources.done

@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.ui.SlowModeButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.know
 import lyramp.composeapp.generated.resources.learn

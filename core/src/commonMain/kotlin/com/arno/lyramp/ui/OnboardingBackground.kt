@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.onboarding.ui.background
+package com.arno.lyramp.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 @Composable
-internal fun OnboardingBackground(
+fun OnboardingBackground(
         modifier: Modifier = Modifier
 ) {
 

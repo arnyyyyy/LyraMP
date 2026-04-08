@@ -8,7 +8,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import cafe.adriel.voyager.transitions.SlideTransition
-import com.arno.lyramp.feature.learn_words.ui.LearnWordsScreen
+import com.arno.lyramp.feature.learn_words.ui.ChooseModeScreen
 
 object WordsTab : Tab {
 
@@ -25,7 +25,7 @@ object WordsTab : Tab {
 
         @Composable
         override fun Content() {
-                Navigator(LearnWordsScreen) { nav ->
+                Navigator(ChooseModeScreen) { nav ->
                         navigator = nav
                         SlideTransition(nav)
                 }

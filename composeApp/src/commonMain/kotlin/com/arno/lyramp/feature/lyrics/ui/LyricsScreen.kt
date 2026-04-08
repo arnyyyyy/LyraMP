@@ -7,11 +7,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.koin.getScreenModel
-import com.arno.lyramp.ui.MainFeatureScaffold
-import com.arno.lyramp.ui.ErrorCard
-import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
+import com.arno.lyramp.ui.ErrorCard
+import com.arno.lyramp.ui.LoadingCard
+import com.arno.lyramp.ui.MainFeatureScaffold
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.repeat
 import lyramp.composeapp.generated.resources.lyrics_loading

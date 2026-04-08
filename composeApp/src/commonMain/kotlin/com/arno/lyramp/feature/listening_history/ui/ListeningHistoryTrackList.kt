@@ -24,9 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.lyrics
 import lyramp.composeapp.generated.resources.practice
@@ -109,16 +109,6 @@ private fun TrackItem(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                         )
-                        track.albumName?.let { albumName ->
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                        text = albumName,
-                                        fontSize = 12.sp,
-                                        color = LyraColorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                )
-                        }
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

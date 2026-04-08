@@ -24,10 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
 import lyramp.composeapp.generated.resources.Res
 import lyramp.composeapp.generated.resources.accuracy
 import lyramp.composeapp.generated.resources.back

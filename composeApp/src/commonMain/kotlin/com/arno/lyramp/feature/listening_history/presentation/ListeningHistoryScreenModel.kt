@@ -18,7 +18,14 @@ internal class ListeningHistoryScreenModel(
                 MutableStateFlow<ListeningHistoryUiState>(ListeningHistoryUiState.Loading)
         val uiState: StateFlow<ListeningHistoryUiState> = _uiState.asStateFlow()
 
+        private val _isRefreshing = MutableStateFlow(false)
+        val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
         init {
+                loadHistory()
+        }
+
+        private fun loadHistory() {
                 screenModelScope.launch {
                         repository.getListeningHistory()
                                 .catch { e ->
@@ -28,6 +35,24 @@ internal class ListeningHistoryScreenModel(
                                         _uiState.value = if (tracks.isEmpty()) ListeningHistoryUiState.Empty
                                         else Success(tracks)
                                 }
+                }
+        }
+
+        fun refresh() {
+                screenModelScope.launch {
+                        _isRefreshing.value = true
+                        try {
+                                repository.getListeningHistory()
+                                        .catch { e ->
+                                                _uiState.value = Error(e.message ?: "Unknown error")
+                                        }
+                                        .collect { tracks ->
+                                                _uiState.value = if (tracks.isEmpty()) ListeningHistoryUiState.Empty
+                                                else Success(tracks)
+                                        }
+                        } finally {
+                                _isRefreshing.value = false
+                        }
                 }
         }
 }
