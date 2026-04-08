@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class AccountStatusResponse(
+data class AccountStatusResponse(
         val result: AccountResult?
 ) {
         @Serializable
@@ -31,7 +31,7 @@ internal data class AccountStatusResponse(
 }
 
 @Serializable
-internal data class LikedTracksResponse(
+data class LikedTracksResponse(
         val result: LikedTracksResult?
 ) {
         @Serializable
@@ -46,7 +46,7 @@ internal data class LikedTracksResponse(
 }
 
 @Serializable
-internal data class YandexTrackItem(
+data class YandexTrackItem(
         val id: String? = null,
         @SerialName("albumId")
         val albumId: String? = null,
@@ -55,7 +55,7 @@ internal data class YandexTrackItem(
 )
 
 @Serializable
-internal data class YandexTrack(
+ data class YandexTrack(
         val id: String? = null,
         val title: String = "",
         val artists: List<YandexArtist>? = null,
@@ -75,13 +75,28 @@ internal data class YandexTrack(
 }
 
 @Serializable
-internal data class TracksResponseWrapper(
+ data class TracksResponseWrapper(
         val invocationInfo: YandexInvocationInfo? = null,
         val result: List<YandexTrack>? = null
 )
 
 @Serializable
-internal data class YandexInvocationInfo(
+ data class YandexAlbumWithTracksResponse(
+        val result: YandexAlbumFull? = null
+)
+
+@Serializable
+ data class YandexAlbumFull(
+        val id: Long? = null,
+        val title: String? = null,
+        val trackCount: Int? = null,
+        val coverUri: String? = null,
+        val artists: List<YandexTrack.YandexArtist>? = null,
+        val volumes: List<List<YandexTrack>>? = null
+)
+
+@Serializable
+ data class YandexInvocationInfo(
         @SerialName("req-id")
         val reqId: String? = null,
         val hostname: String? = null,

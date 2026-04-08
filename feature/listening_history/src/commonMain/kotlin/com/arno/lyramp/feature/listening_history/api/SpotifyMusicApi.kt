@@ -6,7 +6,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 
-internal class SpotifyMusicApi(private val client: HttpClient) {
+class SpotifyMusicApi(private val client: HttpClient) {
         suspend fun getLikedTracks(accessToken: String, limit: Int = 20): SpotifySavedTracksResponse {
                 return client.get("https://api.spotify.com/v1/me/tracks?limit=$limit") {
                         header("Authorization", "Bearer $accessToken")

@@ -3,6 +3,7 @@ package com.arno.lyramp.feature.listening_history.api
 import com.arno.lyramp.feature.listening_history.model.AccountStatusResponse
 import com.arno.lyramp.feature.listening_history.model.LikedTracksResponse
 import com.arno.lyramp.feature.listening_history.model.TracksResponseWrapper
+import com.arno.lyramp.feature.listening_history.model.YandexAlbumWithTracksResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -12,7 +13,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 
-internal class YandexMusicApi(private val client: HttpClient) {
+class YandexMusicApi(private val client: HttpClient) {
         suspend fun getAccountStatus(token: String): AccountStatusResponse {
                 return client.get("$BASE_URL/account/status") {
                         header(HttpHeaders.Authorization, "OAuth $token")
@@ -33,6 +34,14 @@ internal class YandexMusicApi(private val client: HttpClient) {
                         header(HttpHeaders.Accept, "application/json")
                         header(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded)
                         setBody("track-ids=$trackIds&with-positions=true")
+                }.body()
+        }
+
+        // TODO: мейби все-таки не в listening_history_api
+        suspend fun getAlbumWithTracks(token: String, albumId: String): YandexAlbumWithTracksResponse {
+                return client.get("$BASE_URL/albums/$albumId/with-tracks") {
+                        header(HttpHeaders.Authorization, "OAuth $token")
+                        header(HttpHeaders.Accept, "application/json")
                 }.body()
         }
 

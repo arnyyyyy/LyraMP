@@ -13,9 +13,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.arno.lyramp.feature.main.ui.LibraryTab
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,35 +27,36 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState
-import com.arno.lyramp.feature.lyrics.ui.LyricsScreen
 import com.arno.lyramp.ui.OnboardingBackground
-import com.arno.lyramp.feature.listening_practice.ui.ListeningPracticeScreen
-import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.ui.EmptyStateCard
 import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.nav_library
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.history_empty_subtitle
-import lyramp.composeapp.generated.resources.history_empty_title
-import lyramp.composeapp.generated.resources.history_error_title
-import lyramp.composeapp.generated.resources.history_loading
+import com.arno.lyramp.feature.listeningHistory.resources.Res
+import com.arno.lyramp.feature.listeningHistory.resources.nav_library
+import com.arno.lyramp.feature.listeningHistory.resources.history_empty_subtitle
+import com.arno.lyramp.feature.listeningHistory.resources.history_empty_title
+import com.arno.lyramp.feature.listeningHistory.resources.history_error_title
+import com.arno.lyramp.feature.listeningHistory.resources.history_loading
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
-internal object ShowListeningHistoryScreen : Screen {
+object ShowListeningHistoryScreen : Screen {
+
+        val scrollToTopToken: MutableState<Int> = mutableIntStateOf(0)
 
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
                 val screenModel = getScreenModel<ListeningHistoryScreenModel>()
+                val screenFactory: ScreenFactory = koinInject()
                 val uiState by screenModel.uiState.collectAsState()
                 val isRefreshing by screenModel.isRefreshing.collectAsState()
-                val scrollToTopToken by LibraryTab.scrollToTopToken
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
@@ -123,10 +125,10 @@ internal object ShowListeningHistoryScreen : Screen {
                                                         is ListeningHistoryUiState.Success -> {
                                                                 TrackList(
                                                                         tracks = state.tracks,
-                                                                        scrollToTopToken = scrollToTopToken,
+                                                                        scrollToTopToken = scrollToTopToken.value,
                                                                         onTrackClick = { track ->
                                                                                 navigator.push(
-                                                                                        LyricsScreen(
+                                                                                        screenFactory.lyricsScreen(
                                                                                                 trackId = track.id,
                                                                                                 trackName = track.name,
                                                                                                 artists = track.artists,
@@ -136,16 +138,15 @@ internal object ShowListeningHistoryScreen : Screen {
                                                                                 )
                                                                         },
                                                                         onPracticeClick = { track ->
-                                                                                val practiceTrack = PracticeTrack(
-                                                                                        id = track.id ?: "",
-                                                                                        albumId = track.albumId,
-                                                                                        name = track.name,
-                                                                                        artists = track.artists,
-                                                                                        albumName = track.albumName,
-                                                                                        imageUrl = track.imageUrl
-                                                                                )
                                                                                 navigator.push(
-                                                                                        ListeningPracticeScreen(practiceTrack)
+                                                                                        screenFactory.listeningPracticeScreen(
+                                                                                                id = track.id ?: "",
+                                                                                                albumId = track.albumId,
+                                                                                                name = track.name,
+                                                                                                artists = track.artists,
+                                                                                                albumName = track.albumName,
+                                                                                                imageUrl = track.imageUrl
+                                                                                        )
                                                                                 )
                                                                         }
                                                                 )

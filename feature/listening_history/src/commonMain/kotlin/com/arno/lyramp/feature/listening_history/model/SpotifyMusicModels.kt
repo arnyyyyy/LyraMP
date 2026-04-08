@@ -3,7 +3,7 @@ package com.arno.lyramp.feature.listening_history.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class SpotifySavedTracksResponse(val items: List<SavedItem>) {
+data class SpotifySavedTracksResponse(val items: List<SavedItem>) {
         @Serializable
         data class SavedItem(val track: Track) {
                 @Serializable

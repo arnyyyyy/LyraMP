@@ -1,14 +1,14 @@
 package com.arno.lyramp.feature.listening_history.domain
 
-import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
+import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.mapper.YandexTracksMapper
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class YandexMusicService(
+ class YandexMusicService(
         private val authRepo: YandexAuthRepository,
         private val api: YandexMusicApi
 ) : MusicService {
@@ -44,7 +44,8 @@ internal class YandexMusicService(
                                                                 albumId = trackItem.albumId ?: track.albums?.firstOrNull()?.id?.toString(),
                                                                 name = track.title,
                                                                 artists = track.artists?.mapNotNull { it.name }.orEmpty(),
-                                                                albumName = null, imageUrl = null
+                                                                albumName = track.albums?.firstOrNull()?.title,
+                                                                imageUrl = null
                                                         )
                                                 }
                                         }

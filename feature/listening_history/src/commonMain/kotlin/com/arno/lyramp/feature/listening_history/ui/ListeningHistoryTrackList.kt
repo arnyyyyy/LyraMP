@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.lyrics
-import lyramp.composeapp.generated.resources.practice
+import com.arno.lyramp.feature.listeningHistory.resources.Res
+import com.arno.lyramp.feature.listeningHistory.resources.lyrics
+import com.arno.lyramp.feature.listeningHistory.resources.practice
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-internal class ListeningHistoryScreenModel(
+ class ListeningHistoryScreenModel(
         private val repository: ListeningHistoryRepository
 ) : ScreenModel {
         private val _uiState =

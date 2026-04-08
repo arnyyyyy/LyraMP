@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.flow
 
 private val cyrillicRegex = Regex("[\\u0400-\\u04FF]")
 
-internal class ListeningHistoryRepository(
+class ListeningHistoryRepository(
         private val musicService: MusicService,
         private val dao: ListeningHistoryDao
 ) {
