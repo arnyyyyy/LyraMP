@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.listening_practice.model
 
-internal data class PracticeTrack(
+data class PracticeTrack(
         val id: String,
         val albumId: String?,
         val name: String,

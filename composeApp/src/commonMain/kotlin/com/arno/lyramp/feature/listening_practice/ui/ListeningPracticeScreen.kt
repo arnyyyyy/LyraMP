@@ -19,7 +19,7 @@ import lyramp.composeapp.generated.resources.practice_loading
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-internal class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
+class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
 
         @Composable
         override fun Content() {

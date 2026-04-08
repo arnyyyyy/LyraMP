@@ -2,7 +2,6 @@ package com.arno.lyramp.feature.main.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
@@ -14,7 +13,8 @@ object LibraryTab : Tab {
         var navigator: Navigator? = null
                 private set
 
-        val scrollToTopToken: MutableState<Int> = mutableIntStateOf(0)
+        val scrollToTopToken: MutableState<Int>
+                get() = ShowListeningHistoryScreen.scrollToTopToken
 
         override val options: TabOptions
                 @Composable

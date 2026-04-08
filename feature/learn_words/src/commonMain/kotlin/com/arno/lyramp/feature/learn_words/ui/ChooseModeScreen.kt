@@ -52,7 +52,7 @@ import com.arno.lyramp.feature.learn_words.resources.words_loading
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-internal object ChooseModeScreen : Screen {
+object ChooseModeScreen : Screen {
         @Composable
         override fun Content() {
                 val screenModel = getScreenModel<ChooseModeScreenModel>()

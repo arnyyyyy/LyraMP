@@ -1,14 +1,15 @@
-package com.arno.lyramp.di
+package com.arno.lyramp.feature.learn_words.di
 
+import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabaseBuilder
 import androidx.room.RoomDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
-import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabaseBuilder
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 actual val learnWordsDatabaseModule: Module = module {
         single<RoomDatabase.Builder<LearnWordsDatabase>>(named("learn_words")) {
-                getLearnWordsDatabaseBuilder()
+                getLearnWordsDatabaseBuilder(androidContext())
         }
 }
