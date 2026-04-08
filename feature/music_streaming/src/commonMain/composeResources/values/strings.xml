@@ -1,0 +1,9 @@
+<resources>
+    <string name="nav_library">Медиатека</string>
+    <string name="history_loading">Загружаем треки...</string>
+    <string name="history_empty_title">Медиатека пуста</string>
+    <string name="history_empty_subtitle">Добавьте песни для изучения</string>
+    <string name="history_error_title">Ошибка загрузки</string>
+    <string name="practice">Практика</string>
+    <string name="lyrics">Текст</string>
+</resources>

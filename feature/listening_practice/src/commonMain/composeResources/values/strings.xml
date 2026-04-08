@@ -1,0 +1,25 @@
+<resources>
+    <string name="practice_loading">Подготовка трека...</string>
+    <string name="practice_completed">Практика завершена!</string>
+    <string name="correct">Правильно</string>
+    <string name="incorrect">Неправильно</string>
+    <string name="accuracy">Точность: %1$d%%</string>
+    <string name="result">Результаты:</string>
+    <string name="back">Назад</string>
+    <string name="retry">Повторить</string>
+    <string name="correct_ticked">✓ Правильно</string>
+    <string name="incorrect_ticked">✗ Неправильно</string>
+    <string name="correct_stat">Правильно: %1$s</string>
+    <string name="user_ans">Вы написали: %1$s</string>
+    <string name="practice_input">Введите текст строки</string>
+    <string name="practice_input_placeholder">Что вы услышали?</string>
+    <string name="practice_skip">Пропустить</string>
+    <string name="check">Проверить</string>
+    <string name="full_song">Вся песня</string>
+    <string name="random_song">Случайная</string>
+    <string name="practice_listen_line">▶  Прослушать строку</string>
+    <string name="practice_playing">⏸  Воспроизводится...</string>
+    <string name="correct_count">✓ %1$d</string>
+    <string name="incorrect_count">✗ %1$d</string>
+    <string name="practice_line_counter">Строка %1$d из %2$d</string>
+</resources>
