@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.onboarding.domain
 
-import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.translation.domain.TranslationRepository
 import com.arno.lyramp.util.Log
@@ -15,7 +15,7 @@ private val cyrillicRegex = Regex("[\u0400-\u04FF]")
 internal class AnalyzeLanguagesUseCase(
         private val translationRepository: TranslationRepository
 ) {
-        suspend operator fun invoke(tracks: List<ListeningHistoryMusicTrack>): AnalysisResult {
+        suspend operator fun invoke(tracks: List<MusicTrack>): AnalysisResult {
                 val languageCounts = mutableMapOf<String, Int>()
                 val trackLanguages = mutableMapOf<String, String>()
 

@@ -1,4 +1,4 @@
-package com.arno.lyramp.di
+package com.arno.lyramp.feature.onboarding.di
 
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel

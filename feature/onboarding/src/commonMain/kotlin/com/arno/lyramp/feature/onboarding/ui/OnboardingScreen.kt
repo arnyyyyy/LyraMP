@@ -30,43 +30,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.feature.main.ui.MainScreen
+import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
 import com.arno.lyramp.ui.OnboardingBackground
+import com.arno.lyramp.ui.StoryProgressBar
 import cafe.adriel.voyager.koin.getScreenModel
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.continue_next
-import lyramp.composeapp.generated.resources.done
-import lyramp.composeapp.generated.resources.lang_chinese
-import lyramp.composeapp.generated.resources.lang_english
-import lyramp.composeapp.generated.resources.lang_french
-import lyramp.composeapp.generated.resources.lang_german
-import lyramp.composeapp.generated.resources.lang_hebrew
-import lyramp.composeapp.generated.resources.lang_hungarian
-import lyramp.composeapp.generated.resources.lang_italian
-import lyramp.composeapp.generated.resources.lang_japanese
-import lyramp.composeapp.generated.resources.lang_korean
-import lyramp.composeapp.generated.resources.lang_portuguese
-import lyramp.composeapp.generated.resources.lang_russian
-import lyramp.composeapp.generated.resources.lang_spanish
-import lyramp.composeapp.generated.resources.error
-import lyramp.composeapp.generated.resources.found_languages
-import lyramp.composeapp.generated.resources.loading_history
-import lyramp.composeapp.generated.resources.loading_init
-import lyramp.composeapp.generated.resources.lang_analyze
-import lyramp.composeapp.generated.resources.analyzed_res
-import lyramp.composeapp.generated.resources.tracks_count
-import lyramp.composeapp.generated.resources.retry
+import com.arno.lyramp.feature.onboarding.resources.Res
+import com.arno.lyramp.feature.onboarding.resources.continue_next
+import com.arno.lyramp.feature.onboarding.resources.done
+import com.arno.lyramp.feature.onboarding.resources.lang_chinese
+import com.arno.lyramp.feature.onboarding.resources.lang_english
+import com.arno.lyramp.feature.onboarding.resources.lang_french
+import com.arno.lyramp.feature.onboarding.resources.lang_german
+import com.arno.lyramp.feature.onboarding.resources.lang_hebrew
+import com.arno.lyramp.feature.onboarding.resources.lang_hungarian
+import com.arno.lyramp.feature.onboarding.resources.lang_italian
+import com.arno.lyramp.feature.onboarding.resources.lang_japanese
+import com.arno.lyramp.feature.onboarding.resources.lang_korean
+import com.arno.lyramp.feature.onboarding.resources.lang_portuguese
+import com.arno.lyramp.feature.onboarding.resources.lang_russian
+import com.arno.lyramp.feature.onboarding.resources.lang_spanish
+import com.arno.lyramp.feature.onboarding.resources.error
+import com.arno.lyramp.feature.onboarding.resources.found_languages
+import com.arno.lyramp.feature.onboarding.resources.loading_history
+import com.arno.lyramp.feature.onboarding.resources.loading_init
+import com.arno.lyramp.feature.onboarding.resources.lang_analyze
+import com.arno.lyramp.feature.onboarding.resources.analyzed_res
+import com.arno.lyramp.feature.onboarding.resources.tracks_count
+import com.arno.lyramp.feature.onboarding.resources.retry
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 object OnboardingScreen : Screen {
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.current
                 val screenModel = getScreenModel<OnboardingScreenModel>()
+                val screenFactory: ScreenFactory = koinInject()
                 val state by screenModel.state.collectAsState()
 
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -103,7 +106,7 @@ object OnboardingScreen : Screen {
                                                         is OnboardingState.Success -> SuccessContent(
                                                                 languages = currentState.languages,
                                                                 tracksCount = currentState.tracks.size,
-                                                                onContinue = { navigator?.replaceAll(MainScreen) }
+                                                                onContinue = { navigator?.replaceAll(screenFactory.mainScreen()) }
                                                         )
 
                                                         is OnboardingState.Error -> ErrorContent(

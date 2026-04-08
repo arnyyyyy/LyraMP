@@ -2,6 +2,7 @@ package com.arno.lyramp.feature.onboarding.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 import com.arno.lyramp.feature.listening_history.domain.MusicService
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
@@ -31,11 +32,15 @@ internal class OnboardingScreenModel(
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)
-                                val tracks = musicService.getListeningHistory(limit = 200)
+                                val rawTracks = musicService.getListeningHistory(limit = 200)
 
-                                if (tracks.isEmpty()) {
+                                if (rawTracks.isEmpty()) {
                                         _state.value = Error("Не удалось загрузить треки")
                                         return@launch
+                                }
+
+                                val tracks = rawTracks.map {
+                                        MusicTrack(id = it.id, name = it.name, artists = it.artists, albumName = it.albumName, imageUrl = it.imageUrl)
                                 }
 
                                 _state.value = Loading(OnboardingStep.ANALYZING_LANGUAGES)
