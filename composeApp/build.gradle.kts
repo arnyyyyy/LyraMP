@@ -59,7 +59,8 @@ kotlin {
 
                 commonMain.dependencies {
                         implementation(project(":core"))
-                        implementation(project(":feature:extraction"))
+                        implementation(project(":feature:add_words_extraction"))
+                        implementation(project(":feature:translation"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)
@@ -92,6 +93,8 @@ kotlin {
                         implementation(libs.androidx.room.runtime)
                         implementation(libs.androidx.sqlite.bundled)
                         implementation(libs.llamatik)
+                        implementation(libs.coil3.compose)
+                        implementation(libs.coil3.network.ktor3)
                 }
                 commonTest.dependencies {
                         implementation(libs.kotlin.test)

@@ -30,3 +30,5 @@ dependencyResolutionManagement {
 
 include(":composeApp")
 include(":core")
+include(":feature:add_words_extraction")
+include(":feature:translation")
