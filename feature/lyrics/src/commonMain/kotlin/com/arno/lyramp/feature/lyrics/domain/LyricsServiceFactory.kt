@@ -3,7 +3,7 @@ package com.arno.lyramp.feature.lyrics.domain
 import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
 import com.arno.lyramp.util.Log
 
-internal class LyricsServiceFactory(
+ class LyricsServiceFactory(
         private val yandexLyricsService: YandexLyricsService,
         private val lyricsOvhService: LyricsOvhService
 ) {

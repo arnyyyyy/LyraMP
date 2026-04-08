@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.lyrics.domain
 
-internal class LyricsUseCase(
+ class LyricsUseCase(
         private val lyricsServiceFactory: LyricsServiceFactory
 ) {
         suspend fun getTimeStampedLyrics(artist: String, song: String, trackId: String? = null): LyricsResult {

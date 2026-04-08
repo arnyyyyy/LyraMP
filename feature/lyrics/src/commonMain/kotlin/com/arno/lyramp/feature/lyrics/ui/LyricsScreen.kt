@@ -7,18 +7,18 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.koin.getScreenModel
-import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
 import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.MainFeatureScaffold
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.repeat
-import lyramp.composeapp.generated.resources.lyrics_loading
+import com.arno.lyramp.feature.lyrics.resources.Res
+import com.arno.lyramp.feature.lyrics.resources.lyrics_loading
+import com.arno.lyramp.feature.lyrics.resources.repeat
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-internal class LyricsScreen(
+class LyricsScreen(
         private val trackId: String?,
         private val trackName: String,
         private val artists: List<String>,
@@ -26,7 +26,7 @@ internal class LyricsScreen(
         private val imageUrl: String? = null
 ) : Screen {
         private val track
-                get() = ListeningHistoryMusicTrack(
+                get() = MusicTrack(
                         id = trackId,
                         name = trackName,
                         artists = artists,

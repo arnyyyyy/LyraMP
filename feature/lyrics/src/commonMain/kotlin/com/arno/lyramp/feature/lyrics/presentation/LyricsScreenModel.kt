@@ -3,7 +3,7 @@ package com.arno.lyramp.feature.lyrics.presentation
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
-import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import com.arno.lyramp.feature.lyrics.ui.LyricsEvent
@@ -22,8 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-internal class LyricsScreenModel(
-        private val track: ListeningHistoryMusicTrack,
+ class LyricsScreenModel(
+        private val track: MusicTrack,
         private val lyricsUseCase: LyricsUseCase,
         private val translationRepository: TranslationRepository,
         private val learnWordsRepository: LearnWordsRepository,

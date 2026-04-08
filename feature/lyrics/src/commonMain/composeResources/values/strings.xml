@@ -1,0 +1,9 @@
+<resources>
+    <string name="lyrics_loading">Загружаем текст...</string>
+    <string name="lyrics_not_found">Текст не найден</string>
+    <string name="repeat">Повторить</string>
+    <string name="loading_dots">...</string>
+    <string name="not_found">Не найдено</string>
+    <string name="know">Знаю</string>
+    <string name="learn">Учить</string>
+</resources>

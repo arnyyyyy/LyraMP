@@ -2,13 +2,13 @@ package com.arno.lyramp.feature.lyrics.ui
 
 import com.arno.lyramp.feature.translation.model.TranslationResult
 
-internal sealed interface LyricsUiState {
+ sealed interface LyricsUiState {
         object Loading : LyricsUiState
         data class Success(val lyricsLines: List<List<String>>) : LyricsUiState
         data class Error(val message: String) : LyricsUiState
 }
 
-internal sealed interface WordPopupState {
+ sealed interface WordPopupState {
         object Hidden : WordPopupState
         data class Visible(
                 val word: String,
@@ -24,7 +24,7 @@ internal sealed interface WordPopupState {
         ) : WordPopupState
 }
 
-internal sealed interface LyricsEvent {
+ sealed interface LyricsEvent {
         data class WordTapped(
                 val word: String,
                 val lyricLine: String,

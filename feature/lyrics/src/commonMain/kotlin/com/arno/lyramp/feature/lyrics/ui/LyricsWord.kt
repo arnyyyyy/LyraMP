@@ -35,11 +35,11 @@ import androidx.compose.ui.window.PopupProperties
 import com.arno.lyramp.ui.SlowModeButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.know
-import lyramp.composeapp.generated.resources.learn
-import lyramp.composeapp.generated.resources.loading_dots
-import lyramp.composeapp.generated.resources.not_found
+import com.arno.lyramp.feature.lyrics.resources.Res
+import com.arno.lyramp.feature.lyrics.resources.know
+import com.arno.lyramp.feature.lyrics.resources.learn
+import com.arno.lyramp.feature.lyrics.resources.loading_dots
+import com.arno.lyramp.feature.lyrics.resources.not_found
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
