@@ -131,7 +131,7 @@ internal fun CramModeContent(
                         }
                 }
 
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 35.dp)) {
                         if (state.result == null) {
                                 LyraFilledButton(
                                         text = stringResource(Res.string.check),

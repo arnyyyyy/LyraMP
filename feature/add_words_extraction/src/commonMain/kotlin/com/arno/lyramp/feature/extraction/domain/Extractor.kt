@@ -22,7 +22,7 @@ internal class Extractor(
         private val lyricsUseCase: LyricsUseCase,
         private val getCefrVocabulary: GetCefrVocabularyUseCase,
         private val getShownWords: GetShownWordsUseCase,
-        private val markAsShown: MarkWordsAsShownUseCase,
+        val markAsShown: MarkWordsAsShownUseCase,
 ) {
         private val log = Logger.withTag("LyricsWordsExtractor")
 

@@ -1,0 +1,18 @@
+<resources>
+    <string name="extraction_title">Слова из песен</string>
+    <string name="extraction_subtitle">Извлечём слова из недавних песен и добавим их для изучения</string>
+    <string name="extraction_start">Извлечь слова</string>
+    <string name="extraction_running">Обрабатываем тексты песен...</string>
+    <string name="extraction_done_title">Готово</string>
+    <string name="extraction_done_tracks">🎶 Обработано треков: %1$d</string>
+    <string name="extraction_done_words">Сохранено слов: %1$d</string>
+    <string name="extraction_failed">Не удалось извлечь слова</string>
+    <string name="extraction_saving">Сохраняем слова...</string>
+    <string name="extraction_words_count">Слов: %1$d</string>
+    <string name="extraction_select_all">Выбрать всё</string>
+    <string name="extraction_deselect_all">Снять всё</string>
+    <string name="extraction_add_words">Добавить %1$d слов</string>
+    <string name="extraction_done">Готово</string>
+    <string name="retry">Попробовать снова</string>
+</resources>
+

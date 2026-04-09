@@ -51,6 +51,7 @@ val listeningHistoryModule = module {
         single { SaveTrackLanguageUseCase(dao = get()) }
 
         single { ListeningHistoryRepository(musicService = get(), dao = get(), detectLanguage = get<DetectLanguageUseCase>()) }
+        // TODO: упростить репозиторий
 
         factory { ListeningHistoryScreenModel(repository = get()) }
 }
