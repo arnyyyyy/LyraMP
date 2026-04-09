@@ -18,7 +18,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.arno.lyramp.feature.learn_words.data.CefrDifficultyGroup
+import com.arno.lyramp.core.model.CefrDifficultyGroup
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsUiState

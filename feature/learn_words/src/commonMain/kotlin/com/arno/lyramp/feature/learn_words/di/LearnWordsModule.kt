@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.learn_words.di
 
 import com.arno.lyramp.core.model.CefrDifficultyGroup
 import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
-import com.arno.lyramp.feature.learn_words.data.LanguagePreferencesRepository
+import com.arno.lyramp.core.LanguagePreferencesRepository
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabase

@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -40,7 +41,7 @@ import com.arno.lyramp.ui.theme.LyraTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun LoadingCard(message: String) {
+fun LoadingCard(message: String, progress: Float? = null) {
         Box(
                 modifier = Modifier.fillMaxWidth(0.80f)
                         .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
@@ -49,11 +50,29 @@ fun LoadingCard(message: String) {
                 contentAlignment = Alignment.Center
         ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(
-                                modifier = Modifier.size(48.dp),
-                                color = LyraColorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        if (progress != null) {
+                                LinearProgressIndicator(
+                                        progress = { progress.coerceIn(0f, 1f) },
+                                        modifier = Modifier.fillMaxWidth().height(8.dp),
+                                        color = LyraColorScheme.primary,
+                                        trackColor = LyraColorScheme.outline,
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                        text = "${(progress * 100).toInt()}%",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = LyraColorScheme.primary,
+                                        textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                        } else {
+                                CircularProgressIndicator(
+                                        modifier = Modifier.size(48.dp),
+                                        color = LyraColorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                        }
                         Text(
                                 text = message,
                                 fontSize = 18.sp,

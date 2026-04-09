@@ -33,7 +33,6 @@ internal fun ModeSelectionContent(
         onNavigateToStories: () -> Unit = {},
         onNavigateToExtraction: () -> Unit = {},
         onNavigateToSuggestions: () -> Unit = {},
-        showExtraction: Boolean = false,
         showSuggestions: Boolean = false,
         wordCount: Int = 0
 ) {
@@ -101,17 +100,15 @@ internal fun ModeSelectionContent(
                         )
                 }
 
-                if (showExtraction || showSuggestions) {
+                if (showSuggestions) {
                         Spacer(modifier = Modifier.height(8.dp))
                         SectionHeader(text = stringResource(Res.string.words_mode_section_music))
 
-                        if (showExtraction) {
-                                MusicFeatureCard(
-                                        icon = "🎵",
-                                        title = stringResource(Res.string.extraction_card_title),
-                                        onClick = onNavigateToExtraction
-                                )
-                        }
+                        MusicFeatureCard(
+                                icon = "🎵",
+                                title = stringResource(Res.string.extraction_card_title),
+                                onClick = onNavigateToExtraction
+                        )
 
                         if (showSuggestions) {
                                 MusicFeatureCard(

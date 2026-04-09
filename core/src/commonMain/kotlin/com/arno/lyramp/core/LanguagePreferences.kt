@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.learn_words.data
+package com.arno.lyramp.core
 
 import com.russhwolf.settings.Settings
 

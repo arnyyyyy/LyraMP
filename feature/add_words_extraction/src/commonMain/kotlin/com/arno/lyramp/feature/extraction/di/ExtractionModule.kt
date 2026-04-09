@@ -50,6 +50,7 @@ val extractionModule = module {
                 ExtractionScreenModel(
                         extractor = get(),
                         wordSaver = get(),
+                        languagePreferencesRepository = get(),
                 )
         }
 }

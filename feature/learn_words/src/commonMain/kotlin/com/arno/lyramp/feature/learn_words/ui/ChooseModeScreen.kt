@@ -112,7 +112,6 @@ object ChooseModeScreen : Screen {
                                                 }
 
                                                 is ChooseModeUiState.ModeSelection -> {
-                                                        val isEnglish = selectedLanguage == "en"
                                                         val isYandex = AuthSelectionStorage.lastAuthorizedService == "YANDEX"
 
                                                         if (state.cefrGroups != null && state.cefrGroups.isNotEmpty()) {
@@ -145,9 +144,10 @@ object ChooseModeScreen : Screen {
                                                                                 },
                                                                                 onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
                                                                                 onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
-                                                                                onNavigateToSuggestions = { navigator.push(screenFactory.wordSuggestionsScreen()) },
-                                                                                showExtraction = isEnglish,
-                                                                                showSuggestions = isEnglish && isYandex,
+                                                                                onNavigateToSuggestions = {
+//                                                                                        navigator.push(screenFactory.wordSuggestionsScreen())
+                                                                                },
+                                                                                showSuggestions = isYandex,
                                                                                 wordCount = state.words.size
                                                                         )
                                                                 }
@@ -158,9 +158,10 @@ object ChooseModeScreen : Screen {
                                                                         },
                                                                         onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
                                                                         onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
-                                                                        onNavigateToSuggestions = { navigator.push(screenFactory.wordSuggestionsScreen()) },
-                                                                        showExtraction = isEnglish,
-                                                                        showSuggestions = isEnglish && isYandex,
+                                                                        onNavigateToSuggestions = {
+//                                                                                navigator.push(screenFactory.wordSuggestionsScreen())
+                                                                        },
+                                                                        showSuggestions = isYandex,
                                                                         wordCount = state.words.size
                                                                 )
                                                         }

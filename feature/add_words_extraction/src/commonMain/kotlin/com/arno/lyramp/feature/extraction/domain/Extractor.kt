@@ -26,11 +26,19 @@ internal class Extractor(
 ) {
         private val log = Logger.withTag("LyricsWordsExtractor")
 
-        internal suspend fun extractFromRecentTracks(): ExtractionResult = withContext(Dispatchers.IO) {
+        internal suspend fun extractFromRecentTracks(
+                languageFilter: String? = null,
+                onProgress: (progress: Float, trackName: String) -> Unit = { _, _ -> }
+        ): ExtractionResult = withContext(Dispatchers.IO) {
                 val shownWords = getShownWords()
 
-                // TODO ФИЛЬТРУЕМ ПО ВЫБРАННОМУ ЯЗЫКУ КОГДА БУДЕТ ПРОФИЛЬ
-                val candidateTracks = getRecentTracks().filter { it.language in SUPPORTED_LANGUAGES }.take(MAX_TRACKS_TO_SCAN)
+                val candidateTracks = getRecentTracks()
+                        .filter { it.language in SUPPORTED_LANGUAGES }
+                        .let { tracks ->
+                                if (languageFilter != null) tracks.filter { it.language == languageFilter }
+                                else tracks
+                        }
+                        .take(MAX_TRACKS_TO_SCAN)
                 if (candidateTracks.isEmpty()) {
                         return@withContext ExtractionResult(0, 0, 0)
                 }
@@ -42,8 +50,10 @@ internal class Extractor(
                 var processedTracks = 0
                 var totalWordsInLyrics = 0
 
-                for (track in candidateTracks) {
+                for ((index, track) in candidateTracks.withIndex()) {
                         if (allExtractedWords.size >= MAX_NEW_WORDS) break
+
+                        onProgress(index.toFloat() / candidateTracks.size, track.name)
 
                         try {
                                 coroutineContext.ensureActive()

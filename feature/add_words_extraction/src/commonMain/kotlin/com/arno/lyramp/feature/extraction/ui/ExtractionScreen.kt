@@ -48,6 +48,7 @@ import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
+import korlibs.io.lang.format
 import org.jetbrains.compose.resources.stringResource
 
 object ExtractionVoyagerScreen : Screen {
@@ -96,7 +97,17 @@ object ExtractionVoyagerScreen : Screen {
                                                 is ExtractionUiState.Idle ->
                                                         IdleContent(onStart = { screenModel.startExtraction() })
 
-                                                is ExtractionUiState.Running -> LoadingCard(message = stringResource(Res.string.extraction_running))
+                                                is ExtractionUiState.Running -> {
+                                                        val message = if (state.currentTrack.isNotEmpty()) {
+                                                                "${stringResource(Res.string.extraction_running)}\n🎵 ${state.currentTrack} "
+                                                        } else {
+                                                                stringResource(Res.string.extraction_running)
+                                                        }
+                                                        LoadingCard(
+                                                                message = message,
+                                                                progress = state.progress
+                                                        )
+                                                }
 
                                                 is ExtractionUiState.WordSelection -> {
                                                         WordSelectionContent(
@@ -129,7 +140,6 @@ object ExtractionVoyagerScreen : Screen {
         }
 }
 
-// TODO прогресс!!
 @Composable
 private fun IdleContent(onStart: () -> Unit) {
         Column(

@@ -8,11 +8,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.arno.lyramp.core.LanguagePreferencesRepository
 import kotlinx.coroutines.CancellationException
 
 internal class ExtractionScreenModel(
         private val extractor: Extractor,
         private val wordSaver: WordSaver,
+        private val languagePreferencesRepository: LanguagePreferencesRepository,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<ExtractionUiState>(ExtractionUiState.Idle)
@@ -21,10 +23,19 @@ internal class ExtractionScreenModel(
         fun startExtraction() {
                 if (_uiState.value is ExtractionUiState.Running) return
 
-                _uiState.value = ExtractionUiState.Running
+                _uiState.value = ExtractionUiState.Running()
                 screenModelScope.launch {
                         try {
-                                val result = extractor.extractFromRecentTracks()
+                                val languageFilter = languagePreferencesRepository.getSavedLanguage()
+                                val result = extractor.extractFromRecentTracks(
+                                        languageFilter = languageFilter,
+                                        onProgress = { progress, trackName ->
+                                                _uiState.value = ExtractionUiState.Running(
+                                                        progress = progress,
+                                                        currentTrack = trackName
+                                                )
+                                        }
+                                )
                                 if (result.words.isEmpty()) {
                                         _uiState.value = ExtractionUiState.Done(0)
                                 } else {
