@@ -48,7 +48,6 @@ import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import korlibs.io.lang.format
 import org.jetbrains.compose.resources.stringResource
 
 object ExtractionVoyagerScreen : Screen {

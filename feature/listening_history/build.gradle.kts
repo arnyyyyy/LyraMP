@@ -46,7 +46,8 @@ kotlin {
                         implementation(project(":core"))
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))
-
+                        implementation(project(":feature:user_settings"))
+                        
                         implementation(compose.runtime)
                         implementation(compose.foundation)
                         implementation(compose.material3)

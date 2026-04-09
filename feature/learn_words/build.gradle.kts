@@ -47,6 +47,7 @@ kotlin {
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))
                         implementation(project(":feature:add_words_extraction"))
+                        implementation(project(":feature:user_settings"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)
@@ -60,8 +61,8 @@ kotlin {
                         implementation(libs.ktor.client.content.negotiation)
                         implementation(libs.ktor.serialization.kotlinx.json)
                         implementation(libs.kotlinx.serialization.json)
-                        implementation(libs.multiplatform.settings)
                         implementation(libs.kotlinx.coroutines.core)
+                        implementation(libs.multiplatform.settings)
                         implementation(libs.multiplatform.settings.no.arg)
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
@@ -90,7 +91,6 @@ android {
 }
 
 dependencies {
-        implementation(project(":feature:authorization"))
         add("kspAndroid", libs.androidx.room.compiler)
         add("kspIosSimulatorArm64", libs.androidx.room.compiler)
         add("kspIosArm64", libs.androidx.room.compiler)

@@ -1,0 +1,8 @@
+<resources>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_learning_languages">Языки для изучения</string>
+    <string name="settings_word_level">Уровень рекомендуемых слов</string>
+    <string name="settings_done">Готово</string>
+    <string name="settings_no_languages">Выберите языки</string>
+</resources>
+

@@ -14,6 +14,7 @@ import com.arno.lyramp.feature.extraction.domain.usecase.SaveWordUseCase
 import com.arno.lyramp.feature.extraction.presentation.ExtractionScreenModel
 import com.arno.lyramp.feature.listening_history.domain.GetRecentTracksUseCase
 import com.arno.lyramp.feature.translation.domain.TranslateWordUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -50,7 +51,7 @@ val extractionModule = module {
                 ExtractionScreenModel(
                         extractor = get(),
                         wordSaver = get(),
-                        languagePreferencesRepository = get(),
+                        getSelectedLanguage = get<GetSelectedLanguageUseCase>(),
                 )
         }
 }

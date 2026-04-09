@@ -5,8 +5,6 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
-        alias(libs.plugins.ksp)
-        alias(libs.plugins.androidx.room)
 }
 
 kotlin {
@@ -26,27 +24,14 @@ kotlin {
                 iosSimulatorArm64()
         ).forEach { iosTarget ->
                 iosTarget.binaries.framework {
-                        baseName = "ExtractionFeature"
+                        baseName = "UserSettingsFeature"
                         isStatic = true
                 }
         }
 
         sourceSets {
-                androidMain.dependencies {
-                        implementation(libs.koin.android)
-                        implementation(libs.androidx.room.sqlite.wrapper)
-                }
-
-                iosMain.dependencies {
-                        implementation(libs.jetbrains.kotlinx.coroutines.core)
-                }
-
                 commonMain.dependencies {
                         implementation(project(":core"))
-                        implementation(project(":feature:listening_history"))
-                        implementation(project(":feature:lyrics"))
-                        implementation(project(":feature:translation"))
-                        implementation(project(":feature:user_settings"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)
@@ -54,15 +39,9 @@ kotlin {
                         implementation(compose.ui)
                         implementation(compose.components.resources)
 
-                        implementation(libs.voyager.navigator)
-                        implementation(libs.voyager.screenmodel)
-                        implementation(libs.voyager.koin)
-
-                        implementation(libs.kotlinx.coroutines.core)
-                        implementation(libs.kermit)
+                        implementation(libs.multiplatform.settings)
+                        implementation(libs.multiplatform.settings.no.arg)
                         implementation(libs.koin.core)
-                        implementation(libs.androidx.room.runtime)
-                        implementation(libs.androidx.sqlite.bundled)
                 }
 
                 commonTest.dependencies {
@@ -72,7 +51,7 @@ kotlin {
 }
 
 android {
-        namespace = "com.arno.lyramp.feature.extraction"
+        namespace = "com.arno.lyramp.feature.user_settings"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         defaultConfig {
@@ -85,19 +64,9 @@ android {
         }
 }
 
-dependencies {
-        add("kspAndroid", libs.androidx.room.compiler)
-        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-        add("kspIosArm64", libs.androidx.room.compiler)
-}
-
-room {
-        schemaDirectory("$projectDir/schemas")
-}
-
 compose.resources {
         publicResClass = false
-        packageOfResClass = "com.arno.lyramp.feature.extraction.resources"
+        packageOfResClass = "com.arno.lyramp.feature.user_settings.resources"
         generateResClass = auto
 }
 

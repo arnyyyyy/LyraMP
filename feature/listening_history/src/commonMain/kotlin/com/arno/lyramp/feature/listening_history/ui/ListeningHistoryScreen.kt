@@ -1,7 +1,9 @@
 package com.arno.lyramp.feature.listening_history.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +47,9 @@ import com.arno.lyramp.feature.listeningHistory.resources.history_empty_subtitle
 import com.arno.lyramp.feature.listeningHistory.resources.history_empty_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_error_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_loading
+import com.arno.lyramp.feature.user_settings.data.UserSettingsRepository
+import com.arno.lyramp.feature.user_settings.ui.LanguageSelectorDropdown
+import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -57,27 +65,43 @@ object ShowListeningHistoryScreen : Screen {
                 val screenFactory: ScreenFactory = koinInject()
                 val uiState by screenModel.uiState.collectAsState()
                 val isRefreshing by screenModel.isRefreshing.collectAsState()
+                val availableLanguages by screenModel.availableLanguages.collectAsState()
+                val userSettingsRepository: UserSettingsRepository = koinInject()
+                var showSettingsSheet by remember { mutableStateOf(false) }
+
+                if (showSettingsSheet) {
+                        UserSettingsSheet(
+                                repository = userSettingsRepository,
+                                onDismiss = { showSettingsSheet = false }
+                        )
+                }
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
 
                         Column(
-                                modifier = Modifier
-                                        .fillMaxSize()
-                                        .statusBarsPadding()
-                                        .navigationBarsPadding()
+                                modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
                         ) {
-                                Box(
+                                Row(
                                         modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 4.dp, vertical = 12.dp)
+                                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                         Text(
                                                 text = stringResource(Res.string.nav_library),
                                                 fontSize = 36.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White,
-                                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                                                modifier = Modifier.weight(1f)
+                                        )
+
+                                        LanguageSelectorDropdown(
+                                                availableLanguages = availableLanguages,
+                                                repository = userSettingsRepository,
+                                                onLanguageChanged = { screenModel.refreshLanguages() },
+                                                onSettingsClick = { showSettingsSheet = true }
                                         )
                                 }
 

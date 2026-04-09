@@ -24,6 +24,7 @@ fun getLanguageFlag(languageCode: String): String {
                 "uk" -> "🇺🇦"
                 "el" -> "🇬🇷"
                 "he" -> "🇮🇱"
+                "hu" -> "🇭🇺"
                 "hi" -> "🇮🇳"
                 "th" -> "🇹🇭"
                 "vi" -> "🇻🇳"

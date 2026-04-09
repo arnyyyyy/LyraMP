@@ -4,17 +4,17 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.extraction.domain.Extractor
 import com.arno.lyramp.feature.extraction.domain.WordSaver
+import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.arno.lyramp.core.LanguagePreferencesRepository
-import kotlinx.coroutines.CancellationException
 
 internal class ExtractionScreenModel(
         private val extractor: Extractor,
         private val wordSaver: WordSaver,
-        private val languagePreferencesRepository: LanguagePreferencesRepository,
+        private val getSelectedLanguage: GetSelectedLanguageUseCase,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<ExtractionUiState>(ExtractionUiState.Idle)
@@ -26,7 +26,7 @@ internal class ExtractionScreenModel(
                 _uiState.value = ExtractionUiState.Running()
                 screenModelScope.launch {
                         try {
-                                val languageFilter = languagePreferencesRepository.getSavedLanguage()
+                                val languageFilter = getSelectedLanguage()
                                 val result = extractor.extractFromRecentTracks(
                                         languageFilter = languageFilter,
                                         onProgress = { progress, trackName ->
