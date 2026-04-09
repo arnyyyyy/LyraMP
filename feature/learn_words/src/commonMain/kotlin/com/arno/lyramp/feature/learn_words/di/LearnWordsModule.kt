@@ -1,7 +1,7 @@
 package com.arno.lyramp.feature.learn_words.di
 
-import com.arno.lyramp.feature.learn_words.data.CefrDifficultyGroup
-import com.arno.lyramp.feature.learn_words.data.CefrRepository
+import com.arno.lyramp.core.model.CefrDifficultyGroup
+import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
 import com.arno.lyramp.feature.learn_words.data.LanguagePreferencesRepository
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
@@ -22,13 +22,12 @@ val learnWordsModule = module {
 
         single { (LanguagePreferencesRepository()) }
 
-        single { CefrRepository() }
 
         factory {
                 ChooseModeScreenModel(
                         repository = get(),
                         languagePreferencesRepository = get(),
-                        cefrRepository = get()
+                        classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
                 )
         }
 
@@ -39,7 +38,7 @@ val learnWordsModule = module {
                         cefrGroup = cefrGroup,
                         repository = get(),
                         translationRepository = get<TranslationRepository>(),
-                        cefrRepository = get()
+                        classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
                 )
         }
 }
