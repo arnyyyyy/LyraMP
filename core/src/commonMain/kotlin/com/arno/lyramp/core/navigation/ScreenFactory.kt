@@ -28,5 +28,5 @@ interface ScreenFactory {
 
         fun extractionScreen(): Screen
 
-        fun wordSuggestionsScreen(): Screen
+//        fun wordSuggestionsScreen(): Screen
 }

@@ -8,7 +8,7 @@ import com.arno.lyramp.feature.listening_practice.ui.ListeningPracticeScreen
 import com.arno.lyramp.feature.lyrics.ui.LyricsScreen
 import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
-import com.arno.lyramp.feature.word_suggestions.ui.WordSuggestionsVoyagerScreen
+//import com.arno.lyramp.feature.word_suggestions.ui.WordSuggestionsVoyagerScreen
 
 class ScreenFactoryImpl : ScreenFactory {
         override fun lyricsScreen(
@@ -54,6 +54,6 @@ class ScreenFactoryImpl : ScreenFactory {
 
         override fun extractionScreen(): Screen = ExtractionVoyagerScreen // TODO
 
-        override fun wordSuggestionsScreen(): Screen = WordSuggestionsVoyagerScreen // TODO
+//        override fun wordSuggestionsScreen(): Screen = WordSuggestionsVoyagerScreen // TODO
 }
 

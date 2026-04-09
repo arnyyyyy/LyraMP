@@ -2,14 +2,15 @@ package com.arno.lyramp.feature.listening_history.data
 
 import com.arno.lyramp.feature.listening_history.domain.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-private val cyrillicRegex = Regex("[\\u0400-\\u04FF]")
 
 class ListeningHistoryRepository(
         private val musicService: MusicService,
-        private val dao: ListeningHistoryDao
+        private val dao: ListeningHistoryDao,
+        private val detectLanguage: DetectLanguageUseCase,
 ) {
         fun getListeningHistory(limit: Int = 20): Flow<List<ListeningHistoryMusicTrack>> = flow {
                 val cachedTracks = dao.getAll()
@@ -25,7 +26,7 @@ class ListeningHistoryRepository(
                         }
                 } else {
                         val tracks = musicService.getListeningHistory(limit)
-                        dao.insertAll(tracks.reversed().map { it.preselectLanguage().toEntity() })
+                        dao.insertAll(tracks.reversed().map { it.withDetectedLanguage().toEntity() })
                         emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 }
         }
@@ -49,12 +50,14 @@ class ListeningHistoryRepository(
 
                 val toInsert = fresh.filter { it.id !in cachedIds }
                 if (toInsert.isNotEmpty())
-                        dao.insertAll(toInsert.reversed().map { it.preselectLanguage().toEntity() })
+                        dao.insertAll(toInsert.reversed().map { it.withDetectedLanguage().toEntity() })
         }
 
-        private fun ListeningHistoryMusicTrack.preselectLanguage(): ListeningHistoryMusicTrack =
-                if (language == null && cyrillicRegex.containsMatchIn(name)) copy(language = "ru")
-                else this
+        private suspend fun ListeningHistoryMusicTrack.withDetectedLanguage(): ListeningHistoryMusicTrack {
+                if (language != null) return this
+                val detected = detectLanguage(name) ?: return this
+                return copy(language = detected)
+        }
 
         private fun List<ListeningHistoryMusicTrack>.filterNonNative(): List<ListeningHistoryMusicTrack> =
                 filter { it.language != "ru" }

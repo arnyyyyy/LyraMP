@@ -1,6 +1,7 @@
 package com.arno.lyramp.di
 
 import com.arno.lyramp.core.model.MusicTrack
+import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.lyrics.api.LyricsOvhApi
 import com.arno.lyramp.feature.lyrics.api.YandexLyricsApi
 import com.arno.lyramp.feature.lyrics.domain.LyricsOvhService
@@ -22,11 +23,14 @@ val lyricsModule = module {
         single { LyricsUseCase(get()) }
 
         factory { (track: MusicTrack) ->
+                val repo: LearnWordsRepository = get()
                 LyricsScreenModel(
                         track = track,
                         lyricsUseCase = get(),
                         translationRepository = get(),
-                        learnWordsRepository = get()
+                        saveWordToLearn = { word, translation, sourceLang, trackName, artists, lyricLine ->
+                                repo.saveWord(word, translation, sourceLang, trackName, artists, lyricLine)
+                        }
                 )
         }
 }

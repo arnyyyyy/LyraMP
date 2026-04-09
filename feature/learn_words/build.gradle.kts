@@ -46,6 +46,7 @@ kotlin {
                         implementation(project(":core"))
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))
+                        implementation(project(":feature:add_words_extraction"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)

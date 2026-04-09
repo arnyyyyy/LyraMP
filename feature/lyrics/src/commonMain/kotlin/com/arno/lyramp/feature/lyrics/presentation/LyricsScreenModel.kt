@@ -2,7 +2,6 @@ package com.arno.lyramp.feature.lyrics.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
@@ -22,11 +21,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
- class LyricsScreenModel(
+class LyricsScreenModel(
         private val track: MusicTrack,
         private val lyricsUseCase: LyricsUseCase,
         private val translationRepository: TranslationRepository,
-        private val learnWordsRepository: LearnWordsRepository,
+        private val saveWordToLearn: suspend (word: String, translation: String, sourceLang: String?, trackName: String, artists: List<String>, lyricLine: String) -> Unit,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<LyricsUiState>(LyricsUiState.Loading)
@@ -172,13 +171,13 @@ import kotlinx.coroutines.launch
                 val current = _popupState.value as? WordPopupState.Visible ?: return
                 val translation = current.translationResult.translation ?: return
                 screenModelScope.launch {
-                        learnWordsRepository.saveWord(
-                                word = current.word,
-                                translation = translation,
-                                sourceLang = current.translationResult.sourceLanguage,
-                                trackName = track.name,
-                                artists = track.artists,
-                                lyricLine = current.lyricLine,
+                        saveWordToLearn(
+                                current.word,
+                                translation,
+                                current.translationResult.sourceLanguage,
+                                track.name,
+                                track.artists,
+                                current.lyricLine,
                         )
                 }
                 dismissPopup()

@@ -45,7 +45,6 @@ kotlin {
                         implementation(project(":core"))
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))
-                        implementation(project(":feature:learn_words"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)

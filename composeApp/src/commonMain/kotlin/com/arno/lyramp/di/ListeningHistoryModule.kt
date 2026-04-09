@@ -11,7 +11,10 @@ import com.arno.lyramp.feature.listening_history.domain.AppleMusicService
 import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.domain.YandexMusicService
+import com.arno.lyramp.feature.listening_history.domain.GetRecentTracksUseCase
+import com.arno.lyramp.feature.listening_history.domain.SaveTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
+import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -44,8 +47,10 @@ val listeningHistoryModule = module {
 
         single<ListeningHistoryDatabase> { getListeningHistoryDatabase(get(named("listening_history"))) }
         single { get<ListeningHistoryDatabase>().listeningHistoryDao() }
+        single { GetRecentTracksUseCase(historyDao = get()) }
+        single { SaveTrackLanguageUseCase(dao = get()) }
 
-        single { ListeningHistoryRepository(musicService = get(), dao = get()) }
+        single { ListeningHistoryRepository(musicService = get(), dao = get(), detectLanguage = get<DetectLanguageUseCase>()) }
 
         factory { ListeningHistoryScreenModel(repository = get()) }
 }

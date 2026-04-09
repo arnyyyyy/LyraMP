@@ -7,7 +7,6 @@ plugins {
         alias(libs.plugins.composeCompiler)
         alias(libs.plugins.ksp)
         alias(libs.plugins.androidx.room)
-        alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -27,7 +26,7 @@ kotlin {
                 iosSimulatorArm64()
         ).forEach { iosTarget ->
                 iosTarget.binaries.framework {
-                        baseName = "LyricsFeature"
+                        baseName = "ExtractionFeature"
                         isStatic = true
                 }
         }
@@ -44,26 +43,23 @@ kotlin {
 
                 commonMain.dependencies {
                         implementation(project(":core"))
-                        implementation(project(":feature:authorization"))
+                        implementation(project(":feature:listening_history"))
+                        implementation(project(":feature:lyrics"))
                         implementation(project(":feature:translation"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)
                         implementation(compose.material3)
+                        implementation(compose.ui)
                         implementation(compose.components.resources)
-                        implementation(libs.androidx.sqlite.bundled)
+
                         implementation(libs.voyager.navigator)
                         implementation(libs.voyager.screenmodel)
                         implementation(libs.voyager.koin)
-                        implementation(libs.ktor.client.core)
-                        implementation(libs.ktor.client.content.negotiation)
-                        implementation(libs.ktor.serialization.kotlinx.json)
-                        implementation(libs.kotlinx.serialization.json)
-                        implementation(libs.multiplatform.settings)
+
                         implementation(libs.kotlinx.coroutines.core)
-                        implementation(libs.multiplatform.settings.no.arg)
+                        implementation(libs.kermit)
                         implementation(libs.koin.core)
-                        implementation(libs.koin.compose)
                         implementation(libs.androidx.room.runtime)
                         implementation(libs.androidx.sqlite.bundled)
                 }
@@ -75,7 +71,7 @@ kotlin {
 }
 
 android {
-        namespace = "com.arno.lyramp.feature.listening_history"
+        namespace = "com.arno.lyramp.feature.extraction"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         defaultConfig {
@@ -89,11 +85,9 @@ android {
 }
 
 dependencies {
-        implementation(project(":feature:authorization"))
         add("kspAndroid", libs.androidx.room.compiler)
         add("kspIosSimulatorArm64", libs.androidx.room.compiler)
         add("kspIosArm64", libs.androidx.room.compiler)
-
 }
 
 room {
@@ -102,6 +96,7 @@ room {
 
 compose.resources {
         publicResClass = false
-        packageOfResClass = "com.arno.lyramp.feature.listeningHistory.resources"
+        packageOfResClass = "com.arno.lyramp.feature.extraction.resources"
         generateResClass = auto
 }
+
