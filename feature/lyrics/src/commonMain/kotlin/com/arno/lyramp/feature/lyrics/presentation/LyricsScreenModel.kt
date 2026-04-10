@@ -30,7 +30,7 @@ class LyricsScreenModel(
         getSelectedLanguage: GetSelectedLanguageUseCase? = null,
 ) : ScreenModel {
 
-        private val _uiState = MutableStateFlow<LyricsUiState>(LyricsUiState.Loading)
+        private val _uiState = MutableStateFlow<LyricsUiState>(Loading)
         val uiState: StateFlow<LyricsUiState> = _uiState.asStateFlow()
 
         private val _popupState = MutableStateFlow<WordPopupState>(WordPopupState.Hidden)

@@ -1,5 +1,6 @@
 package com.arno.lyramp.feature.listening_history.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,5 +13,7 @@ data class ListeningHistoryTrackEntity(
         val name: String,
         val artists: String,
         val albumName: String?,
-        val imageUrl: String?
+        val imageUrl: String?,
+        @ColumnInfo(defaultValue = "1")
+        val isShowing: Boolean = true
 )

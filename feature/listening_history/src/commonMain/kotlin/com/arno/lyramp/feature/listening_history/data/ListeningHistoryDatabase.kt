@@ -11,7 +11,7 @@ import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-@Database(entities = [ListeningHistoryTrackEntity::class], version = 2)
+@Database(entities = [ListeningHistoryTrackEntity::class], version = 3)
 @ConstructedBy(ListeningHistoryDatabaseConstructor::class)
 abstract class ListeningHistoryDatabase : RoomDatabase() {
         abstract fun listeningHistoryDao(): ListeningHistoryDao
@@ -24,7 +24,7 @@ expect object ListeningHistoryDatabaseConstructor : RoomDatabaseConstructor<List
 
 fun getListeningHistoryDatabase(builder: RoomDatabase.Builder<ListeningHistoryDatabase>): ListeningHistoryDatabase {
         return builder
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .setDriver(BundledSQLiteDriver())
                 .setQueryCoroutineContext(Dispatchers.IO)
                 .build()
@@ -35,3 +35,10 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 connection.execSQL("ALTER TABLE listening_history_tracks ADD COLUMN language TEXT")
         }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE listening_history_tracks ADD COLUMN isShowing INTEGER NOT NULL DEFAULT 1")
+        }
+}
+

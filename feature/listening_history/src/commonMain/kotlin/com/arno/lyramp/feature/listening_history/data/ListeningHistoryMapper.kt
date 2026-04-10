@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.listening_history.data
 
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 
-internal fun ListeningHistoryTrackEntity.toDomain(): ListeningHistoryMusicTrack = ListeningHistoryMusicTrack(
+internal fun ListeningHistoryTrackEntity.toDomain() = ListeningHistoryMusicTrack(
         id = trackId,
         albumId = albumId,
         name = name,
@@ -12,7 +12,7 @@ internal fun ListeningHistoryTrackEntity.toDomain(): ListeningHistoryMusicTrack 
         language = language
 )
 
-internal fun ListeningHistoryMusicTrack.toEntity(): ListeningHistoryTrackEntity = ListeningHistoryTrackEntity(
+internal fun ListeningHistoryMusicTrack.toEntity() = ListeningHistoryTrackEntity(
         trackId = id,
         albumId = albumId,
         name = name,

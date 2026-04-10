@@ -185,6 +185,9 @@ object ShowListeningHistoryScreen : Screen {
                                                                                                 imageUrl = track.imageUrl
                                                                                         )
                                                                                 )
+                                                                        },
+                                                                        onHideTrack = { track ->
+                                                                                screenModel.hideTrack(track)
                                                                         }
                                                                 )
                                                         }

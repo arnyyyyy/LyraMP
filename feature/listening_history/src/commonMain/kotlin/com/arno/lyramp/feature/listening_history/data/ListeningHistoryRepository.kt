@@ -6,7 +6,6 @@ import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-
 class ListeningHistoryRepository(
         private val musicService: MusicService,
         private val dao: ListeningHistoryDao,
@@ -17,13 +16,9 @@ class ListeningHistoryRepository(
 
                 if (cachedTracks.isNotEmpty()) {
                         emit(cachedTracks.map { it.toDomain() }.filterNonNative())
-
-                        try {
-                                val fresh = musicService.getListeningHistory(limit)
-                                applyDiff(cachedTracks, fresh)
-                                emit(dao.getAll().map { it.toDomain() }.filterNonNative())
-                        } catch (_: Exception) {
-                        }
+                        val fresh = musicService.getListeningHistory(limit)
+                        applyDiff(cachedTracks, fresh)
+                        emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 } else {
                         val tracks = musicService.getListeningHistory(limit)
                         dao.insertAll(tracks.reversed().map { it.withDetectedLanguage().toEntity() })
@@ -35,6 +30,10 @@ class ListeningHistoryRepository(
                 trackLanguages.forEach { (trackId, language) ->
                         dao.updateLanguage(trackId, language)
                 }
+        }
+
+        internal suspend fun hideTrack(trackId: String) {
+                dao.hideTrack(trackId)
         }
 
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {

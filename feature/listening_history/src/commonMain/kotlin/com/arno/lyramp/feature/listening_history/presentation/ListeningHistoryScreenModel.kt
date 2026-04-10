@@ -112,4 +112,13 @@ class ListeningHistoryScreenModel(
         internal fun selectLanguage(language: String) {
                 saveSelectedLanguage(language)
         }
+
+        internal fun hideTrack(track: ListeningHistoryMusicTrack) {
+                val trackId = track.id ?: return
+                screenModelScope.launch {
+                        repository.hideTrack(trackId)
+                        _allTracks.value = _allTracks.value.filter { it.id != trackId }
+                        updateFilteredTracks()
+                }
+        }
 }

@@ -12,10 +12,10 @@ interface ListeningHistoryDao {
         @Insert(onConflict = OnConflictStrategy.IGNORE)
         suspend fun insertAll(tracks: List<ListeningHistoryTrackEntity>)
 
-        @Query("SELECT * FROM listening_history_tracks ORDER BY localId DESC")
+        @Query("SELECT * FROM listening_history_tracks WHERE isShowing = 1 ORDER BY localId DESC")
         fun getAllAsFlow(): Flow<List<ListeningHistoryTrackEntity>>
 
-        @Query("SELECT * FROM listening_history_tracks ORDER BY localId DESC")
+        @Query("SELECT * FROM listening_history_tracks WHERE isShowing = 1 ORDER BY localId DESC")
         suspend fun getAll(): List<ListeningHistoryTrackEntity>
 
         @Query("SELECT COUNT(*) FROM listening_history_tracks")
@@ -26,6 +26,9 @@ interface ListeningHistoryDao {
 
         @Query("UPDATE listening_history_tracks SET language = :language WHERE trackId = :trackId")
         suspend fun updateLanguage(trackId: String, language: String)
+
+        @Query("UPDATE listening_history_tracks SET isShowing = 0 WHERE trackId = :trackId")
+        suspend fun hideTrack(trackId: String)
 
         @Query("DELETE FROM listening_history_tracks")
         suspend fun deleteAll()
