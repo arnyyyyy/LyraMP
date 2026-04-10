@@ -10,7 +10,7 @@ import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
 import com.arno.lyramp.feature.translation.domain.TranslationRepository
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
-import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
@@ -26,7 +26,7 @@ val learnWordsModule = module {
                 ChooseModeScreenModel(
                         repository = get(),
                         classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
-                        getSelectedLanguage = get<GetSelectedLanguageUseCase>(),
+                        observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
                 )

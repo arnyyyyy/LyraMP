@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -47,13 +46,13 @@ import com.arno.lyramp.feature.listeningHistory.resources.history_empty_subtitle
 import com.arno.lyramp.feature.listeningHistory.resources.history_empty_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_error_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_loading
-import com.arno.lyramp.feature.user_settings.data.UserSettingsRepository
+import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel
+import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel.Companion.AVAILABLE_LANGUAGES
 import com.arno.lyramp.feature.user_settings.ui.LanguageSelectorDropdown
 import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class)
 object ShowListeningHistoryScreen : Screen {
 
         val scrollToTopToken: MutableState<Int> = mutableIntStateOf(0)
@@ -65,14 +64,28 @@ object ShowListeningHistoryScreen : Screen {
                 val screenFactory: ScreenFactory = koinInject()
                 val uiState by screenModel.uiState.collectAsState()
                 val isRefreshing by screenModel.isRefreshing.collectAsState()
+                val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
-                val userSettingsRepository: UserSettingsRepository = koinInject()
+                
+                val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
+                val settingsState by userSettingsScreenModel.state.collectAsState()
                 var showSettingsSheet by remember { mutableStateOf(false) }
 
                 if (showSettingsSheet) {
                         UserSettingsSheet(
-                                repository = userSettingsRepository,
-                                onDismiss = { showSettingsSheet = false }
+                                state = settingsState,
+                                availableLanguages = AVAILABLE_LANGUAGES,
+                                onToggleLanguage = userSettingsScreenModel::toggleLanguage,
+                                onSelectLevel = userSettingsScreenModel::selectLevel,
+                                onDone = {
+                                        userSettingsScreenModel.saveAndClose()
+                                        showSettingsSheet = false
+                                        screenModel.refreshLanguages()
+                                },
+                                onDismiss = {
+                                        showSettingsSheet = false
+                                        screenModel.refreshLanguages()
+                                },
                         )
                 }
 
@@ -98,9 +111,9 @@ object ShowListeningHistoryScreen : Screen {
                                         )
 
                                         LanguageSelectorDropdown(
+                                                selectedLanguage = selectedLanguage,
                                                 availableLanguages = availableLanguages,
-                                                repository = userSettingsRepository,
-                                                onLanguageChanged = { screenModel.refreshLanguages() },
+                                                onLanguageSelected = { screenModel.selectLanguage(it) },
                                                 onSettingsClick = { showSettingsSheet = true }
                                         )
                                 }

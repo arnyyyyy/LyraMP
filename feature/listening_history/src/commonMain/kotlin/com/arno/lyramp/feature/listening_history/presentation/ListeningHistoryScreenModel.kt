@@ -7,7 +7,8 @@ import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrac
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Error
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Success
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
-import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class ListeningHistoryScreenModel(
         private val repository: ListeningHistoryRepository,
-        private val getSelectedLanguage: GetSelectedLanguageUseCase,
+        observeSelectedLanguage: ObserveSelectedLanguageUseCase,
+        private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
         private val getLearningLanguages: GetLearningLanguagesUseCase,
 ) : ScreenModel {
         private val _uiState =
@@ -25,7 +27,8 @@ class ListeningHistoryScreenModel(
 
         private val _allTracks = MutableStateFlow<List<ListeningHistoryMusicTrack>>(emptyList())
 
-        private val _selectedLanguage = MutableStateFlow<String?>(null)
+        val selectedLanguage: StateFlow<String?> = observeSelectedLanguage()
+
         private val _availableLanguages = MutableStateFlow<List<String>>(emptyList())
         val availableLanguages: StateFlow<List<String>> = _availableLanguages.asStateFlow()
 
@@ -34,6 +37,9 @@ class ListeningHistoryScreenModel(
 
         init {
                 loadHistory()
+                screenModelScope.launch {
+                        selectedLanguage.collect { updateFilteredTracks() }
+                }
         }
 
         private fun loadHistory() {
@@ -62,8 +68,10 @@ class ListeningHistoryScreenModel(
                 }
                 _availableLanguages.value = languages
 
-                val saved = getSelectedLanguage()
-                _selectedLanguage.value = saved?.takeIf { it in languages } ?: languages.firstOrNull()
+                val current = selectedLanguage.value
+                if (current == null || current !in languages) {
+                        saveSelectedLanguage(languages.firstOrNull())
+                }
 
                 updateFilteredTracks()
         }
@@ -79,7 +87,7 @@ class ListeningHistoryScreenModel(
 
         private fun getFilteredTracks(): List<ListeningHistoryMusicTrack> {
                 val allTracks = _allTracks.value
-                val lang = _selectedLanguage.value ?: return allTracks
+                val lang = selectedLanguage.value ?: return allTracks
                 return allTracks.filter { it.language == lang }
         }
 
@@ -99,5 +107,9 @@ class ListeningHistoryScreenModel(
                                 _isRefreshing.value = false
                         }
                 }
+        }
+
+        internal fun selectLanguage(language: String) {
+                saveSelectedLanguage(language)
         }
 }

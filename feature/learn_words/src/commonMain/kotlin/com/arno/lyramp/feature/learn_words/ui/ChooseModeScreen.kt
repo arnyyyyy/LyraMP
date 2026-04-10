@@ -1,7 +1,5 @@
 package com.arno.lyramp.feature.learn_words.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,13 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,14 +35,16 @@ import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.EmptyStateCard
 import com.arno.lyramp.ui.LoadingCard
-import com.arno.lyramp.ui.theme.LyraColorScheme
-import com.arno.lyramp.util.getLanguageFlag
 import com.arno.lyramp.feature.learn_words.resources.Res
 import com.arno.lyramp.feature.learn_words.resources.nav_words
 import com.arno.lyramp.feature.learn_words.resources.notebook_icon
 import com.arno.lyramp.feature.learn_words.resources.words_empty_subtitle
 import com.arno.lyramp.feature.learn_words.resources.words_empty_title
 import com.arno.lyramp.feature.learn_words.resources.words_loading
+import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel
+import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel.Companion.AVAILABLE_LANGUAGES
+import com.arno.lyramp.feature.user_settings.ui.LanguageSelectorDropdown
+import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -61,6 +57,27 @@ object ChooseModeScreen : Screen {
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
                 val screenFactory: ScreenFactory = koinInject()
+                val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
+                val settingsState by userSettingsScreenModel.state.collectAsState()
+                var showSettingsSheet by remember { mutableStateOf(false) }
+
+                if (showSettingsSheet) {
+                        UserSettingsSheet(
+                                state = settingsState,
+                                availableLanguages = AVAILABLE_LANGUAGES,
+                                onToggleLanguage = userSettingsScreenModel::toggleLanguage,
+                                onSelectLevel = userSettingsScreenModel::selectLevel,
+                                onDone = {
+                                        userSettingsScreenModel.saveAndClose()
+                                        showSettingsSheet = false
+                                        screenModel.refreshLanguages()
+                                },
+                                onDismiss = {
+                                        showSettingsSheet = false
+                                        screenModel.refreshLanguages()
+                                },
+                        )
+                }
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
@@ -85,13 +102,12 @@ object ChooseModeScreen : Screen {
                                                 )
                                         }
 
-                                        if (uiState is ChooseModeUiState.ModeSelection && availableLanguages.isNotEmpty()) {
-                                                LanguageSelector(
-                                                        selectedLanguage = selectedLanguage,
-                                                        availableLanguages = availableLanguages,
-                                                        onLanguageSelected = { screenModel.selectLanguage(it) }
-                                                )
-                                        }
+                                        LanguageSelectorDropdown(
+                                                selectedLanguage = selectedLanguage,
+                                                availableLanguages = availableLanguages,
+                                                onLanguageSelected = { screenModel.selectLanguage(it) },
+                                                onSettingsClick = { showSettingsSheet = true }
+                                        )
                                 }
 
                                 Box(
@@ -168,58 +184,6 @@ object ChooseModeScreen : Screen {
                                                 }
                                         }
                                 }
-                        }
-                }
-        }
-}
-
-@Composable
-private fun LanguageSelector(
-        selectedLanguage: String?,
-        availableLanguages: List<String>,
-        onLanguageSelected: (String) -> Unit
-) {
-        var expanded by remember { mutableStateOf(false) }
-
-        Box {
-                Box(
-                        modifier = Modifier
-                                .size(48.dp)
-                                .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                                .clickable {
-                                        if (availableLanguages.size > 1) {
-                                                expanded = !expanded
-                                        }
-                                },
-                        contentAlignment = Alignment.Center
-                ) {
-                        Text(
-                                text = getLanguageFlag(selectedLanguage ?: "en"),
-                                fontSize = 24.sp
-                        )
-                }
-
-                DropdownMenu(
-                        expanded = expanded && availableLanguages.size > 1,
-                        onDismissRequest = { expanded = false }
-                ) {
-                        availableLanguages.forEach { lang ->
-                                DropdownMenuItem(
-                                        text = {
-                                                Text(
-                                                        text = getLanguageFlag(lang),
-                                                        fontSize = 22.sp
-                                                )
-                                        },
-                                        onClick = {
-                                                onLanguageSelected(lang)
-                                                expanded = false
-                                        },
-                                        modifier = Modifier.background(
-                                                if (lang == selectedLanguage) LyraColorScheme.primary.copy(alpha = 0.2f)
-                                                else Color.Transparent
-                                        )
-                                )
                         }
                 }
         }

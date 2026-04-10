@@ -1,13 +1,20 @@
 package com.arno.lyramp.feature.user_settings.data
 
 import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class UserSettingsRepository {
 
-        fun getSelectedLanguage(): String? = UserSettingsStorage.selectedLanguage
+        private val _selectedLanguage = MutableStateFlow(UserSettingsStorage.selectedLanguage)
+        val selectedLanguageFlow: StateFlow<String?> = _selectedLanguage.asStateFlow()
+
+        fun getSelectedLanguage(): String? = _selectedLanguage.value
 
         fun saveSelectedLanguage(language: String?) {
                 UserSettingsStorage.selectedLanguage = language
+                _selectedLanguage.value = language
         }
 
         fun getLearningLanguages(): Set<String> = UserSettingsStorage.learningLanguages
