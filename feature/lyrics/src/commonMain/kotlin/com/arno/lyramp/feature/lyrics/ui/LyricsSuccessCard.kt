@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.feature.lyrics.presentation.LyricsEvent
 import com.arno.lyramp.feature.lyrics.presentation.SelectionState
 import com.arno.lyramp.feature.lyrics.presentation.WordPopupState
@@ -30,6 +31,7 @@ internal fun LyricsSuccessCard(
         popupState: WordPopupState,
         selectionState: SelectionState,
         onEvent: (LyricsEvent) -> Unit,
+        wordLevels: Map<String, CefrLevel> = emptyMap(),
 ) {
         val scrollState = rememberScrollState()
         val selectedPositions = remember(selectionState, lyricsLines) {
@@ -70,6 +72,7 @@ internal fun LyricsSuccessCard(
                                                                         word = word,
                                                                         isSelected = isSelected,
                                                                         isHighlighted = isAnchor,
+                                                                        cefrLevel = wordLevels[word.lowercase().trim { !it.isLetter() }],
                                                                         onClick = {
                                                                                 if (selectionState.isActive) {
                                                                                         onEvent(LyricsEvent.SelectionExtended(lineIndex, wordIndex))

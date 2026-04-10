@@ -26,11 +26,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.arno.lyramp.core.model.CefrDifficultyGroup
+import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.feature.lyrics.presentation.LyricsEvent
 import com.arno.lyramp.feature.lyrics.presentation.WordPopupState
 import com.arno.lyramp.ui.SlowModeButton
@@ -48,18 +51,34 @@ internal fun LyricsWord(
         word: String,
         isSelected: Boolean,
         isHighlighted: Boolean,
+        cefrLevel: CefrLevel? = null,
         onClick: () -> Unit,
         onLongClick: () -> Unit,
 ) {
+        val difficultyColor = cefrLevel?.let { level ->
+                when (CefrDifficultyGroup.entries.find { it.includesLevel(level) }) {
+                        CefrDifficultyGroup.BEGINNER -> LyraColors.BeginnerDifficulty
+                        CefrDifficultyGroup.INTERMEDIATE -> LyraColors.IntermediateDifficulty
+                        CefrDifficultyGroup.ADVANCED -> LyraColors.AdvancedDifficulty
+                        else -> LyraColorScheme.onSurface
+                }
+        }
+
         Text(
                 text = word,
                 fontSize = 17.sp,
-                fontWeight = if (isSelected || isHighlighted) FontWeight.SemiBold else FontWeight.Normal,
+                fontWeight = when {
+                        isSelected || isHighlighted -> FontWeight.SemiBold
+                        difficultyColor != null -> FontWeight.Medium
+                        else -> FontWeight.Normal
+                },
                 color = when {
                         isSelected -> Color.White
                         isHighlighted -> LyraColorScheme.primary
+                        difficultyColor != null -> difficultyColor
                         else -> LyraColorScheme.onSurface
                 },
+                textDecoration = if (difficultyColor != null && !isSelected) TextDecoration.Underline else null,
                 lineHeight = 28.sp,
                 softWrap = true,
                 modifier = Modifier

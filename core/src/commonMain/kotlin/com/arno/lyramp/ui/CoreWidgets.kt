@@ -213,6 +213,7 @@ fun MainFeatureScaffold(
         subtitle: String,
         onBack: () -> Unit,
         modifier: Modifier = Modifier,
+        actions: @Composable () -> Unit = {},
         content: @Composable () -> Unit
 ) {
         Box(modifier = modifier.fillMaxSize()) {
@@ -235,7 +236,8 @@ fun MainFeatureScaffold(
                                         icon = icon,
                                         title = title,
                                         subtitle = subtitle,
-                                        onBack = onBack
+                                        onBack = onBack,
+                                        actions = actions
                                 )
 
                                 Box(
@@ -279,6 +281,7 @@ fun ScreenTopBar(
         subtitle: String,
         onBack: () -> Unit,
         modifier: Modifier = Modifier,
+        actions: @Composable () -> Unit = {},
 ) {
         Box(
                 modifier = modifier
@@ -329,6 +332,7 @@ fun ScreenTopBar(
                                         }
                                 }
                         }
+                        actions()
                 }
         }
 }

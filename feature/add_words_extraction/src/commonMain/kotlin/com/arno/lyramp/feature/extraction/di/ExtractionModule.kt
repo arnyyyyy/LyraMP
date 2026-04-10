@@ -1,5 +1,6 @@
 package com.arno.lyramp.feature.extraction.di
 
+import com.arno.lyramp.core.model.WordDifficultyProvider
 import com.arno.lyramp.feature.extraction.data.CefrRepository
 import com.arno.lyramp.feature.extraction.data.ExtractionShownDatabase
 import com.arno.lyramp.feature.extraction.data.ExtractionShownWordsMapper
@@ -24,6 +25,7 @@ val extractionModule = module {
         single { get<ExtractionShownDatabase>().extractionShownWordsDao() }
         single { ExtractionShownWordsMapper() }
         single { CefrRepository() }
+        single<WordDifficultyProvider> { get<CefrRepository>() }
 
         single { GetCefrVocabularyUseCase(cefrRepository = get()) }
         single { ClassifyWordsByCefrUseCase(cefrRepository = get()) }

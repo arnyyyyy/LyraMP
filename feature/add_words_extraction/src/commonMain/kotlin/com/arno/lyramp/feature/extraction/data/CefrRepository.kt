@@ -2,10 +2,11 @@ package com.arno.lyramp.feature.extraction.data
 
 import com.arno.lyramp.core.model.CefrDifficultyGroup
 import com.arno.lyramp.core.model.CefrLevel
+import com.arno.lyramp.core.model.WordDifficultyProvider
 import com.arno.lyramp.feature.extraction.resources.Res
 import com.arno.lyramp.util.Log
 
-class CefrRepository {
+class CefrRepository : WordDifficultyProvider {
         private val cache = mutableMapOf<String, Map<String, CefrLevel>>()
 
         suspend fun <T> classifyWords(
@@ -20,6 +21,9 @@ class CefrRepository {
                         else null
                 }.groupBy({ it.first }, { it.second })
         }
+
+        override suspend fun getWordLevels(language: String): Map<String, CefrLevel> =
+                getVocabularyMap(language) // TODO без бриджа
 
         suspend fun getVocabularyMap(language: String = "en"): Map<String, CefrLevel> {
                 cache[language]?.let { return it }

@@ -2,7 +2,9 @@ package com.arno.lyramp.feature.lyrics.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.core.model.MusicTrack
+import com.arno.lyramp.core.model.WordDifficultyProvider
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import com.arno.lyramp.feature.lyrics.ui.LyricsUiState
@@ -12,6 +14,7 @@ import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Error
 import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.translation.model.TranslationResult
+import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +26,8 @@ class LyricsScreenModel(
         private val translateWord: TranslateWordWithStateUseCase,
         private val audioManager: PopupAudioManager,
         private val saveWordToLearn: suspend (word: String, translation: String, sourceLang: String?, trackName: String, artists: List<String>, lyricLine: String) -> Unit,
+        private val wordDifficultyProvider: WordDifficultyProvider? = null,
+        getSelectedLanguage: GetSelectedLanguageUseCase? = null,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<LyricsUiState>(LyricsUiState.Loading)
@@ -33,6 +38,17 @@ class LyricsScreenModel(
 
         private val _selectionState = MutableStateFlow(SelectionState())
         val selectionState: StateFlow<SelectionState> = _selectionState.asStateFlow()
+
+        val selectedLanguage: String? = getSelectedLanguage?.invoke()
+
+        private val _highlightEnabled = MutableStateFlow(false)
+        val highlightEnabled: StateFlow<Boolean> = _highlightEnabled.asStateFlow()
+
+        private val _wordLevels = MutableStateFlow<Map<String, CefrLevel>>(emptyMap())
+        val wordLevels: StateFlow<Map<String, CefrLevel>> = _wordLevels.asStateFlow()
+
+        val canShowDifficultyButton: Boolean
+                get() = selectedLanguage != null && wordDifficultyProvider != null
 
         init {
                 loadLyrics()
@@ -71,12 +87,24 @@ class LyricsScreenModel(
                         LyricsEvent.Audio.AudioPlayToggled -> onTogglePlay()
                         LyricsEvent.Audio.SlowModeToggled -> audioManager.toggleSlowMode(_popupState)
                         LyricsEvent.SaveWordRequested -> onSaveWord()
+                        LyricsEvent.DifficultyHighlightToggled -> toggleDifficultyHighlight()
                 }
         }
 
-        override fun onDispose() {
-                audioManager.stop()
-                super.onDispose()
+        private fun toggleDifficultyHighlight() {
+                val newState = !_highlightEnabled.value
+                _highlightEnabled.value = newState
+                if (newState && _wordLevels.value.isEmpty()) {
+                        loadWordDifficulties()
+                }
+        }
+
+        private fun loadWordDifficulties() {
+                val provider = wordDifficultyProvider ?: return
+                val lang = selectedLanguage ?: return
+                screenModelScope.launch {
+                        _wordLevels.value = provider.getWordLevels(lang)
+                }
         }
 
         private fun currentLines(): List<List<String>> =

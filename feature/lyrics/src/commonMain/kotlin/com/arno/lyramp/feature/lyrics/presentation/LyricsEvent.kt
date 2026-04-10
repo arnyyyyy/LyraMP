@@ -7,6 +7,7 @@ sealed interface LyricsEvent {
 
         object PopupDismissed : LyricsEvent
         object SaveWordRequested : LyricsEvent
+        object DifficultyHighlightToggled : LyricsEvent
 
         sealed interface Audio : LyricsEvent {
                 object AudioPlayToggled : Audio
