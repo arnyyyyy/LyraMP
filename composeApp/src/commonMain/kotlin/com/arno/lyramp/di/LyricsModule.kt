@@ -9,6 +9,9 @@ import com.arno.lyramp.feature.lyrics.domain.LyricsServiceFactory
 import com.arno.lyramp.feature.lyrics.domain.YandexLyricsService
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
+import com.arno.lyramp.feature.lyrics.presentation.PopupAudioManager
+import com.arno.lyramp.feature.translation.domain.GetSpeechFilePathUseCase
+import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import org.koin.dsl.module
 
 val lyricsModule = module {
@@ -27,7 +30,8 @@ val lyricsModule = module {
                 LyricsScreenModel(
                         track = track,
                         lyricsUseCase = get(),
-                        translationRepository = get(),
+                        translateWord = get<TranslateWordWithStateUseCase>(),
+                        audioManager = PopupAudioManager(getSpeechFilePath = get<GetSpeechFilePathUseCase>()),
                         saveWordToLearn = { word, translation, sourceLang, trackName, artists, lyricLine ->
                                 repo.saveWord(word, translation, sourceLang, trackName, artists, lyricLine)
                         }

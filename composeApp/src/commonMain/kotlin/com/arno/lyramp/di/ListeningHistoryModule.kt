@@ -17,6 +17,7 @@ import com.arno.lyramp.feature.listening_history.presentation.ListeningHistorySc
 import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -59,6 +60,7 @@ val listeningHistoryModule = module {
                 ListeningHistoryScreenModel(
                         repository = get(),
                         getSelectedLanguage = get<GetSelectedLanguageUseCase>(),
+                        saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
                 )
         }

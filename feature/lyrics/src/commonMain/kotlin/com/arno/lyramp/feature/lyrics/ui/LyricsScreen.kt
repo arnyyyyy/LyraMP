@@ -42,6 +42,7 @@ class LyricsScreen(
 
                 val uiState by screenModel.uiState.collectAsState()
                 val popupState by screenModel.popupState.collectAsState()
+                val selectionState by screenModel.selectionState.collectAsState()
 
                 MainFeatureScaffold(
                         icon = "🎵",
@@ -66,6 +67,7 @@ class LyricsScreen(
                                         LyricsSuccessCard(
                                                 lyricsLines = state.lyricsLines,
                                                 popupState = popupState,
+                                                selectionState = selectionState,
                                                 onEvent = screenModel::onEvent,
                                         )
                                 }

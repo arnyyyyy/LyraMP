@@ -2,9 +2,8 @@ package com.arno.lyramp.feature.lyrics.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.arno.lyramp.feature.lyrics.presentation.LyricsEvent
+import com.arno.lyramp.feature.lyrics.presentation.WordPopupState
 import com.arno.lyramp.ui.SlowModeButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
@@ -45,42 +46,34 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun LyricsWord(
         word: String,
-        lyricLine: String,
-        lineIndex: Int,
-        wordIndex: Int,
-        popupState: WordPopupState,
-        onEvent: (LyricsEvent) -> Unit,
+        isSelected: Boolean,
+        isHighlighted: Boolean,
+        onClick: () -> Unit,
+        onLongClick: () -> Unit,
 ) {
-        val isPopupVisible = popupState is WordPopupState.Visible
-                && popupState.lineIndex == lineIndex
-                && popupState.wordIndex == wordIndex
-
-        Box {
-                Text(
-                        text = word,
-                        fontSize = 17.sp,
-                        fontWeight = if (isPopupVisible) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isPopupVisible) LyraColorScheme.primary else LyraColorScheme.onSurface,
-                        lineHeight = 28.sp,
-                        softWrap = true,
-                        modifier = Modifier
-                                .clickable {
-                                        if (word.isNotBlank()) {
-                                                if (isPopupVisible) onEvent(LyricsEvent.PopupDismissed)
-                                                else onEvent(LyricsEvent.WordTapped(word, lyricLine, lineIndex, wordIndex))
-                                        }
-                                }
-                                .padding(end = 5.dp, bottom = 2.dp)
-                )
-
-                if (isPopupVisible) {
-                        WordTranslationPopup(state = popupState, onEvent = onEvent)
-                }
-        }
+        Text(
+                text = word,
+                fontSize = 17.sp,
+                fontWeight = if (isSelected || isHighlighted) FontWeight.SemiBold else FontWeight.Normal,
+                color = when {
+                        isSelected -> Color.White
+                        isHighlighted -> LyraColorScheme.primary
+                        else -> LyraColorScheme.onSurface
+                },
+                lineHeight = 28.sp,
+                softWrap = true,
+                modifier = Modifier
+                        .then(
+                                if (isSelected) Modifier.background(LyraColorScheme.primary.copy(alpha = 0.75f))
+                                else Modifier
+                        )
+                        .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+                        .padding(end = 5.dp, bottom = 2.dp)
+        )
 }
 
 @Composable
-private fun WordTranslationPopup(
+internal fun TranslationPopup(
         state: WordPopupState.Visible,
         onEvent: (LyricsEvent) -> Unit,
 ) {
@@ -126,36 +119,36 @@ private fun WordTranslationPopup(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                                Button(
-                                        onClick = {
-                                                if (state.isPlayingAudio) onEvent(LyricsEvent.StopAudioRequested)
-                                                else onEvent(LyricsEvent.PlayAudioRequested)
-                                        },
-                                        modifier = Modifier.size(36.dp),
-                                        shape = CircleShape,
-                                        contentPadding = PaddingValues(0.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (state.isPlayingAudio) LyraColors.Correct else LyraColorScheme.primary,
-                                                contentColor = Color.White
-                                        ),
-                                        enabled = !state.isLoadingAudio && !state.isTranslating
-                                ) {
-                                        if (state.isLoadingAudio) {
-                                                CircularProgressIndicator(
-                                                        modifier = Modifier.size(16.dp),
-                                                        strokeWidth = 2.dp,
-                                                        color = Color.White
-                                                )
-                                        } else {
-                                                Text(text = "🔊", fontSize = 16.sp)
+                                if (state.isSingleWord) {
+                                        val audio = state.audio
+                                        Button(
+                                                onClick = { onEvent(LyricsEvent.Audio.AudioPlayToggled) },
+                                                modifier = Modifier.size(36.dp),
+                                                shape = CircleShape,
+                                                contentPadding = PaddingValues(0.dp),
+                                                colors = ButtonDefaults.buttonColors(
+                                                        containerColor = if (audio.isPlaying) LyraColors.Correct else LyraColorScheme.primary,
+                                                        contentColor = Color.White
+                                                ),
+                                                enabled = !audio.isLoading && !state.isTranslating
+                                        ) {
+                                                if (audio.isLoading) {
+                                                        CircularProgressIndicator(
+                                                                modifier = Modifier.size(16.dp),
+                                                                strokeWidth = 2.dp,
+                                                                color = Color.White
+                                                        )
+                                                } else {
+                                                        Text(text = "🔊", fontSize = 16.sp)
+                                                }
                                         }
-                                }
 
-                                SlowModeButton(
-                                        isSlowMode = state.isSlowMode,
-                                        onClick = { onEvent(LyricsEvent.SlowModeToggled) },
-                                        size = 30.dp,
-                                )
+                                        SlowModeButton(
+                                                isSlowMode = audio.isSlowMode,
+                                                onClick = { onEvent(LyricsEvent.Audio.SlowModeToggled) },
+                                                size = 30.dp,
+                                        )
+                                }
 
                                 Spacer(modifier = Modifier.weight(1f))
 

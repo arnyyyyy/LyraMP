@@ -5,26 +5,23 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
-import com.arno.lyramp.feature.lyrics.ui.LyricsEvent
 import com.arno.lyramp.feature.lyrics.ui.LyricsUiState
-import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Error
+import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Loading
 import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Success
-import com.arno.lyramp.feature.lyrics.ui.WordPopupState
-import com.arno.lyramp.feature.translation.domain.TranslationRepository
+import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Error
+import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.translation.model.TranslationResult
-import com.arno.lyramp.feature.translation.model.WordInfo
-import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LyricsScreenModel(
         private val track: MusicTrack,
         private val lyricsUseCase: LyricsUseCase,
-        private val translationRepository: TranslationRepository,
+        private val translateWord: TranslateWordWithStateUseCase,
+        private val audioManager: PopupAudioManager,
         private val saveWordToLearn: suspend (word: String, translation: String, sourceLang: String?, trackName: String, artists: List<String>, lyricLine: String) -> Unit,
 ) : ScreenModel {
 
@@ -34,7 +31,8 @@ class LyricsScreenModel(
         private val _popupState = MutableStateFlow<WordPopupState>(WordPopupState.Hidden)
         val popupState: StateFlow<WordPopupState> = _popupState.asStateFlow()
 
-        private val speechController = TranslationSpeechController()
+        private val _selectionState = MutableStateFlow(SelectionState())
+        val selectionState: StateFlow<SelectionState> = _selectionState.asStateFlow()
 
         init {
                 loadLyrics()
@@ -42,7 +40,7 @@ class LyricsScreenModel(
 
         fun loadLyrics() {
                 screenModelScope.launch {
-                        _uiState.value = LyricsUiState.Loading
+                        _uiState.value = Loading
                         try {
                                 when (val result = lyricsUseCase.getLyrics(
                                         track.artists.joinToString(", "),
@@ -61,52 +59,89 @@ class LyricsScreenModel(
         private fun parseLyricsLines(lyrics: String): List<List<String>> =
                 lyrics.split("\n").map { line ->
                         if (line.isBlank()) emptyList()
-                        else line.split(" ").filter { it.isNotEmpty() }
+                        else line.split(Regex("\\s+")).filter { it.isNotEmpty() }
                 }
 
         fun onEvent(event: LyricsEvent) {
                 when (event) {
-                        is LyricsEvent.WordTapped -> onWordTapped(event.word, event.lyricLine, event.lineIndex, event.wordIndex)
+                        is LyricsEvent.WordTapped -> onWordTapped(event.lineIndex, event.wordIndex)
+                        is LyricsEvent.SelectionStarted -> onSelectionStarted(event.lineIndex, event.wordIndex)
+                        is LyricsEvent.SelectionExtended -> onSelectionExtended(event.lineIndex, event.wordIndex)
                         LyricsEvent.PopupDismissed -> dismissPopup()
-                        LyricsEvent.PlayAudioRequested -> onPlayAudioRequested()
-                        LyricsEvent.StopAudioRequested -> onStopAudio()
-                        LyricsEvent.SlowModeToggled -> onSlowModeToggled()
+                        LyricsEvent.Audio.AudioPlayToggled -> onTogglePlay()
+                        LyricsEvent.Audio.SlowModeToggled -> audioManager.toggleSlowMode(_popupState)
                         LyricsEvent.SaveWordRequested -> onSaveWord()
                 }
         }
 
         override fun onDispose() {
-                speechController.stop()
+                audioManager.stop()
                 super.onDispose()
         }
 
-        private fun onWordTapped(word: String, lyricLine: String, lineIndex: Int, wordIndex: Int) {
+        private fun currentLines(): List<List<String>> =
+                (_uiState.value as? Success)?.lyricsLines ?: emptyList()
+
+        private fun wordAt(pos: WordPosition): String? =
+                currentLines().getOrNull(pos.lineIndex)?.getOrNull(pos.wordIndex)
+
+        private fun lyricLineAt(lineIndex: Int): String =
+                currentLines().getOrNull(lineIndex)?.joinToString(" ") ?: ""
+
+        private fun onWordTapped(lineIndex: Int, wordIndex: Int) {
+                val word = wordAt(WordPosition(lineIndex, wordIndex)) ?: return
+                val pos = WordPosition(lineIndex, wordIndex)
+                showPopupAndTranslate(word, listOf(pos), lyricLineAt(lineIndex))
+        }
+
+        private fun onSelectionStarted(lineIndex: Int, wordIndex: Int) {
+                dismissPopup()
+                _selectionState.value = SelectionState(anchor = WordPosition(lineIndex, wordIndex))
+        }
+
+        private fun onSelectionExtended(lineIndex: Int, wordIndex: Int) {
+                val anchor = _selectionState.value.anchor ?: return
+                val end = WordPosition(lineIndex, wordIndex)
+
+                if (anchor == end) {
+                        dismissPopup()
+                        return
+                }
+
+                _selectionState.value = SelectionState(anchor = anchor, end = end)
+
+                val positions = _selectionState.value.getSelectedRange(currentLines())
+                val combinedText = positions.mapNotNull { wordAt(it) }.joinToString(" ")
+                showPopupAndTranslate(combinedText, positions, lyricLineAt(anchor.lineIndex))
+        }
+
+        private fun showPopupAndTranslate(
+                text: String,
+                positions: List<WordPosition>,
+                lyricLine: String,
+        ) {
                 _popupState.value = WordPopupState.Visible(
-                        word = word,
+                        text = text,
                         lyricLine = lyricLine,
-                        lineIndex = lineIndex,
-                        wordIndex = wordIndex,
+                        positions = positions,
                         isTranslating = true,
                 )
                 screenModelScope.launch {
-                        val result = translationRepository.translateWord(word)
-                        _popupState.update { current ->
-                                if (current !is WordPopupState.Visible
-                                        || current.lineIndex != lineIndex
-                                        || current.wordIndex != wordIndex
-                                ) return@update current
+                        val result = translateWord(text)
+                        _popupState.updateVisible { visible ->
+                                if (visible.text != text) return@updateVisible visible
                                 when (result) {
-                                        is TranslationState.Success -> current.copy(
+                                        is TranslationState.Success -> visible.copy(
                                                 translationResult = result.translationWithLang,
                                                 isTranslating = false,
                                         )
 
-                                        is TranslationState.Error -> current.copy(
+                                        is TranslationState.Error -> visible.copy(
                                                 translationResult = TranslationResult("Ошибка: ${result.message}", null),
                                                 isTranslating = false,
                                         )
 
-                                        else -> current.copy(
+                                        else -> visible.copy(
                                                 translationResult = TranslationResult("Не найдено", null),
                                                 isTranslating = false,
                                         )
@@ -116,55 +151,9 @@ class LyricsScreenModel(
         }
 
         private fun dismissPopup() {
-                speechController.stop()
+                audioManager.stop()
                 _popupState.value = WordPopupState.Hidden
-        }
-
-        private fun onPlayAudioRequested() {
-                val current = _popupState.value as? WordPopupState.Visible ?: return
-                _popupState.update { (it as? WordPopupState.Visible)?.copy(isLoadingAudio = true) ?: it }
-                screenModelScope.launch {
-                        val wordInfo = WordInfo(
-                                word = current.word,
-                                translation = current.translationResult.translation,
-                                sourceLang = current.translationResult.sourceLanguage,
-                        )
-                        val filePath = translationRepository.getSourceSpeechFilePath(wordInfo)
-                        _popupState.update { state ->
-                                val visible = state as? WordPopupState.Visible ?: return@update state
-                                if (filePath != null) {
-                                        speechController.play(filePath) {
-                                                screenModelScope.launch {
-                                                        _popupState.update { s ->
-                                                                (s as? WordPopupState.Visible)?.copy(isPlayingAudio = false) ?: s
-                                                        }
-                                                }
-                                        }
-                                        if (visible.isSlowMode) speechController.setPlaybackSpeed(0.7f)
-                                        visible.copy(audioFilePath = filePath, isLoadingAudio = false, isPlayingAudio = true)
-                                } else {
-                                        visible.copy(isLoadingAudio = false, isPlayingAudio = false)
-                                }
-                        }
-                }
-        }
-
-        private fun onStopAudio() {
-                speechController.stop()
-                _popupState.update { state ->
-                        (state as? WordPopupState.Visible)?.copy(isPlayingAudio = false, isSlowMode = false) ?: state
-                }
-        }
-
-        private fun onSlowModeToggled() {
-                _popupState.update { state ->
-                        val visible = state as? WordPopupState.Visible ?: return@update state
-                        val newSlowMode = !visible.isSlowMode
-                        if (visible.isPlayingAudio) {
-                                speechController.setPlaybackSpeed(if (newSlowMode) 0.7f else 1.0f)
-                        }
-                        visible.copy(isSlowMode = newSlowMode)
-                }
+                _selectionState.value = SelectionState()
         }
 
         private fun onSaveWord() {
@@ -172,7 +161,7 @@ class LyricsScreenModel(
                 val translation = current.translationResult.translation ?: return
                 screenModelScope.launch {
                         saveWordToLearn(
-                                current.word,
+                                current.text,
                                 translation,
                                 current.translationResult.sourceLanguage,
                                 track.name,
@@ -181,5 +170,16 @@ class LyricsScreenModel(
                         )
                 }
                 dismissPopup()
+        }
+
+        private fun onTogglePlay() {
+                val current = _popupState.value as? WordPopupState.Visible ?: return
+                screenModelScope.launch {
+                        audioManager.togglePlay(_popupState, current) {
+                                screenModelScope.launch {
+                                        _popupState.updateVisible { it.copy(audio = it.audio.copy(isPlaying = false)) }
+                                }
+                        }
+                }
         }
 }
