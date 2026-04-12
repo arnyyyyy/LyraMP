@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.story_generator.ui
+package com.arno.lyramp.feature.stories_generator.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,16 +21,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
-import com.arno.lyramp.feature.story_generator.presentation.StoryUiState
-import com.arno.lyramp.ui.theme.LyraColors
-import lyramp.composeapp.generated.resources.Res
-import lyramp.composeapp.generated.resources.story_generate
-import lyramp.composeapp.generated.resources.select_all
+import com.arno.lyramp.feature.stories_generator.presentation.StoryUiState
+import com.arno.lyramp.feature.stories_generator.resources.Res
+import com.arno.lyramp.feature.stories_generator.resources.select_all
+import com.arno.lyramp.feature.stories_generator.resources.story_generate
+import com.arno.lyramp.ui.theme.LyraColorScheme
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -90,9 +89,8 @@ private fun WordChip(
         isSelected: Boolean,
         onClick: () -> Unit
 ) {
-        val bgColor = if (isSelected) LyraColors.GlassSurface.copy(alpha = 0.6f) else LyraColors.GlassSurface
-        val borderColor = if (isSelected) Color.White.copy(alpha = 0.6f) else LyraColors.GlassBorder
-        val textColor = Color.White
+        val bgColor = if (isSelected) LyraColorScheme.primary.copy(alpha = 0.12f) else LyraColorScheme.surface
+        val borderColor = if (isSelected) LyraColorScheme.primary else LyraColorScheme.outline
 
         Box(
                 modifier = Modifier
@@ -106,12 +104,12 @@ private fun WordChip(
                                 text = word.word,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = textColor
+                                color = LyraColorScheme.onSurface
                         )
                         Text(
                                 text = word.translation,
                                 fontSize = 11.sp,
-                                color = textColor.copy(alpha = 0.7f)
+                                color = LyraColorScheme.onSurfaceVariant
                         )
                 }
         }
@@ -122,9 +120,9 @@ private fun SmallChipButton(text: String, onClick: () -> Unit) {
         Box(
                 modifier = Modifier
                         .clickable(onClick = onClick)
-                        .background(LyraColors.GlassSurface, RoundedCornerShape(16.dp))
+                        .background(LyraColorScheme.surfaceVariant, RoundedCornerShape(16.dp))
                         .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-                Text(text = text, fontSize = 13.sp, color = Color.White)
+                Text(text = text, fontSize = 13.sp, color = LyraColorScheme.onSurfaceVariant)
         }
 }

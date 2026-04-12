@@ -40,7 +40,6 @@ kotlin {
                         implementation(compose.preview)
                         implementation(libs.androidx.activity.compose)
                         implementation(libs.ktor.client.okhttp)
-                        implementation(libs.androidx.browser)
                         implementation(libs.okhttp)
                         implementation(libs.androidx.media3.exoplayer)
                         implementation(libs.androidx.media3.ui)
@@ -59,8 +58,17 @@ kotlin {
 
                 commonMain.dependencies {
                         implementation(project(":core"))
+                        implementation(project(":feature:authorization"))
                         implementation(project(":feature:add_words_extraction"))
                         implementation(project(":feature:translation"))
+                        implementation(project(":feature:lyrics"))
+                        implementation(project(":feature:onboarding"))
+                        implementation(project(":feature:listening_history"))
+                        implementation(project(":feature:learn_words"))
+                        implementation(project(":feature:listening_practice"))
+                        implementation(project(":feature:music_streaming"))
+                        implementation(project(":feature:user_settings"))
+                        implementation(project(":feature:stories_generator"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)
@@ -87,12 +95,10 @@ kotlin {
                         implementation(libs.multiplatform.settings.no.arg)
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
-                        implementation(libs.korio)
                         implementation(libs.basic.sound)
                         implementation(libs.okio)
                         implementation(libs.androidx.room.runtime)
                         implementation(libs.androidx.sqlite.bundled)
-                        implementation(libs.llamatik)
                         implementation(libs.coil3.compose)
                         implementation(libs.coil3.network.ktor3)
                 }

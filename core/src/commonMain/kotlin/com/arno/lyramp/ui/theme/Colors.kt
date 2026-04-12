@@ -54,4 +54,8 @@ object LyraColors {
 
         val ErrorCardBorder = Color(0xFFFFCDD2)
         val ErrorText = Color(0xFFD32F2F)
+
+        val BeginnerDifficulty = Color(0xFF4CAF50)
+        val IntermediateDifficulty = Color(0xFFFF9800)
+        val AdvancedDifficulty = Color(0xFFF44336)
 }

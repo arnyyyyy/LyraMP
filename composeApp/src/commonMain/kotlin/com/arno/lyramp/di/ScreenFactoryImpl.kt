@@ -8,6 +8,8 @@ import com.arno.lyramp.feature.listening_practice.ui.ListeningPracticeScreen
 import com.arno.lyramp.feature.lyrics.ui.LyricsScreen
 import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.onboarding.ui.OnboardingScreen
+import com.arno.lyramp.feature.stories_generator.ui.StoryGeneratorVoyagerScreen
+
 //import com.arno.lyramp.feature.word_suggestions.ui.WordSuggestionsVoyagerScreen
 
 class ScreenFactoryImpl : ScreenFactory {
@@ -47,13 +49,9 @@ class ScreenFactoryImpl : ScreenFactory {
 
         override fun mainScreen(): Screen = MainScreen
 
-        override fun storyGeneratorScreen(): Screen {
-                // AAAA TODO
-                throw NotImplementedError("Story generator screen not yet available")
-        }
+        override fun storyGeneratorScreen(): Screen = StoryGeneratorVoyagerScreen
 
         override fun extractionScreen(): Screen = ExtractionVoyagerScreen // TODO
 
 //        override fun wordSuggestionsScreen(): Screen = WordSuggestionsVoyagerScreen // TODO
 }
-

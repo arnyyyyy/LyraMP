@@ -1,0 +1,19 @@
+<resources>
+    <string name="story_title">Истории</string>
+    <string name="story_subtitle">Генерация историй из ваших слов</string>
+    <string name="select_all">Выбрать все</string>
+    <string name="story_generate">✨ Сгенерировать историю</string>
+    <string name="story_words_used">Слова: %1$s</string>
+    <string name="story_generating">Генерация истории...</string>
+    <string name="story_empty_title">Нет сохранённых слов</string>
+    <string name="story_empty_subtitle">Сохраните слова из песен, чтобы генерировать истории</string>
+    <string name="model_loading">Загрузка модели…</string>
+    <string name="downloading_proc">⬇️ %1$s…</string>
+    <string name="model_default_name">Модель</string>
+    <string name="nums_description">%1$s • %2$s</string>
+    <string name="model_ready">Модель готова • %1$s</string>
+    <string name="model_change">Другая модель</string>
+    <string name="percent">%1$d%</string>
+    <string name="retry">Попробовать снова</string>
+    <string name="back">Назад</string>
+</resources>
