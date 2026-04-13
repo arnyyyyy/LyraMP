@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.lyrics.domain
 
- interface LyricsService {
+internal interface LyricsService {
         val serviceName: String
 
         suspend fun getLyrics(artist: String, song: String, trackId: String? = null): String?

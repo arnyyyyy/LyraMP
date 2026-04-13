@@ -35,7 +35,7 @@ val extractionModule = module {
         single {
                 Extractor(
                         getRecentTracks = get<GetRecentTracksUseCase>(),
-                        lyricsUseCase = get(),
+                        getLyrics = get(),
                         getCefrVocabulary = get(),
                         getShownWords = get(),
                         markAsShown = get(),

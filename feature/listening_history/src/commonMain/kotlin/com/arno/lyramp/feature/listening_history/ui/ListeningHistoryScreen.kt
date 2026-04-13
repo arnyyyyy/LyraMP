@@ -162,6 +162,7 @@ object ShowListeningHistoryScreen : Screen {
                                                         is ListeningHistoryUiState.Success -> {
                                                                 TrackList(
                                                                         tracks = state.tracks,
+                                                                        availableLanguages = AVAILABLE_LANGUAGES,
                                                                         scrollToTopToken = scrollToTopToken.value,
                                                                         onTrackClick = { track ->
                                                                                 navigator.push(
@@ -188,7 +189,10 @@ object ShowListeningHistoryScreen : Screen {
                                                                         },
                                                                         onHideTrack = { track ->
                                                                                 screenModel.hideTrack(track)
-                                                                        }
+                                                                        },
+                                                                        onUpdateLanguage = { track, language ->
+                                                                                screenModel.updateTrackLanguage(track, language)
+                                                                        },
                                                                 )
                                                         }
                                                 }

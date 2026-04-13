@@ -9,8 +9,8 @@ import com.arno.lyramp.feature.extraction.domain.usecase.GetCefrVocabularyUseCas
 import com.arno.lyramp.feature.extraction.domain.usecase.GetShownWordsUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.MarkWordsAsShownUseCase
 import com.arno.lyramp.feature.listening_history.domain.GetRecentTracksUseCase
+import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
-import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 
 internal class Extractor(
         private val getRecentTracks: GetRecentTracksUseCase,
-        private val lyricsUseCase: LyricsUseCase,
+        private val getLyrics: GetLyricsUseCase,
         private val getCefrVocabulary: GetCefrVocabularyUseCase,
         private val getShownWords: GetShownWordsUseCase,
         val markAsShown: MarkWordsAsShownUseCase,
@@ -86,7 +86,7 @@ internal class Extractor(
                 val trackLang = track.language ?: return null
                 val cefrVocab = vocabByLang[trackLang] ?: return null
 
-                val lyricsResult = lyricsUseCase.getLyrics(track.artists, track.name, track.id)
+                val lyricsResult = getLyrics(track.artists, track.name, track.id)
                 val lyrics = when (lyricsResult) {
                         is LyricsResult.Found -> lyricsResult.lyrics
                         else -> return null

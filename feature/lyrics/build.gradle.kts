@@ -7,6 +7,7 @@ plugins {
         alias(libs.plugins.composeCompiler)
         alias(libs.plugins.ksp)
         alias(libs.plugins.serialization)
+        alias(libs.plugins.androidx.room)
 }
 
 kotlin {
@@ -65,6 +66,7 @@ kotlin {
                         implementation(libs.korio)
                         implementation(libs.basic.sound)
                         implementation(libs.okio)
+                        implementation(libs.androidx.room.runtime)
                 }
 
                 commonTest.dependencies {
@@ -91,6 +93,10 @@ dependencies {
         add("kspAndroid", libs.androidx.room.compiler)
         add("kspIosSimulatorArm64", libs.androidx.room.compiler)
         add("kspIosArm64", libs.androidx.room.compiler)
+}
+
+room {
+        schemaDirectory("$projectDir/schemas")
 }
 
 compose.resources {

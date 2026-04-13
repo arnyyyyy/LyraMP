@@ -4,14 +4,14 @@ import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.feature.listening_practice.model.TrackDownloadInfo
 import com.arno.lyramp.feature.listening_practice.presentation.PracticeDataResult
+import com.arno.lyramp.feature.lyrics.domain.GetTimestampedLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
-import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
 import com.arno.lyramp.feature.music_streaming.domain.GetStreamingInfoUseCase
 import com.arno.lyramp.feature.music_streaming.domain.StreamingResult
 
 internal class ListeningPracticeUseCase(
         private val getStreamingInfoUseCase: GetStreamingInfoUseCase,
-        private val lyricsUseCase: LyricsUseCase
+        private val getTimestampedLyrics: GetTimestampedLyricsUseCase
 ) {
         suspend fun loadPracticeData(track: PracticeTrack): PracticeDataResult {
                 val streamingResult = getStreamingInfoUseCase.getStreamingInfo(track.id)
@@ -20,7 +20,7 @@ internal class ListeningPracticeUseCase(
                         StreamingResult.NotFound -> return PracticeDataResult.NoStreaming
                 }
 
-                val lyricsResult = lyricsUseCase.getTimeStampedLyrics(
+                val lyricsResult = getTimestampedLyrics(
                         artist = track.artists.firstOrNull().orEmpty(),
                         song = track.name,
                         trackId = track.id

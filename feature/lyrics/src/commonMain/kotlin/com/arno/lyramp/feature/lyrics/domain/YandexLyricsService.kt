@@ -2,10 +2,10 @@ package com.arno.lyramp.feature.lyrics.domain
 
 import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
 import com.arno.lyramp.feature.lyrics.api.YandexLyricsApi
-import com.arno.lyramp.feature.lyrics.model.LyricsType
+import com.arno.lyramp.feature.lyrics.api.LyricsType
 import com.arno.lyramp.util.Log
 
- class YandexLyricsService(
+internal class YandexLyricsService(
         private val yandexLyricsApi: YandexLyricsApi,
         private val yandexAuthRepository: YandexAuthRepository
 ) : LyricsService {

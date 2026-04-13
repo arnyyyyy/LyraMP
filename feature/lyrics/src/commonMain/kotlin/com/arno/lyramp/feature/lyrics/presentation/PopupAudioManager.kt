@@ -5,7 +5,7 @@ import com.arno.lyramp.feature.translation.model.WordInfo
 import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class PopupAudioManager(
+internal class PopupAudioManager(
         private val getSpeechFilePath: GetSpeechFilePathUseCase,
         private val speechController: TranslationSpeechController = TranslationSpeechController(),
 ) {
@@ -54,4 +54,3 @@ class PopupAudioManager(
                 }
         }
 }
-

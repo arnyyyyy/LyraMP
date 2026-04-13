@@ -1,18 +1,23 @@
 package com.arno.lyramp.feature.lyrics.ui
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -20,13 +25,14 @@ import cafe.adriel.voyager.koin.getScreenModel
 import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.lyrics.presentation.LyricsEvent
 import com.arno.lyramp.feature.lyrics.presentation.LyricsScreenModel
+import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState
 import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.MainFeatureScaffold
-import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.ToolbarActionButton
 import com.arno.lyramp.feature.lyrics.resources.Res
+import com.arno.lyramp.feature.lyrics.resources.enter_text
 import com.arno.lyramp.feature.lyrics.resources.lyrics_loading
-import com.arno.lyramp.feature.lyrics.resources.repeat
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
@@ -64,10 +70,19 @@ class LyricsScreen(
                         subtitle = track.artists.firstOrNull() ?: "",
                         onBack = { navigator.pop() },
                         actions = {
-                                if (screenModel.canShowDifficultyButton) {
-                                        DifficultyHighlightButton(
+                                if (uiState is LyricsUiState.Success) {
+                                        LyricsActionsRow(
+                                                onEditClick = { screenModel.onEvent(LyricsEvent.EditLyrics) },
+                                                showHighlight = screenModel.canShowDifficultyButton,
+                                                highlightEnabled = highlightEnabled,
+                                                onHighlightClick = { screenModel.onEvent(LyricsEvent.DifficultyHighlightToggled) },
+                                        )
+                                } else if (screenModel.canShowDifficultyButton) {
+                                        ToolbarActionButton(
+                                                emoji = "💡",
+                                                onClick = { screenModel.onEvent(LyricsEvent.DifficultyHighlightToggled) },
                                                 isActive = highlightEnabled,
-                                                onClick = { screenModel.onEvent(LyricsEvent.DifficultyHighlightToggled) }
+                                                modifier = Modifier.padding(end = 8.dp),
                                         )
                                 }
                         }
@@ -80,8 +95,15 @@ class LyricsScreen(
                                 is LyricsUiState.Error -> {
                                         ErrorCard(
                                                 message = state.message,
-                                                onRetry = screenModel::loadLyrics,
-                                                retryLabel = stringResource(Res.string.repeat)
+                                                onRetry = { screenModel.onEvent(LyricsEvent.AddLyrics) },
+                                                retryLabel = stringResource(Res.string.enter_text)
+                                        )
+                                }
+
+                                is LyricsUiState.Editing -> {
+                                        LyricsTextEditor(
+                                                initialText = state.initialText,
+                                                onSubmit = { screenModel.onEvent(LyricsEvent.UpdateLyrics(it)) }
                                         )
                                 }
 
@@ -100,20 +122,50 @@ class LyricsScreen(
 }
 
 @Composable
-private fun DifficultyHighlightButton(
-        isActive: Boolean,
-        onClick: () -> Unit,
+private fun LyricsActionsRow(
+        onEditClick: () -> Unit,
+        showHighlight: Boolean,
+        highlightEnabled: Boolean,
+        onHighlightClick: () -> Unit,
 ) {
-        Button(
-                onClick = onClick,
-                modifier = Modifier.size(36.dp).padding(end = 8.dp),
-                shape = CircleShape,
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isActive) LyraColorScheme.primary else LyraColorScheme.surfaceVariant,
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp)
+        var editRevealed by remember { mutableStateOf(!showHighlight) }
+
+        Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (showHighlight) {
+                        Modifier.pointerInput(Unit) {
+                                var totalDrag = 0f
+                                detectHorizontalDragGestures(
+                                        onDragStart = { totalDrag = 0f },
+                                        onDragEnd = {
+                                                if (totalDrag < -20) editRevealed = true
+                                                else if (totalDrag > 20) editRevealed = false
+                                        },
+                                        onHorizontalDrag = { _, dragAmount ->
+                                                totalDrag += dragAmount
+                                        }
+                                )
+                        }
+                } else Modifier
         ) {
-                Text(text = "💡", fontSize = 16.sp)
+                AnimatedVisibility(
+                        visible = editRevealed,
+                        enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+                        exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(),
+                ) {
+                        ToolbarActionButton(
+                                emoji = "✏️",
+                                onClick = onEditClick,
+                                modifier = Modifier.padding(end = 8.dp),
+                        )
+                }
+                if (showHighlight) {
+                        ToolbarActionButton(
+                                emoji = "💡",
+                                onClick = onHighlightClick,
+                                isActive = highlightEnabled,
+                                modifier = Modifier.padding(end = 8.dp),
+                        )
+                }
         }
 }

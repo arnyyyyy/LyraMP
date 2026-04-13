@@ -11,7 +11,7 @@ class ListeningHistoryRepository(
         private val dao: ListeningHistoryDao,
         private val detectLanguage: DetectLanguageUseCase,
 ) {
-        fun getListeningHistory(limit: Int = 20): Flow<List<ListeningHistoryMusicTrack>> = flow {
+        fun getListeningHistory(limit: Int = 50): Flow<List<ListeningHistoryMusicTrack>> = flow {
                 val cachedTracks = dao.getAll()
 
                 if (cachedTracks.isNotEmpty()) {
@@ -36,9 +36,13 @@ class ListeningHistoryRepository(
                 dao.hideTrack(trackId)
         }
 
+        internal suspend fun updateTrackLanguage(trackId: String, language: String) {
+                dao.updateLanguage(trackId, language)
+        }
+
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
-                val freshIds = fresh.mapNotNull { it.id }.toSet()
-                val cachedIds = cached.mapNotNull { it.trackId }.toSet()
+                val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
+                val cachedIds = cached.map { it.trackId ?: "${it.name}||${it.artists}" }.toSet()
 
                 val toDelete = cachedIds - freshIds
                 if (toDelete.isNotEmpty()) {
@@ -47,7 +51,7 @@ class ListeningHistoryRepository(
                         else dao.deleteAll()
                 }
 
-                val toInsert = fresh.filter { it.id !in cachedIds }
+                val toInsert = fresh.filter { (((it.id ?: "${it.name}||${it.artists.joinToString(",")}")) !in cachedIds) }
                 if (toInsert.isNotEmpty())
                         dao.insertAll(toInsert.reversed().map { it.withDetectedLanguage().toEntity() })
         }

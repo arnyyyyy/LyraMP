@@ -1,8 +1,6 @@
 package com.arno.lyramp.feature.lyrics.api
 
 import com.arno.lyramp.core.Secrets
-import com.arno.lyramp.feature.lyrics.model.LyricsType
-import com.arno.lyramp.feature.lyrics.model.YandexLyricsResponse
 import com.arno.lyramp.util.HmacSha256
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -16,7 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
- class YandexLyricsApi(private val client: HttpClient) {
+internal class YandexLyricsApi(private val client: HttpClient) {
         private val json = Json { ignoreUnknownKeys = true }
 
         @OptIn(ExperimentalTime::class)

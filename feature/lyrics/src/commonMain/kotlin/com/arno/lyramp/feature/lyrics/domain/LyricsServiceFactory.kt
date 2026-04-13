@@ -3,9 +3,10 @@ package com.arno.lyramp.feature.lyrics.domain
 import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
 import com.arno.lyramp.util.Log
 
- class LyricsServiceFactory(
+internal class LyricsServiceFactory(
         private val yandexLyricsService: YandexLyricsService,
-        private val lyricsOvhService: LyricsOvhService
+        private val lyricsOvhService: LyricsOvhService,
+        private val geniusLyricsService: GeniusLyricsService
 ) {
         fun getPrimaryService(): LyricsService {
                 val authorizedService = AuthSelectionStorage.lastAuthorizedService
@@ -13,12 +14,17 @@ import com.arno.lyramp.util.Log
 
                 return when (authorizedService) {
                         "YANDEX" -> yandexLyricsService
-                        "SPOTIFY", "APPLE" -> lyricsOvhService
-                        else -> lyricsOvhService
+                        "SPOTIFY", "APPLE" -> geniusLyricsService
+                        else -> geniusLyricsService
                 }
         }
 
         fun getFallbackService(): LyricsService {
-                return lyricsOvhService
+                val authorizedService = AuthSelectionStorage.lastAuthorizedService
+
+                return when (authorizedService) {
+                        "YANDEX" -> geniusLyricsService
+                        else -> lyricsOvhService
+                }
         }
 }

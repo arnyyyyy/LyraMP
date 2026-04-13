@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.lyrics.model
+package com.arno.lyramp.feature.lyrics.api
 
 import kotlinx.serialization.Serializable
 

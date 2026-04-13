@@ -360,3 +360,25 @@ fun LyraFilledButton(
                 Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
 }
+
+@Composable
+fun ToolbarActionButton(
+        emoji: String,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        isActive: Boolean = false,
+        size: Dp = 36.dp,
+) {
+        Button(
+                onClick = onClick,
+                modifier = modifier.size(size),
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isActive) LyraColorScheme.primary else LyraColorScheme.surfaceVariant,
+                ),
+                elevation = ButtonDefaults.buttonElevation(0.dp)
+        ) {
+                Text(text = emoji, fontSize = (size.value * 0.44f).sp)
+        }
+}

@@ -32,7 +32,7 @@ internal class OnboardingScreenModel(
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)
-                                val rawTracks = musicService.getListeningHistory(limit = 200)
+                                val rawTracks = musicService.getListeningHistory(limit = 120)
 
                                 if (rawTracks.isEmpty()) {
                                         _state.value = Error("Не удалось загрузить треки")

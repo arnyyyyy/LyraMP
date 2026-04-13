@@ -1,8 +1,8 @@
-package com.arno.lyramp.feature.lyrics.model
+package com.arno.lyramp.feature.lyrics.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LyricsOvhResponse(
+internal data class LyricsOvhResponse(
         val lyrics: String?
 )

@@ -6,4 +6,8 @@
     <string name="not_found">Не найдено</string>
     <string name="know">Знаю</string>
     <string name="learn">Учить</string>
+    <string name="enter_text">Ввести текст</string>
+    <string name="edit_text">Редактировать текст</string>
+    <string name="paste_lyrics_hint">Вставьте текст песни...</string>
+    <string name="save">Сохранить</string>
 </resources>

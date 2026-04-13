@@ -5,12 +5,14 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.core.model.WordDifficultyProvider
+import com.arno.lyramp.feature.lyrics.data.CustomLyricsRepository
+import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
-import com.arno.lyramp.feature.lyrics.domain.LyricsUseCase
-import com.arno.lyramp.feature.lyrics.ui.LyricsUiState
-import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Loading
-import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Success
-import com.arno.lyramp.feature.lyrics.ui.LyricsUiState.Error
+import com.arno.lyramp.feature.lyrics.domain.LyricsTextParser
+import com.arno.lyramp.feature.lyrics.domain.SaveWordToLearnUseCase
+import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Loading
+import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Success
+import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Error
 import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.translation.model.TranslationResult
@@ -20,12 +22,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LyricsScreenModel(
+internal class LyricsScreenModel(
         private val track: MusicTrack,
-        private val lyricsUseCase: LyricsUseCase,
+        private val getLyrics: GetLyricsUseCase,
+        private val customLyricsRepository: CustomLyricsRepository,
         private val translateWord: TranslateWordWithStateUseCase,
         private val audioManager: PopupAudioManager,
-        private val saveWordToLearn: suspend (word: String, translation: String, sourceLang: String?, trackName: String, artists: List<String>, lyricLine: String) -> Unit,
+        private val saveWordToLearn: SaveWordToLearnUseCase,
+        private val lyricsTextParser: LyricsTextParser,
         private val wordDifficultyProvider: WordDifficultyProvider? = null,
         getSelectedLanguage: GetSelectedLanguageUseCase? = null,
 ) : ScreenModel {
@@ -58,12 +62,17 @@ class LyricsScreenModel(
                 screenModelScope.launch {
                         _uiState.value = Loading
                         try {
-                                when (val result = lyricsUseCase.getLyrics(
-                                        track.artists.joinToString(", "),
-                                        track.name,
-                                        track.id
-                                )) {
-                                        is LyricsResult.Found -> _uiState.value = Success(parseLyricsLines(result.lyrics))
+                                val artist = track.artists.joinToString(", ")
+                                val song = track.name
+
+                                val cached = customLyricsRepository.getCustomLyrics(artist, song)
+                                if (!cached.isNullOrBlank()) {
+                                        _uiState.value = Success(lyricsTextParser.parse(cached))
+                                        return@launch
+                                }
+
+                                when (val result = getLyrics(artist, song, track.id)) {
+                                        is LyricsResult.Found -> _uiState.value = Success(lyricsTextParser.parse(result.lyrics))
                                         LyricsResult.NotFound -> _uiState.value = Error("Текст песни не найден")
                                 }
                         } catch (e: Throwable) {
@@ -71,12 +80,6 @@ class LyricsScreenModel(
                         }
                 }
         }
-
-        private fun parseLyricsLines(lyrics: String): List<List<String>> =
-                lyrics.split("\n").map { line ->
-                        if (line.isBlank()) emptyList()
-                        else line.split(Regex("\\s+")).filter { it.isNotEmpty() }
-                }
 
         fun onEvent(event: LyricsEvent) {
                 when (event) {
@@ -88,7 +91,28 @@ class LyricsScreenModel(
                         LyricsEvent.Audio.SlowModeToggled -> audioManager.toggleSlowMode(_popupState)
                         LyricsEvent.SaveWordRequested -> onSaveWord()
                         LyricsEvent.DifficultyHighlightToggled -> toggleDifficultyHighlight()
+                        LyricsEvent.AddLyrics -> _uiState.value = LyricsUiState.Editing()
+                        LyricsEvent.EditLyrics -> onEditLyricsRequested()
+                        is LyricsEvent.UpdateLyrics -> onManualLyricsSubmitted(event.lyrics)
                 }
+        }
+
+        private fun onManualLyricsSubmitted(lyrics: String) {
+                if (lyrics.isBlank()) return
+                screenModelScope.launch {
+                        customLyricsRepository.saveCustomLyrics(
+                                artist = track.artists.joinToString(", "),
+                                song = track.name,
+                                lyrics = lyrics
+                        )
+                        _uiState.value = Success(lyricsTextParser.parse(lyrics))
+                }
+        }
+
+        private fun onEditLyricsRequested() {
+                val current = (_uiState.value as? Success) ?: return
+                val lyricsText = current.lyricsLines.joinToString("\n") { it.joinToString(" ") }
+                _uiState.value = LyricsUiState.Editing(initialText = lyricsText)
         }
 
         private fun toggleDifficultyHighlight() {
@@ -189,12 +213,12 @@ class LyricsScreenModel(
                 val translation = current.translationResult.translation ?: return
                 screenModelScope.launch {
                         saveWordToLearn(
-                                current.text,
-                                translation,
-                                current.translationResult.sourceLanguage,
-                                track.name,
-                                track.artists,
-                                current.lyricLine,
+                                word = current.text,
+                                translation = translation,
+                                sourceLang = current.translationResult.sourceLanguage,
+                                trackName = track.name,
+                                artists = track.artists,
+                                lyricLine = current.lyricLine,
                         )
                 }
                 dismissPopup()
