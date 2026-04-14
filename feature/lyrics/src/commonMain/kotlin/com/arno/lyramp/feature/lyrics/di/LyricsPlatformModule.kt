@@ -33,7 +33,7 @@ val lyricsModule = module {
         single { LyricsOvhService(get()) }
         single { GeniusHtmlParser() }
         single { GeniusLyricsService(get(), get()) }
-        single { LyricsServiceFactory(get(), get(), get()) }
+        single { LyricsServiceFactory(get(), get(), get(), get()) }
 
         single { GetLyricsUseCase(get()) }
         single { GetTimestampedLyricsUseCase(get()) }

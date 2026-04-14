@@ -1,12 +1,12 @@
 package com.arno.lyramp.feature.authorization.domain
 
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
-import com.arno.lyramp.feature.authorization.repository.PlaylistUrlRepository
+import com.arno.lyramp.feature.authorization.data.AppleAuthRepository
+import com.arno.lyramp.feature.authorization.data.OptionalPlaylistRepository
 
-class GetAuthPlaylistUrlUseCase internal constructor(
+class GetAuthPlaylistUseCase internal constructor(
         private val appleRepo: AppleAuthRepository,
-        private val playlistRepo: PlaylistUrlRepository,
+        private val playlistRepo: OptionalPlaylistRepository,
 ) {
         operator fun invoke(service: MusicServiceType) = when (service) {
                 MusicServiceType.APPLE -> appleRepo.getPlaylistUrl()

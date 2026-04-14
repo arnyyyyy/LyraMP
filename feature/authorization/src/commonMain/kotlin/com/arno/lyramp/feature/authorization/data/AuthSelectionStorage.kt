@@ -1,8 +1,8 @@
-package com.arno.lyramp.feature.authorization.repository
+package com.arno.lyramp.feature.authorization.data
 
 import com.russhwolf.settings.Settings
 
-object AuthSelectionStorage {
+internal object AuthSelectionStorage {
         private val settings = Settings()
 
         var lastAuthorizedService: String?

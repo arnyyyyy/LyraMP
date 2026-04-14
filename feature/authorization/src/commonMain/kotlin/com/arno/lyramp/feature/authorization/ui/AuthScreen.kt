@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
@@ -87,7 +87,7 @@ object AuthScreen : Screen {
                                                 }
                                         }
 
-                                        AuthNews.NavigateToAppleEnterPlaylist -> {
+                                        AuthNews.NavigateToApplePlaylistInput -> {
                                                 try {
                                                         navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
                                                 } catch (e: Throwable) {
@@ -95,7 +95,7 @@ object AuthScreen : Screen {
                                                 }
                                         }
 
-                                        AuthNews.NavigateToPlaylistInput -> {
+                                        AuthNews.NavigateToOptionalPlaylistInput -> {
                                                 try {
                                                         navigator?.push(AuthPlaylistScreen(MusicServiceType.NONE))
                                                 } catch (e: Throwable) {

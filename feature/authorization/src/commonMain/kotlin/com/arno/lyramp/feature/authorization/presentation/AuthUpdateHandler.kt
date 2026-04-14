@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.authorization.presentation
 
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 
 internal class AuthUpdateHandler {
         fun handle(state: AuthState, update: AuthUpdate): AuthCommand {
@@ -21,13 +21,13 @@ internal class AuthUpdateHandler {
                                         MusicServiceType.APPLE ->
                                                 AuthCommand(
                                                         state = state.copy(isLoading = false),
-                                                        news = AuthNews.NavigateToAppleEnterPlaylist
+                                                        news = AuthNews.NavigateToApplePlaylistInput
                                                 )
 
                                         MusicServiceType.NONE ->
                                                 AuthCommand(
                                                         state = state.copy(isLoading = false),
-                                                        news = AuthNews.NavigateToPlaylistInput
+                                                        news = AuthNews.NavigateToOptionalPlaylistInput
                                                 )
                                 }
                         }

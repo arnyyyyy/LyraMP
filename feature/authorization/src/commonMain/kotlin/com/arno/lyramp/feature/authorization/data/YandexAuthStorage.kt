@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.authorization.repository
+package com.arno.lyramp.feature.authorization.data
 
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
@@ -6,7 +6,6 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 internal class YandexAuthStorage(private val settings: Settings) {
-
         var accessToken: String?
                 get() = settings.getStringOrNull(ACCESS_TOKEN_KEY)
                 set(value) {

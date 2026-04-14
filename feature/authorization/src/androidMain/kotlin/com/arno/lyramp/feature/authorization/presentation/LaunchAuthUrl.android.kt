@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.authorization.presentation
 
 import android.content.Context
 import android.content.Intent
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthActivity
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

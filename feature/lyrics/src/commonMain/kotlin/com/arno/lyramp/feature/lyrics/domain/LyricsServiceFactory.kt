@@ -1,15 +1,16 @@
 package com.arno.lyramp.feature.lyrics.domain
 
-import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
+import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.util.Log
 
 internal class LyricsServiceFactory(
         private val yandexLyricsService: YandexLyricsService,
         private val lyricsOvhService: LyricsOvhService,
-        private val geniusLyricsService: GeniusLyricsService
+        private val geniusLyricsService: GeniusLyricsService,
+        private val getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
 ) {
         fun getPrimaryService(): LyricsService {
-                val authorizedService = AuthSelectionStorage.lastAuthorizedService
+                val authorizedService = getLastAuthorizedService()
                 Log.logger.d("AAAAALast authorized service: $authorizedService")
 
                 return when (authorizedService) {
@@ -20,7 +21,7 @@ internal class LyricsServiceFactory(
         }
 
         fun getFallbackService(): LyricsService {
-                val authorizedService = AuthSelectionStorage.lastAuthorizedService
+                val authorizedService = getLastAuthorizedService()
 
                 return when (authorizedService) {
                         "YANDEX" -> geniusLyricsService

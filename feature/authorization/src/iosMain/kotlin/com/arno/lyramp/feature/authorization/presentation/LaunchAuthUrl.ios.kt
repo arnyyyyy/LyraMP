@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.authorization.presentation
 
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.yandex.launchYandexAuthWebView
 
 actual fun launchAuthUrl(url: String, service: MusicServiceType) {

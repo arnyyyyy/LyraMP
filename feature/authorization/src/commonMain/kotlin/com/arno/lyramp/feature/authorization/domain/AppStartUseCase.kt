@@ -1,8 +1,8 @@
 package com.arno.lyramp.feature.authorization.domain
 
-import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
-import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
-import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
+import com.arno.lyramp.feature.authorization.data.AppleAuthRepository
+import com.arno.lyramp.feature.authorization.data.AuthSelectionStorage
+import com.arno.lyramp.feature.authorization.data.YandexAuthRepository
 
 class AppStartUseCase internal constructor(
         private val yandexRepo: YandexAuthRepository,

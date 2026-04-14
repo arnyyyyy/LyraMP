@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.listening_history.domain
 
-import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
+import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.mapper.YandexTracksMapper
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
@@ -8,15 +9,15 @@ import com.arno.lyramp.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
- class YandexMusicService(
-        private val authRepo: YandexAuthRepository,
+class YandexMusicService(
+        private val authToken: ProvideAuthTokenUseCase,
         private val api: YandexMusicApi
 ) : MusicService {
         private val tracksMapper = YandexTracksMapper()
 
         override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> =
                 withContext(Dispatchers.Default) {
-                        val token = authRepo.provideValidAccessToken()
+                        val token = authToken(MusicServiceType.YANDEX)
                         if (token == null) error("YandexMusicService: No valid access token available!")
 
                         runCatching {

@@ -1,6 +1,6 @@
-package com.arno.lyramp.feature.authorization.repository
+package com.arno.lyramp.feature.authorization.data
 
-interface AuthPlaylistRepository {
+internal interface AuthPlaylistRepository {
         fun hasPlaylist(): Boolean
         fun getPlaylistUrl(): String?
         fun savePlaylistUrl(url: String?)

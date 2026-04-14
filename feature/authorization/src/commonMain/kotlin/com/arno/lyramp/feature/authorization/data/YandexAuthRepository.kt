@@ -1,24 +1,17 @@
-package com.arno.lyramp.feature.authorization.repository
+package com.arno.lyramp.feature.authorization.data
 
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.russhwolf.settings.Settings
 import com.arno.lyramp.util.Log
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class YandexAuthRepository(settings: Settings) : AuthApiRepository {
-
+internal class YandexAuthRepository(settings: Settings) {
         private val storage = YandexAuthStorage(settings)
+        val service: MusicServiceType = MusicServiceType.YANDEX
 
-        override val service: MusicServiceType = MusicServiceType.YANDEX
-
-        override fun getAccessToken(): String? = storage.accessToken
-
-        override fun getRefreshToken(): String? = getAccessToken()
-
-        override suspend fun refreshAccessToken(): String? = null
-
-        override suspend fun provideValidAccessToken(): String? {
+        fun getAccessToken(): String? = storage.accessToken
+        fun provideValidAccessToken(): String? {
                 val token = getAccessToken()
                 if (token.isNullOrBlank()) return null
                 if (storage.isTokenValid()) return token
@@ -26,11 +19,11 @@ class YandexAuthRepository(settings: Settings) : AuthApiRepository {
         }
 
         // TODO ОГРОМНЫЙ
-        override suspend fun initAuthFlow(): String {
+        fun initAuthFlow(): String {
                 return YANDEX_AUTH_URL
         }
 
-        override suspend fun handleAuthCallback(code: String) {
+        fun handleAuthCallback(code: String) {
                 try {
                         val token = code.substringBefore("_token_expiresIn_")
                         val expiresInStr = code.substringAfter("_token_expiresIn_")

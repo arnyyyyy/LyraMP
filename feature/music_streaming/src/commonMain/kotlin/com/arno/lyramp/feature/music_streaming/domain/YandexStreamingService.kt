@@ -1,13 +1,14 @@
 package com.arno.lyramp.feature.music_streaming.domain
 
-import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
+import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.music_streaming.api.YandexStreamingApi
 import com.arno.lyramp.feature.music_streaming.model.StreamingTrackInfo
 import com.arno.lyramp.util.Log
 
- class YandexStreamingService(
+class YandexStreamingService(
         private val yandexStreamingApi: YandexStreamingApi,
-        private val yandexAuthRepository: YandexAuthRepository
+        private val authToken: ProvideAuthTokenUseCase,
 ) : StreamingService {
 
         override val serviceName: String = "Yandex.Music"
@@ -15,7 +16,7 @@ import com.arno.lyramp.util.Log
         override suspend fun getTrackStreamingInfo(
                 trackId: String
         ): StreamingTrackInfo? {
-                val token = yandexAuthRepository.provideValidAccessToken() ?: return null
+                val token = authToken(MusicServiceType.YANDEX) ?: return null
 
                 return runCatching {
                         val downloadInfo = yandexStreamingApi.getTrackDownloadInfo(token, trackId)
