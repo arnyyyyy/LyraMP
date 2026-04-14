@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.translation.domain
 
 private val cyrillicRegex = Regex("[\u0400-\u04FF]")
 
-class DetectLanguageUseCase(private val translationRepository: TranslationRepository) {
+class DetectLanguageUseCase internal constructor(private val translationRepository: TranslationRepository) {
         suspend operator fun invoke(text: String): String? {
                 if (cyrillicRegex.containsMatchIn(text)) return "ru"
                 return try {

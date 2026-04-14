@@ -1,6 +1,5 @@
-package com.arno.lyramp.feature.translation.domain
+package com.arno.lyramp.feature.translation.api
 
-import com.arno.lyramp.feature.translation.model.TranslationResult
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive

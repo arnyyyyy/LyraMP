@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.translation.domain
 
-class TranslateWordUseCase(
+class TranslateWordUseCase internal constructor(
         private val translationRepository: TranslationRepository
 ) {
         suspend operator fun invoke(word: String): String {

@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.lyrics.presentation
 
-import com.arno.lyramp.feature.translation.model.TranslationResult
+import com.arno.lyramp.feature.translation.api.TranslationResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 

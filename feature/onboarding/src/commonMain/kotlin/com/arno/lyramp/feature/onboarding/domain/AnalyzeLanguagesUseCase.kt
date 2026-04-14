@@ -1,8 +1,8 @@
 package com.arno.lyramp.feature.onboarding.domain
 
 import com.arno.lyramp.core.model.MusicTrack
+import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
-import com.arno.lyramp.feature.translation.domain.TranslationRepository
 import com.arno.lyramp.util.Log
 
 internal data class AnalysisResult(
@@ -13,7 +13,7 @@ internal data class AnalysisResult(
 private val cyrillicRegex = Regex("[\u0400-\u04FF]")
 
 internal class AnalyzeLanguagesUseCase(
-        private val translationRepository: TranslationRepository
+        private val translateWordWithState: TranslateWordWithStateUseCase
 ) {
         suspend operator fun invoke(tracks: List<MusicTrack>): AnalysisResult {
                 val languageCounts = mutableMapOf<String, Int>()
@@ -24,7 +24,7 @@ internal class AnalyzeLanguagesUseCase(
                         .take(35)
                         .forEach { track ->
                                 try {
-                                        val result = translationRepository.translateWord(track.name)
+                                        val result = translateWordWithState(track.name)
                                         if (result is TranslationState.Success) {
                                                 result.translationWithLang.sourceLanguage?.let { lang ->
                                                         languageCounts[lang] = (languageCounts[lang] ?: 0) + 1

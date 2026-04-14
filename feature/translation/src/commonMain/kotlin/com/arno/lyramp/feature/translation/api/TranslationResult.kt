@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.translation.model
+package com.arno.lyramp.feature.translation.api
 
 data class TranslationResult(
         val translation: String?,

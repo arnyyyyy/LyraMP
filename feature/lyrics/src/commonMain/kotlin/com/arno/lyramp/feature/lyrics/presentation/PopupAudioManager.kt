@@ -1,7 +1,7 @@
 package com.arno.lyramp.feature.lyrics.presentation
 
 import com.arno.lyramp.feature.translation.domain.GetSpeechFilePathUseCase
-import com.arno.lyramp.feature.translation.model.WordInfo
+import com.arno.lyramp.feature.translation.domain.WordInfo
 import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.flow.MutableStateFlow
 

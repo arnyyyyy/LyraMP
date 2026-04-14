@@ -8,7 +8,7 @@ import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
-import com.arno.lyramp.feature.translation.domain.TranslationRepository
+import com.arno.lyramp.feature.translation.domain.GetSpeechFilePathUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
@@ -38,7 +38,7 @@ val learnWordsModule = module {
                         language = language,
                         cefrGroup = cefrGroup,
                         repository = get(),
-                        translationRepository = get<TranslationRepository>(),
+                        getSpeechFilePath = get<GetSpeechFilePathUseCase>(),
                         classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
                 )
         }

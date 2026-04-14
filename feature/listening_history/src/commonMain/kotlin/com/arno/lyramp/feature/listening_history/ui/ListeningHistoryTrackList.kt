@@ -145,12 +145,10 @@ private fun SwipeableTrackItem(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
                 ) {
-                        // Фон с двумя кнопками действий
                         Row(
                                 modifier = Modifier.matchParentSize(),
                                 horizontalArrangement = Arrangement.End
                         ) {
-                                // Кнопка смены языка (синяя)
                                 Box(
                                         modifier = Modifier
                                                 .fillMaxHeight()
@@ -167,7 +165,6 @@ private fun SwipeableTrackItem(
                                         Text(text = "🌍", fontSize = 24.sp)
                                 }
 
-                                // Кнопка скрытия (красная)
                                 Box(
                                         modifier = Modifier
                                                 .fillMaxHeight()
@@ -186,7 +183,6 @@ private fun SwipeableTrackItem(
                                 }
                         }
 
-                        // Основная карточка (сдвигается влево)
                         Box(
                                 modifier = Modifier
                                         .fillMaxWidth()

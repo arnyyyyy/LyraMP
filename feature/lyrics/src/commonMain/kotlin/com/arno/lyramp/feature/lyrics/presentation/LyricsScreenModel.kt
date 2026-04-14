@@ -13,9 +13,9 @@ import com.arno.lyramp.feature.lyrics.domain.SaveWordToLearnUseCase
 import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Loading
 import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Success
 import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Error
+import com.arno.lyramp.feature.translation.api.TranslationResult
 import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
-import com.arno.lyramp.feature.translation.model.TranslationResult
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,36 +1,32 @@
 package com.arno.lyramp.feature.translation.domain
 
 import com.arno.lyramp.feature.translation.api.GoogleTranslationApi
-import com.arno.lyramp.feature.translation.model.WordInfo
+import com.arno.lyramp.feature.translation.api.GoogleTranslationParser
 import com.arno.lyramp.util.AudioFileManager
 import io.ktor.client.HttpClient
-import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
-class TranslationRepository(httpClient: HttpClient) {
+internal class TranslationRepository(httpClient: HttpClient) {
         private val api by lazy { GoogleTranslationApi(httpClient) }
         private val parser by lazy { GoogleTranslationParser() }
 
         private val audioFileManager = AudioFileManager()
 
+        // NB: без контекста, так как Ktor сам переключает контекст
         suspend fun translateWord(word: String): TranslationState {
-                return withContext(Dispatchers.IO) {
-                        if (word.isBlank()) return@withContext TranslationState.EmptyWord
-                        try {
-                                val raw = api.getTranslationRaw(word)
-                                val result = parser.parse(raw)
+                if (word.isBlank()) return TranslationState.EmptyWord
+                return try {
+                        val raw = api.getTranslationRaw(word)
+                        val result = parser.parse(raw)
 
-                                when {
-                                        result.translation.isNullOrBlank() -> TranslationState.Error("Перевод не найден")
-                                        else -> TranslationState.Success(result)
-                                }
-                        } catch (_: SocketTimeoutException) {
-                                TranslationState.Error("Превышено время ожидания")
-                        } catch (e: Exception) {
-                                TranslationState.Error(e.message ?: "Не удалось найти перевод")
+                        when {
+                                result.translation.isNullOrBlank() -> TranslationState.Error("Перевод не найден")
+                                else -> TranslationState.Success(result)
                         }
+                } catch (e: Exception) {
+                        TranslationState.Error(e.message ?: "Не удалось найти перевод")
                 }
         }
 
@@ -53,5 +49,4 @@ class TranslationRepository(httpClient: HttpClient) {
                         }
                 }
         }
-        
 }
