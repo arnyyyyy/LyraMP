@@ -2,8 +2,6 @@ package com.arno.lyramp.feature.authorization.presentation
 
 import android.content.Context
 import android.content.Intent
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.core.net.toUri
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthActivity
 import org.koin.core.component.KoinComponent
@@ -21,12 +19,6 @@ actual fun launchAuthUrl(url: String, service: MusicServiceType) {
                         context.startActivity(intent)
                 }
 
-                MusicServiceType.SPOTIFY -> {
-                        val customTabsIntent = CustomTabsIntent.Builder().build().apply {
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        }
-                        customTabsIntent.launchUrl(context, url.toUri())
-                }
 
                 else -> error("Unsupported music service: $service")
         }

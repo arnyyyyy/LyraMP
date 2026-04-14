@@ -14,7 +14,7 @@ internal class LyricsServiceFactory(
 
                 return when (authorizedService) {
                         "YANDEX" -> yandexLyricsService
-                        "SPOTIFY", "APPLE" -> geniusLyricsService
+                        "APPLE" -> geniusLyricsService
                         else -> geniusLyricsService
                 }
         }

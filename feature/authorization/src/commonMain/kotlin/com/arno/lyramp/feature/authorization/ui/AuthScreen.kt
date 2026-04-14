@@ -3,6 +3,7 @@ package com.arno.lyramp.feature.authorization.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +40,6 @@ import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
 import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
-import com.arno.lyramp.feature.authorization.presentation.spotify.SpotifyAuthHolder
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthHolder
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.core.navigation.ScreenFactory
@@ -52,7 +52,6 @@ import com.arno.lyramp.feature.authorization.resources.Res
 import com.arno.lyramp.feature.authorization.resources.apple_icon
 import com.arno.lyramp.feature.authorization.resources.auth_continue_without_auth
 import com.arno.lyramp.feature.authorization.resources.auth_select_service
-import com.arno.lyramp.feature.authorization.resources.spotify_icon
 import com.arno.lyramp.feature.authorization.resources.yandex_icon
 import org.koin.compose.koinInject
 
@@ -65,18 +64,6 @@ object AuthScreen : Screen {
                 val screenFactory: ScreenFactory = koinInject()
 
                 val state by screenModel.state.collectAsState()
-
-                // TODO: подумать, как можно вынести
-                LaunchedEffect(Unit) {
-                        SpotifyAuthHolder.authCodeFlow.collect { code ->
-                                screenModel.onEvent(
-                                        AuthEvent.OnAuthCodeReceived(
-                                                service = MusicServiceType.SPOTIFY,
-                                                code = code
-                                        )
-                                )
-                        }
-                }
 
                 LaunchedEffect(Unit) {
                         YandexAuthHolder.authResultFlow.collect { result ->
@@ -105,6 +92,14 @@ object AuthScreen : Screen {
                                                         navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
                                                 } catch (e: Throwable) {
                                                         Log.logger.e(e) { "$TAG: navigation to Apple screen" }
+                                                }
+                                        }
+
+                                        AuthNews.NavigateToPlaylistInput -> {
+                                                try {
+                                                        navigator?.push(AuthPlaylistScreen(MusicServiceType.NONE))
+                                                } catch (e: Throwable) {
+                                                        Log.logger.e(e) { "$TAG: navigation to Playlist input screen" }
                                                 }
                                         }
 
@@ -191,7 +186,11 @@ object AuthScreen : Screen {
                                                                 fontSize = 16.sp,
                                                                 fontWeight = FontWeight.Bold,
                                                                 color = LyraColors.OnGlassCardSecondary,
-                                                                modifier = Modifier.padding(top = 14.dp),
+                                                                modifier = Modifier
+                                                                        .padding(top = 14.dp)
+                                                                        .clickable {
+                                                                                onAuthClick(MusicServiceType.NONE)
+                                                                        },
                                                                 style = TextStyle(textDecoration = TextDecoration.Underline)
                                                         )
                                                 }
@@ -210,10 +209,10 @@ object AuthScreen : Screen {
         }
 
         val authTypes = listOf(
-                Triple(
-                        MusicServiceType.SPOTIFY, Res.drawable.spotify_icon,
-                        LyraColors.Spotify.copy(alpha = 0.12f)
-                ),
+//                Triple(
+//                        MusicServiceType.SPOTIFY, Res.drawable.spotify_icon,
+//                        LyraColors.Spotify.copy(alpha = 0.12f)
+//                ),
                 Triple(
                         MusicServiceType.YANDEX, Res.drawable.yandex_icon,
                         LyraColors.Yandex.copy(alpha = 0.12f)

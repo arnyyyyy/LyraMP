@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.authorization.presentation
 
 import com.arno.lyramp.feature.authorization.model.MusicServiceType
 
-class AuthUpdateHandler {
+internal class AuthUpdateHandler {
         fun handle(state: AuthState, update: AuthUpdate): AuthCommand {
                 return when (update) {
                         AuthUpdate.Loading -> AuthCommand(state = state.copy(isLoading = true, error = null))
@@ -12,12 +12,6 @@ class AuthUpdateHandler {
 
                         is AuthUpdate.SuccessNavigate -> {
                                 when (update.musicService) {
-                                        MusicServiceType.SPOTIFY ->
-                                                AuthCommand(
-                                                        state = state.copy(isLoading = false),
-                                                        news = AuthNews.NavigateToOnboarding
-                                                )
-
                                         MusicServiceType.YANDEX ->
                                                 AuthCommand(
                                                         state = state.copy(isLoading = false),
@@ -28,6 +22,12 @@ class AuthUpdateHandler {
                                                 AuthCommand(
                                                         state = state.copy(isLoading = false),
                                                         news = AuthNews.NavigateToAppleEnterPlaylist
+                                                )
+
+                                        MusicServiceType.NONE ->
+                                                AuthCommand(
+                                                        state = state.copy(isLoading = false),
+                                                        news = AuthNews.NavigateToPlaylistInput
                                                 )
                                 }
                         }

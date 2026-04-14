@@ -2,11 +2,9 @@ package com.arno.lyramp.feature.authorization.domain
 
 import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
 import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
-import com.arno.lyramp.feature.authorization.repository.SpotifyAuthRepository
 import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
 
- class AppStartUseCase(
-        private val spotifyRepo: SpotifyAuthRepository,
+class AppStartUseCase internal constructor(
         private val yandexRepo: YandexAuthRepository,
         private val appleRepo: AppleAuthRepository
 ) {
@@ -15,9 +13,9 @@ import com.arno.lyramp.feature.authorization.repository.YandexAuthRepository
 
                 return when {
                         auth == null -> AppStartDestination.Authorization
-                        auth == "SPOTIFY" && !spotifyRepo.getAccessToken().isNullOrEmpty() -> AppStartDestination.ShowListeningHistory
                         auth == "YANDEX" && !yandexRepo.getAccessToken().isNullOrEmpty() -> AppStartDestination.ShowListeningHistory
                         auth == "APPLE" && appleRepo.hasPlaylist() -> AppStartDestination.ShowListeningHistory
+                        auth == "NONE" -> AppStartDestination.ShowListeningHistory
                         else -> AppStartDestination.Authorization
                 }
         }
