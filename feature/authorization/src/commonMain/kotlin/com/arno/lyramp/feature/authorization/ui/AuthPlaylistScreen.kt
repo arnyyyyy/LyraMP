@@ -30,14 +30,21 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.arno.lyramp.core.navigation.ScreenFactory
-import com.arno.lyramp.feature.authorization.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.repository.AppleAuthRepository
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
+import com.arno.lyramp.feature.authorization.domain.SaveAuthPlaylistUrlUseCase
+import com.arno.lyramp.feature.authorization.domain.SkipAuthorizationUseCase
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.StoryProgressBar
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.resources.Res
+import com.arno.lyramp.feature.authorization.resources.add_playlist
+import com.arno.lyramp.feature.authorization.resources.apple_music
+import com.arno.lyramp.feature.authorization.resources.auth_playlist
 import com.arno.lyramp.feature.authorization.resources.auth_playlist_link_label
 import com.arno.lyramp.feature.authorization.resources.continue_next
+import com.arno.lyramp.feature.authorization.resources.continue_skip
+import com.arno.lyramp.ui.theme.LyraOnSurfaceVariant
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -46,16 +53,38 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
         override fun Content() {
                 val navigator = LocalNavigator.current
                 val screenFactory: ScreenFactory = koinInject()
+                val getPlaylistUrl: GetAuthPlaylistUseCase = koinInject()
+                val savePlaylistUrl: SaveAuthPlaylistUrlUseCase = koinInject()
+                val skipAuth: SkipAuthorizationUseCase = koinInject()
+
                 when (service) {
                         MusicServiceType.APPLE -> {
-                                val repo: AppleAuthRepository = koinInject()
                                 AuthPlaylistScreenContent(
-                                        title = "Apple Music",
-                                        initialUrl = repo.getPlaylistUrl() ?: "",
+                                        title = stringResource(Res.string.apple_music),
+                                        initialUrl = getPlaylistUrl(service) ?: "",
                                         buttonColor = LyraColors.AppleMusic,
+                                        showSkip = false,
                                         onContinue = { url ->
-                                                repo.savePlaylistUrl(url.takeIf { it.isNotBlank() })
+                                                savePlaylistUrl(service, url.takeIf { it.isNotBlank() })
                                                 navigator?.push(screenFactory.onboardingScreen())
+                                        },
+                                        onSkip = {}
+                                )
+                        }
+
+                        MusicServiceType.NONE -> {
+                                AuthPlaylistScreenContent(
+                                        title = stringResource(Res.string.add_playlist),
+                                        initialUrl = getPlaylistUrl(service) ?: "",
+                                        buttonColor = LyraOnSurfaceVariant,
+                                        showSkip = true,
+                                        onContinue = { url ->
+                                                savePlaylistUrl(service, url.takeIf { it.isNotBlank() })
+                                                navigator?.push(screenFactory.onboardingScreen())
+                                        },
+                                        onSkip = {
+                                                skipAuth()
+                                                navigator?.replaceAll(screenFactory.mainScreen())
                                         }
                                 )
                         }
@@ -71,7 +100,9 @@ private fun AuthPlaylistScreenContent(
         title: String,
         initialUrl: String,
         buttonColor: Color,
-        onContinue: (String) -> Unit
+        showSkip: Boolean = false,
+        onContinue: (String) -> Unit,
+        onSkip: () -> Unit = {}
 ) {
         var playlistUrl by remember { mutableStateOf(initialUrl) }
 
@@ -106,7 +137,7 @@ private fun AuthPlaylistScreenContent(
                                                                 value = playlistUrl,
                                                                 onValueChange = { playlistUrl = it },
                                                                 modifier = Modifier.fillMaxWidth(),
-                                                                label = { Text(stringResource(Res.string.auth_playlist_link_label)) },
+                                                                label = { Text(if (showSkip) stringResource(Res.string.auth_playlist) else stringResource(Res.string.auth_playlist_link_label)) },
                                                                 colors = OutlinedTextFieldDefaults.colors(
                                                                         focusedBorderColor = LyraColors.OnGlassCardSecondary,
                                                                         unfocusedBorderColor = LyraColors.OnGlassCardSecondary,
@@ -119,17 +150,23 @@ private fun AuthPlaylistScreenContent(
                                                         )
 
                                                         Button(
-                                                                onClick = { onContinue(playlistUrl) },
+                                                                onClick = {
+                                                                        if (playlistUrl.isBlank() && showSkip) {
+                                                                                onSkip()
+                                                                        } else {
+                                                                                onContinue(playlistUrl)
+                                                                        }
+                                                                },
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 colors = ButtonDefaults.buttonColors(
                                                                         containerColor = buttonColor,
                                                                         contentColor = Color.White
                                                                 ),
                                                                 shape = RoundedCornerShape(12.dp),
-                                                                enabled = playlistUrl.isNotBlank()
+                                                                enabled = playlistUrl.isNotBlank() || showSkip
                                                         ) {
                                                                 Text(
-                                                                        stringResource(Res.string.continue_next),
+                                                                        if (playlistUrl.isEmpty() && showSkip) stringResource(Res.string.continue_skip) else stringResource(Res.string.continue_next),
                                                                         modifier = Modifier.padding(vertical = 8.dp),
                                                                         fontSize = 16.sp,
                                                                         fontWeight = FontWeight.SemiBold

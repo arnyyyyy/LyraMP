@@ -4,4 +4,8 @@
     <string name="auth_continue_without_auth">Продолжить без авторизации</string>
     <string name="auth_playlist_link_label">Ссылка на плейлист</string>
     <string name="continue_next">Продолжить</string>
+    <string name="continue_skip">Пропустить</string>
+    <string name="auth_playlist">Apple Music или Yandex Music</string>
+    <string name="add_playlist">Добавить плейлист</string>
+    <string name="apple_music">Apple Music</string>
 </resources>
