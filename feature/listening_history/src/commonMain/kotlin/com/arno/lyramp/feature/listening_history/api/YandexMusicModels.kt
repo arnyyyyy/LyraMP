@@ -1,10 +1,10 @@
-package com.arno.lyramp.feature.listening_history.model
+package com.arno.lyramp.feature.listening_history.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AccountStatusResponse(
+internal data class AccountStatusResponse(
         val result: AccountResult?
 ) {
         @Serializable
@@ -31,7 +31,7 @@ data class AccountStatusResponse(
 }
 
 @Serializable
-data class LikedTracksResponse(
+internal data class LikedTracksResponse(
         val result: LikedTracksResult?
 ) {
         @Serializable
@@ -46,7 +46,7 @@ data class LikedTracksResponse(
 }
 
 @Serializable
-data class YandexTrackItem(
+internal data class YandexTrackItem(
         val id: String? = null,
         @SerialName("albumId")
         val albumId: String? = null,
@@ -55,7 +55,7 @@ data class YandexTrackItem(
 )
 
 @Serializable
- data class YandexTrack(
+internal data class YandexTrack(
         val id: String? = null,
         val title: String = "",
         val artists: List<YandexArtist>? = null,
@@ -75,18 +75,18 @@ data class YandexTrackItem(
 }
 
 @Serializable
- data class TracksResponseWrapper(
+internal data class TracksResponseWrapper(
         val invocationInfo: YandexInvocationInfo? = null,
         val result: List<YandexTrack>? = null
 )
 
 @Serializable
- data class YandexAlbumWithTracksResponse(
+internal data class YandexAlbumWithTracksResponse(
         val result: YandexAlbumFull? = null
 )
 
 @Serializable
- data class YandexAlbumFull(
+internal data class YandexAlbumFull(
         val id: Long? = null,
         val title: String? = null,
         val trackCount: Int? = null,
@@ -96,7 +96,7 @@ data class YandexTrackItem(
 )
 
 @Serializable
- data class YandexInvocationInfo(
+internal data class YandexInvocationInfo(
         @SerialName("req-id")
         val reqId: String? = null,
         val hostname: String? = null,

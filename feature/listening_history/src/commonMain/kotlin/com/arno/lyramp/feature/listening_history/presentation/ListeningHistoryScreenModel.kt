@@ -2,7 +2,12 @@ package com.arno.lyramp.feature.listening_history.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
+import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistUrlUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.UpdateTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Error
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Success
@@ -15,8 +20,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class ListeningHistoryScreenModel(
-        private val repository: ListeningHistoryRepository,
+internal class ListeningHistoryScreenModel(
+        private val getListeningHistory: GetListeningHistoryUseCase,
+        private val hideTrack: HideTrackUseCase,
+        private val updateTrackLanguage: UpdateTrackLanguageUseCase,
+        private val addManualTrack: AddManualTrackUseCase,
+        private val getPlaylistUrl: GetPlaylistUrlUseCase,
+        private val savePlaylistUrl: SavePlaylistUrlUseCase,
         observeSelectedLanguage: ObserveSelectedLanguageUseCase,
         private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
         private val getLearningLanguages: GetLearningLanguagesUseCase,
@@ -44,7 +54,7 @@ class ListeningHistoryScreenModel(
 
         private fun loadHistory() {
                 screenModelScope.launch {
-                        repository.getListeningHistory()
+                        getListeningHistory()
                                 .catch { e ->
                                         _uiState.value = Error(e.message ?: "Unknown error")
                                 }
@@ -95,7 +105,7 @@ class ListeningHistoryScreenModel(
                 screenModelScope.launch {
                         _isRefreshing.value = true
                         try {
-                                repository.getListeningHistory()
+                                getListeningHistory()
                                         .catch { e ->
                                                 _uiState.value = Error(e.message ?: "Unknown error")
                                         }
@@ -116,7 +126,7 @@ class ListeningHistoryScreenModel(
         fun hideTrack(track: ListeningHistoryMusicTrack) {
                 val trackId = track.id ?: return
                 screenModelScope.launch {
-                        repository.hideTrack(trackId)
+                        hideTrack(trackId)
                         _allTracks.value = _allTracks.value.filter { it.id != trackId }
                         updateFilteredTracks()
                 }
@@ -125,11 +135,26 @@ class ListeningHistoryScreenModel(
         fun updateTrackLanguage(track: ListeningHistoryMusicTrack, language: String) {
                 val trackId = track.id ?: return
                 screenModelScope.launch {
-                        repository.updateTrackLanguage(trackId, language)
+                        updateTrackLanguage(trackId, language)
                         _allTracks.value = _allTracks.value.map {
                                 if (it.id == trackId) it.copy(language = language) else it
                         }
                         updateFilteredTracks()
+                }
+        }
+
+        fun getPlaylistUrl(): String = getPlaylistUrl.invoke()
+
+        fun onPlaylistUrlChanged(url: String) {
+                savePlaylistUrl(url)
+                refresh()
+        }
+
+        fun addManualTrack(name: String, artist: String) {
+                screenModelScope.launch {
+                        val track = addManualTrack.invoke(name, artist)
+                        _allTracks.value = listOf(track) + _allTracks.value
+                        refreshLanguagesInternal()
                 }
         }
 }

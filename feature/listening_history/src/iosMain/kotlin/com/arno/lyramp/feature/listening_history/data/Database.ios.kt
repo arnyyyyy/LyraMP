@@ -7,7 +7,7 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
-fun getDatabaseBuilder(): RoomDatabase.Builder<ListeningHistoryDatabase> {
+internal fun getDatabaseBuilder(): RoomDatabase.Builder<ListeningHistoryDatabase> {
         val documentDirectory = documentDirectory()
         val dbFilePath = "$documentDirectory/lyra_listening_history.db"
         return Room.databaseBuilder<ListeningHistoryDatabase>(

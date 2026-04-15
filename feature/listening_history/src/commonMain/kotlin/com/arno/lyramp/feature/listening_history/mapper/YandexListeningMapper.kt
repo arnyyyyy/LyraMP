@@ -1,7 +1,7 @@
 package com.arno.lyramp.feature.listening_history.mapper
 
-import com.arno.lyramp.feature.listening_history.model.YandexTrack
-import com.arno.lyramp.feature.listening_history.model.YandexTrackItem
+import com.arno.lyramp.feature.listening_history.api.YandexTrack
+import com.arno.lyramp.feature.listening_history.api.YandexTrackItem
 
 internal class YandexTracksMapper {
         fun enrichTracksWithFullInfo(

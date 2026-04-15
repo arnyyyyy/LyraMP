@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.listening_history.domain
+package com.arno.lyramp.feature.listening_history.domain.service
 
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 

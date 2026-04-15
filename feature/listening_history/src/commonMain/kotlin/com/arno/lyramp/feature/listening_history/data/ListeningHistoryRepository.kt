@@ -1,12 +1,13 @@
 package com.arno.lyramp.feature.listening_history.data
 
-import com.arno.lyramp.feature.listening_history.domain.MusicService
+import com.arno.lyramp.core.model.TrackInfo
+import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class ListeningHistoryRepository(
+internal class ListeningHistoryRepository(
         private val musicService: MusicService,
         private val dao: ListeningHistoryDao,
         private val detectLanguage: DetectLanguageUseCase,
@@ -26,18 +27,50 @@ class ListeningHistoryRepository(
                 }
         }
 
+        suspend fun getRecentTracks(): List<TrackInfo> {
+                return dao.getAll().map { entity ->
+                        TrackInfo(
+                                id = entity.trackId,
+                                name = entity.name,
+                                artists = entity.artists,
+                                language = entity.language
+                        )
+                }
+        }
+
         suspend fun saveTrackLanguages(trackLanguages: Map<String, String>) {
                 trackLanguages.forEach { (trackId, language) ->
                         dao.updateLanguage(trackId, language)
                 }
         }
 
-        internal suspend fun hideTrack(trackId: String) {
+        suspend fun hideTrack(trackId: String) {
                 dao.hideTrack(trackId)
         }
 
-        internal suspend fun updateTrackLanguage(trackId: String, language: String) {
+        suspend fun updateTrackLanguage(trackId: String, language: String) {
                 dao.updateLanguage(trackId, language)
+        }
+
+        suspend fun addManualTrack(name: String, artist: String): ListeningHistoryMusicTrack {
+                val id = "${name}||${artist}"
+                val language = detectLanguage(name)
+                val entity = ListeningHistoryTrackEntity(
+                        trackId = id,
+                        albumId = null,
+                        language = language,
+                        name = name,
+                        artists = artist,
+                        albumName = null,
+                        imageUrl = null,
+                )
+                dao.insertAll(listOf(entity))
+                return ListeningHistoryMusicTrack(
+                        id = id,
+                        name = name,
+                        artists = listOf(artist),
+                        language = language,
+                )
         }
 
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {

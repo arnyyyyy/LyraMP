@@ -7,8 +7,7 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ListeningHistoryDao {
-
+internal interface ListeningHistoryDao {
         @Insert(onConflict = OnConflictStrategy.IGNORE)
         suspend fun insertAll(tracks: List<ListeningHistoryTrackEntity>)
 

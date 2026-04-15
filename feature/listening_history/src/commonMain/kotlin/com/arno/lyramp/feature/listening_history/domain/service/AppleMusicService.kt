@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.listening_history.domain
+package com.arno.lyramp.feature.listening_history.domain.service
 
 import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
@@ -7,7 +7,7 @@ import com.arno.lyramp.feature.listening_history.mapper.AppleMusicParser
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.util.Log
 
-class AppleMusicService(
+internal class AppleMusicService(
         private val getPlaylistUrl: GetAuthPlaylistUseCase,
         private val playlistSource: MusicServiceType,
         private val api: AppleMusicApi

@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.learn_words.di
 
 import com.arno.lyramp.core.model.CefrDifficultyGroup
+import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
@@ -29,6 +30,7 @@ val learnWordsModule = module {
                         observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
+                        getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
                 )
         }
 

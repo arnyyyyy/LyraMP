@@ -3,8 +3,8 @@ package com.arno.lyramp.feature.onboarding.presentation
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.core.model.MusicTrack
-import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
-import com.arno.lyramp.feature.listening_history.domain.MusicService
+import com.arno.lyramp.feature.listening_history.domain.service.MusicService
+import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguagesUseCase
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Error
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 internal class OnboardingScreenModel(
         private val musicService: MusicService,
         private val analyzeLanguages: AnalyzeLanguagesUseCase,
-        private val repository: ListeningHistoryRepository
+        private val saveTrackLanguages: SaveTrackLanguagesUseCase
 ) : ScreenModel {
         private val _state = MutableStateFlow<OnboardingState>(Loading(OnboardingStep.LOADING_HISTORY))
         val state: StateFlow<OnboardingState> = _state.asStateFlow()
@@ -47,7 +47,7 @@ internal class OnboardingScreenModel(
                                 val result = analyzeLanguages(tracks)
 
                                 if (result.trackLanguages.isNotEmpty()) {
-                                        repository.saveTrackLanguages(result.trackLanguages)
+                                        saveTrackLanguages(result.trackLanguages)
                                 }
 
                                 _state.value = Success(

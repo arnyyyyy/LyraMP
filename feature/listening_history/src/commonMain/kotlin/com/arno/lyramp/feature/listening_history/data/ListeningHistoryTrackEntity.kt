@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "listening_history_tracks")
-data class ListeningHistoryTrackEntity(
+internal data class ListeningHistoryTrackEntity(
         @PrimaryKey(autoGenerate = true) val localId: Long = 0,
         val trackId: String?,
         val albumId: String?,

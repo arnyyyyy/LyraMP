@@ -8,7 +8,7 @@ import com.arno.lyramp.feature.extraction.domain.model.ExtractionResult
 import com.arno.lyramp.feature.extraction.domain.usecase.GetCefrVocabularyUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.GetShownWordsUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.MarkWordsAsShownUseCase
-import com.arno.lyramp.feature.listening_history.domain.GetRecentTracksUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import kotlinx.coroutines.CancellationException

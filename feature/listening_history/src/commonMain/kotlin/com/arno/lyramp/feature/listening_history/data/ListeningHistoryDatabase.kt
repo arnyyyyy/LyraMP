@@ -13,16 +13,16 @@ import kotlinx.coroutines.IO
 
 @Database(entities = [ListeningHistoryTrackEntity::class], version = 3)
 @ConstructedBy(ListeningHistoryDatabaseConstructor::class)
-abstract class ListeningHistoryDatabase : RoomDatabase() {
+internal abstract class ListeningHistoryDatabase : RoomDatabase() {
         abstract fun listeningHistoryDao(): ListeningHistoryDao
 }
 
 @Suppress("KotlinNoActualForExpect")
-expect object ListeningHistoryDatabaseConstructor : RoomDatabaseConstructor<ListeningHistoryDatabase> {
+internal expect object ListeningHistoryDatabaseConstructor : RoomDatabaseConstructor<ListeningHistoryDatabase> {
         override fun initialize(): ListeningHistoryDatabase
 }
 
-fun getListeningHistoryDatabase(builder: RoomDatabase.Builder<ListeningHistoryDatabase>): ListeningHistoryDatabase {
+internal fun getListeningHistoryDatabase(builder: RoomDatabase.Builder<ListeningHistoryDatabase>): ListeningHistoryDatabase {
         return builder
                 .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .setDriver(BundledSQLiteDriver())

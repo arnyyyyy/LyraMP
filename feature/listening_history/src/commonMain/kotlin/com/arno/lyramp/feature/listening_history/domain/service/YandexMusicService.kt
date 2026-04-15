@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.listening_history.domain
+package com.arno.lyramp.feature.listening_history.domain.service
 
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
@@ -9,7 +9,7 @@ import com.arno.lyramp.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class YandexMusicService(
+internal class YandexMusicService(
         private val authToken: ProvideAuthTokenUseCase,
         private val api: YandexMusicApi
 ) : MusicService {
