@@ -6,4 +6,13 @@
     <string name="history_error_title">Ошибка загрузки</string>
     <string name="practice">Практика</string>
     <string name="lyrics">Текст</string>
+    <string name="add_content_title">Добавить</string>
+    <string name="add_content_playlist_section">Плейлист</string>
+    <string name="add_content_playlist_url_label">Ссылка на плейлист (Apple / Yandex)</string>
+    <string name="add_content_playlist_save">Сохранить</string>
+    <string name="add_content_track_section">Добавить трек вручную</string>
+    <string name="add_content_track_name">Название песни</string>
+    <string name="add_content_track_artist">Исполнитель</string>
+    <string name="add_content_track_add">Добавить</string>
+    <string name="add_content_track_added">Трек добавлен ✓</string>
 </resources>

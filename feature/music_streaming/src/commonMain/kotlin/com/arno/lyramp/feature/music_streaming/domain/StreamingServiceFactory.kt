@@ -1,20 +1,18 @@
 package com.arno.lyramp.feature.music_streaming.domain
 
-import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
+import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.util.Log
 
- class StreamingServiceFactory(
+class StreamingServiceFactory(
         private val yandexStreamingService: YandexStreamingService,
-        private val spotifyStreamingService: SpotifyStreamingService,
-        private val appleStreamingService: AppleStreamingService
+        private val appleStreamingService: AppleStreamingService,
+        private val getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
 ) {
         fun getService(): StreamingService {
-                val authorizedService = AuthSelectionStorage.lastAuthorizedService
+                val authorizedService = getLastAuthorizedService()
 
                 return when (authorizedService) {
                         "YANDEX" -> yandexStreamingService
-
-                        "SPOTIFY" -> spotifyStreamingService
 
                         "APPLE" -> appleStreamingService
 

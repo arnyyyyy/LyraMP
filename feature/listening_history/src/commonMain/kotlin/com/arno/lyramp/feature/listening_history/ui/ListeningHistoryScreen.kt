@@ -48,7 +48,6 @@ import com.arno.lyramp.feature.listeningHistory.resources.history_error_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_loading
 import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel
 import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel.Companion.AVAILABLE_LANGUAGES
-import com.arno.lyramp.feature.user_settings.ui.LanguageSelectorDropdown
 import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -66,10 +65,11 @@ object ShowListeningHistoryScreen : Screen {
                 val isRefreshing by screenModel.isRefreshing.collectAsState()
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
-                
+
                 val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
                 val settingsState by userSettingsScreenModel.state.collectAsState()
                 var showSettingsSheet by remember { mutableStateOf(false) }
+                var showAddContentSheet by remember { mutableStateOf(false) }
 
                 if (showSettingsSheet) {
                         UserSettingsSheet(
@@ -86,6 +86,20 @@ object ShowListeningHistoryScreen : Screen {
                                         showSettingsSheet = false
                                         screenModel.refreshLanguages()
                                 },
+                        )
+                }
+
+                if (showAddContentSheet) {
+                        AddContentSheet(
+                                currentPlaylistUrl = screenModel.getPlaylistUrl(),
+                                onSavePlaylistUrl = { url ->
+                                        screenModel.onPlaylistUrlChanged(url)
+                                        showAddContentSheet = false
+                                },
+                                onAddTrack = { name, artist ->
+                                        screenModel.addManualTrack(name, artist)
+                                },
+                                onDismiss = { showAddContentSheet = false },
                         )
                 }
 
@@ -110,11 +124,12 @@ object ShowListeningHistoryScreen : Screen {
                                                 modifier = Modifier.weight(1f)
                                         )
 
-                                        LanguageSelectorDropdown(
+                                        LanguageSelectorWithAddButtonWrapper(
                                                 selectedLanguage = selectedLanguage,
                                                 availableLanguages = availableLanguages,
                                                 onLanguageSelected = { screenModel.selectLanguage(it) },
-                                                onSettingsClick = { showSettingsSheet = true }
+                                                onSettingsClick = { showSettingsSheet = true },
+                                                onAddContentClick = { showAddContentSheet = true },
                                         )
                                 }
 

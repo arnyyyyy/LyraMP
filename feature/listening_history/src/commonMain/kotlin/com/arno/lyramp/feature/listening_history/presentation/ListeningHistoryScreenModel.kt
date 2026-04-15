@@ -119,7 +119,7 @@ internal class ListeningHistoryScreenModel(
                 }
         }
 
-        internal fun selectLanguage(language: String) {
+        fun selectLanguage(language: String) {
                 saveSelectedLanguage(language)
         }
 
