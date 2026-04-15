@@ -2,6 +2,8 @@ package com.arno.lyramp.feature.listening_history.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistUrlUseCase
@@ -30,7 +32,10 @@ internal class ListeningHistoryScreenModel(
         observeSelectedLanguage: ObserveSelectedLanguageUseCase,
         private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
         private val getLearningLanguages: GetLearningLanguagesUseCase,
+        getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
 ) : ScreenModel {
+
+        val isPracticeAvailable: Boolean = getLastAuthorizedService() == MusicServiceType.YANDEX.name
         private val _uiState =
                 MutableStateFlow<ListeningHistoryUiState>(ListeningHistoryUiState.Loading)
         val uiState: StateFlow<ListeningHistoryUiState> = _uiState.asStateFlow()

@@ -190,18 +190,22 @@ object ShowListeningHistoryScreen : Screen {
                                                                                         )
                                                                                 )
                                                                         },
-                                                                        onPracticeClick = { track ->
-                                                                                navigator.push(
-                                                                                        screenFactory.listeningPracticeScreen(
-                                                                                                id = track.id ?: "",
-                                                                                                albumId = track.albumId,
-                                                                                                name = track.name,
-                                                                                                artists = track.artists,
-                                                                                                albumName = track.albumName,
-                                                                                                imageUrl = track.imageUrl
+                                                                        onPracticeClick = if (screenModel.isPracticeAvailable) { track ->
+                                                                                if (track.id != null) {
+                                                                                        navigator.push(
+                                                                                                screenFactory.listeningPracticeScreen(
+                                                                                                        id = track.id,
+                                                                                                        albumId = track.albumId,
+                                                                                                        name = track.name,
+                                                                                                        artists = track.artists,
+                                                                                                        albumName = track.albumName,
+                                                                                                        imageUrl = track.imageUrl
+                                                                                                )
                                                                                         )
-                                                                                )
-                                                                        },
+                                                                                } else {
+                                                                                        null
+                                                                                }
+                                                                        } else null,
                                                                         onHideTrack = { track ->
                                                                                 screenModel.hideTrack(track)
                                                                         },

@@ -84,6 +84,7 @@ val listeningHistoryModule = module {
                         observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
+                        getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
                 )
         }
 }
