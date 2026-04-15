@@ -28,7 +28,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.arno.lyramp.feature.authorization.repository.AuthSelectionStorage
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeUiState
 import com.arno.lyramp.core.navigation.ScreenFactory
@@ -55,6 +54,7 @@ object ChooseModeScreen : Screen {
                 val uiState by screenModel.uiState.collectAsState()
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
+                val showSuggestions by screenModel.showSuggestions.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
                 val screenFactory: ScreenFactory = koinInject()
                 val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
@@ -128,7 +128,6 @@ object ChooseModeScreen : Screen {
                                                 }
 
                                                 is ChooseModeUiState.ModeSelection -> {
-                                                        val isYandex = AuthSelectionStorage.lastAuthorizedService == "YANDEX"
 
                                                         if (state.cefrGroups != null && state.cefrGroups.isNotEmpty()) {
                                                                 Column(
@@ -163,7 +162,7 @@ object ChooseModeScreen : Screen {
                                                                                 onNavigateToSuggestions = {
 //                                                                                        navigator.push(screenFactory.wordSuggestionsScreen())
                                                                                 },
-                                                                                showSuggestions = isYandex,
+                                                                                showSuggestions = showSuggestions,
                                                                                 wordCount = state.words.size
                                                                         )
                                                                 }
@@ -177,7 +176,7 @@ object ChooseModeScreen : Screen {
                                                                         onNavigateToSuggestions = {
 //                                                                                navigator.push(screenFactory.wordSuggestionsScreen())
                                                                         },
-                                                                        showSuggestions = isYandex,
+                                                                        showSuggestions = showSuggestions,
                                                                         wordCount = state.words.size
                                                                 )
                                                         }

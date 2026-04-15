@@ -2,7 +2,7 @@ package com.arno.lyramp.feature.learn_words.data
 
 import kotlinx.coroutines.flow.Flow
 
-class LearnWordsRepository(private val dao: LearnWordDao) {
+internal class LearnWordsRepository(private val dao: LearnWordDao) {
         suspend fun saveWord(
                 word: String,
                 translation: String,

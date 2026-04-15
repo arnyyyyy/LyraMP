@@ -7,7 +7,7 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
-fun getLearnWordsDatabaseBuilder(): RoomDatabase.Builder<LearnWordsDatabase> {
+internal fun getLearnWordsDatabaseBuilder(): RoomDatabase.Builder<LearnWordsDatabase> {
         val documentDirectory = documentDirectory()
         val dbFilePath = "$documentDirectory/lyra_learn_words.db"
         return Room.databaseBuilder<LearnWordsDatabase>(

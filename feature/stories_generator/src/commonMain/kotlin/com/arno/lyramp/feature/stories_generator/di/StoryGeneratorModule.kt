@@ -8,7 +8,7 @@ val storyGeneratorModule = module {
         single { ModelDownloadRepository() }
         factory {
                 StoryScreenModel(
-                        learnWordsRepository = get(),
+                        getAllLearnWords = get(),
                         modelDownloadRepository = get(),
                         getSelectedLanguageUseCase = get()
                 )

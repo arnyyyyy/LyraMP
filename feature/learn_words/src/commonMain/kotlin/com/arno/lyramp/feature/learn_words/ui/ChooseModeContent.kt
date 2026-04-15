@@ -110,13 +110,11 @@ internal fun ModeSelectionContent(
                                 onClick = onNavigateToExtraction
                         )
 
-                        if (showSuggestions) {
-                                MusicFeatureCard(
-                                        icon = "🎧",
-                                        title = stringResource(Res.string.suggestions_card_title),
-                                        onClick = onNavigateToSuggestions
-                                )
-                        }
+                        MusicFeatureCard(
+                                icon = "🎧",
+                                title = stringResource(Res.string.suggestions_card_title),
+                                onClick = onNavigateToSuggestions
+                        )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

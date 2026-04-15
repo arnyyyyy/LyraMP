@@ -77,9 +77,11 @@ internal class ListeningHistoryRepository(
                 val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
                 val cachedIds = cached.map { it.trackId ?: "${it.name}||${it.artists}" }.toSet()
 
-                val toDelete = cachedIds - freshIds
+                val manualIds = cachedIds.filter { it.contains("||") }.toSet()
+
+                val toDelete = (cachedIds - freshIds) - manualIds
                 if (toDelete.isNotEmpty()) {
-                        val remaining = freshIds.toList()
+                        val remaining = (freshIds + manualIds).toList()
                         if (remaining.isNotEmpty()) dao.deleteNotIn(remaining)
                         else dao.deleteAll()
                 }

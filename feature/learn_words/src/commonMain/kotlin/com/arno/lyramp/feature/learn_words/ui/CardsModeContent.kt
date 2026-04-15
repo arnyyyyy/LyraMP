@@ -25,9 +25,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Undo
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +67,7 @@ import kotlin.math.roundToInt
 internal fun CardsModeContent(
         state: LearnWordsUiState.Cards,
         onSwipe: (Long, Boolean) -> Unit,
+        onUndo: () -> Unit,
         onToggleImportance: (Long, Boolean) -> Unit,
         isLoadingAudio: Boolean,
         onPlayAudio: (WordInfo) -> Unit
@@ -72,6 +78,9 @@ internal fun CardsModeContent(
         if (currentIndex >= words.size) return
 
         val currentWord = words[currentIndex]
+
+        val initialOffset = if (state.undoDirection != 0) state.undoDirection * SwipeConfig.OFF_SCREEN_OFFSET else 0f
+        val offsetX = remember(currentIndex) { Animatable(initialOffset) }
 
         Column(
                 modifier = Modifier
@@ -86,7 +95,25 @@ internal fun CardsModeContent(
                         incorrectCount = state.incorrectCount
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp),
+                        contentAlignment = Alignment.CenterStart
+                ) {
+                        if (state.canUndo) {
+                                Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.Undo,
+                                        contentDescription = "Undo",
+                                        tint = Color.White.copy(alpha = 0.55f),
+                                        modifier = Modifier
+                                                .size(22.dp)
+                                                .clickable(onClick = onUndo)
+                                )
+                        }
+                }
 
                 Box(
                         modifier = Modifier
@@ -95,32 +122,63 @@ internal fun CardsModeContent(
                                 .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                 ) {
-                        SwipeCard(
-                                word = currentWord,
-                                isLoadingAudio = isLoadingAudio,
-                                onPlayAudio = { onPlayAudio(currentWord) },
-                                onToggleImportance = { onToggleImportance(currentWord.id, currentWord.isImportant) },
-                                onSwipe = onSwipe,
-                        )
+                        if (currentIndex + 2 < words.size) {
+                                Box(modifier = Modifier.fillMaxWidth().fillMaxSize(SwipeConfig.CARD_SIZE_FRACTION)) {
+                                        WordCard(
+                                                word = words[currentIndex + 2],
+                                                isLoadingAudio = false,
+                                                onPlayAudio = {},
+                                                onToggleImportance = {},
+                                                isFront = true,
+                                        )
+                                }
+                        }
+                        if (currentIndex + 1 < words.size) {
+                                Box(modifier = Modifier.fillMaxWidth().fillMaxSize(SwipeConfig.CARD_SIZE_FRACTION)) {
+                                        WordCard(
+                                                word = words[currentIndex + 1],
+                                                isLoadingAudio = false,
+                                                onPlayAudio = {},
+                                                onToggleImportance = {},
+                                                isFront = true,
+                                        )
+                                }
+                        }
+
+                        key(currentWord.id) {
+                                SwipeCard(
+                                        word = currentWord,
+                                        offsetX = offsetX,
+                                        isLoadingAudio = isLoadingAudio,
+                                        onPlayAudio = { onPlayAudio(currentWord) },
+                                        onToggleImportance = { onToggleImportance(currentWord.id, currentWord.isImportant) },
+                                        onSwipe = onSwipe,
+                                        enterFromDirection = state.undoDirection,
+                                )
+                        }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
         }
 }
 
-
 @Composable
 private fun SwipeCard(
         word: WordInfo,
+        offsetX: Animatable<Float, *>,
         isLoadingAudio: Boolean,
         onPlayAudio: () -> Unit,
         onToggleImportance: () -> Unit,
         onSwipe: (Long, Boolean) -> Unit,
+        enterFromDirection: Int = 0,
 ) {
-        val offsetX = remember { Animatable(0f) }
         val coroutineScope = rememberCoroutineScope()
         val density = LocalDensity.current.density
         var isFlipped by remember(word.id) { mutableStateOf(false) }
+
+        LaunchedEffect(word.id, enterFromDirection) {
+                if (enterFromDirection != 0) offsetX.animateTo(0f, tween(SwipeConfig.UNDO_ANIM_MS))
+        }
 
         val rotation by animateFloatAsState(
                 targetValue = if (isFlipped) 180f else 0f,
@@ -128,32 +186,29 @@ private fun SwipeCard(
                 label = "card_rotation"
         )
 
-        val maxTiltAngle = 5f
-        val maxOffset = 1000f
-        val tiltAngle = (offsetX.value / maxOffset) * maxTiltAngle
+        val tiltAngle = (offsetX.value / SwipeConfig.OFF_SCREEN_OFFSET) * SwipeConfig.MAX_TILT_ANGLE
 
-        val swipeAlpha = (offsetX.value.absoluteValue / 300f).coerceIn(0f, 0.6f)
+        val swipeAlpha = (offsetX.value.absoluteValue / SwipeConfig.ALPHA_DIVISOR).coerceIn(0f, SwipeConfig.MAX_SWIPE_ALPHA)
         val swipeColor = if (offsetX.value < 0) LyraColors.Correct else LyraColors.Incorrect
 
         Box(
                 modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .fillMaxSize(SwipeConfig.CARD_SIZE_FRACTION)
                         .graphicsLayer { rotationZ = tiltAngle }
                         .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                        .pointerInput(word.id) {
+                        .pointerInput(Unit) {
                                 detectDragGestures(
                                         onDragEnd = {
-                                                val threshold = 250f
-                                                if (offsetX.value.absoluteValue > threshold) {
+                                                if (offsetX.value.absoluteValue > SwipeConfig.SWIPE_THRESHOLD) {
                                                         coroutineScope.launch {
-                                                                val target = if (offsetX.value > 0) 1000f else -1000f
-                                                                offsetX.animateTo(targetValue = target, animationSpec = tween(200))
+                                                                val target = if (offsetX.value > 0) SwipeConfig.OFF_SCREEN_OFFSET else -SwipeConfig.OFF_SCREEN_OFFSET
+                                                                offsetX.animateTo(targetValue = target, animationSpec = tween(SwipeConfig.SWIPE_ANIM_MS))
                                                                 onSwipe(word.id, offsetX.value < 0)
                                                                 isFlipped = false
-                                                                offsetX.snapTo(0f)
                                                         }
                                                 } else {
-                                                        coroutineScope.launch { offsetX.animateTo(0f, tween(300)) }
+                                                        coroutineScope.launch { offsetX.animateTo(0f, tween(SwipeConfig.SNAP_BACK_ANIM_MS)) }
                                                 }
                                         }
                                 ) { change, dragAmount ->
@@ -188,7 +243,10 @@ private fun SwipeCard(
                                         .alpha(swipeAlpha)
                                         .background(swipeColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                         )
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                                modifier = Modifier.fillMaxSize().padding(top = 80.dp),
+                                contentAlignment = Alignment.Center
+                        ) {
                                 Text(
                                         text = stringResource(
                                                 if (offsetX.value < 0) Res.string.know_ticked
@@ -216,8 +274,7 @@ private fun WordCard(
 
         Box(
                 modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxSize(0.75f)
+                        .fillMaxSize()
                         .graphicsLayer { rotationY = if (isFront) 0f else 180f }
                         .background(
                                 if (isFront) Color.White else LyraColors.CardSurfaceAlt,
@@ -333,3 +390,14 @@ private fun SourceHint(source: WordSource) {
         }
 }
 
+private object SwipeConfig {
+        const val OFF_SCREEN_OFFSET = 1000f
+        const val SWIPE_THRESHOLD = 250f
+        const val ALPHA_DIVISOR = 300f
+        const val MAX_SWIPE_ALPHA = 0.6f
+        const val CARD_SIZE_FRACTION = 0.75f
+        const val UNDO_ANIM_MS = 350
+        const val SWIPE_ANIM_MS = 200
+        const val SNAP_BACK_ANIM_MS = 300
+        const val MAX_TILT_ANGLE = 5f
+}

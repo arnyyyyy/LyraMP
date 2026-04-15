@@ -74,6 +74,7 @@ internal class LearnWordsScreen(
                                                         CardsModeContent(
                                                                 state = state,
                                                                 onSwipe = { wordId, isKnown -> screenModel.onCardSwipe(wordId, isKnown) },
+                                                                onUndo = { screenModel.undoLastSwipe() },
                                                                 onToggleImportance = { wordId, isImportant -> screenModel.onToggleImportance(wordId, isImportant) },
                                                                 isLoadingAudio = state.isLoadingAudio,
                                                                 onPlayAudio = { wordInfo -> screenModel.playAudio(wordInfo) }

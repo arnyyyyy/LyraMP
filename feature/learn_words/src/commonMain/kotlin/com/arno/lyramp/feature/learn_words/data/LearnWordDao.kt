@@ -7,7 +7,7 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface LearnWordDao {
+internal interface LearnWordDao {
         @Insert(onConflict = OnConflictStrategy.IGNORE)
         suspend fun insert(word: LearnWordEntity): Long
 

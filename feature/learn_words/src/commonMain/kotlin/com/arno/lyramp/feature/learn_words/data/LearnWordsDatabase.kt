@@ -13,12 +13,12 @@ import kotlinx.coroutines.IO
 
 @Database(entities = [LearnWordEntity::class, AlbumProgressEntity::class], version = 2)
 @ConstructedBy(LearnWordsDatabaseConstructor::class)
-abstract class LearnWordsDatabase : RoomDatabase() {
+internal abstract class LearnWordsDatabase : RoomDatabase() {
         abstract fun learnWordDao(): LearnWordDao
         abstract fun albumProgressDao(): AlbumProgressDao
 }
 
-val LEARN_WORDS_MIGRATION_1_2 = object : Migration(1, 2) {
+internal val LEARN_WORDS_MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("ALTER TABLE learn_words ADD COLUMN progress REAL NOT NULL DEFAULT 0.0")
                 connection.execSQL("ALTER TABLE learn_words ADD COLUMN albumId TEXT")
@@ -35,7 +35,7 @@ val LEARN_WORDS_MIGRATION_1_2 = object : Migration(1, 2) {
         }
 }
 
-fun getLearnWordsDatabase(builder: RoomDatabase.Builder<LearnWordsDatabase>): LearnWordsDatabase {
+internal fun getLearnWordsDatabase(builder: RoomDatabase.Builder<LearnWordsDatabase>): LearnWordsDatabase {
         return builder
                 .addMigrations(LEARN_WORDS_MIGRATION_1_2)
                 .setDriver(BundledSQLiteDriver())
@@ -43,6 +43,7 @@ fun getLearnWordsDatabase(builder: RoomDatabase.Builder<LearnWordsDatabase>): Le
                 .build()
 }
 
-expect object LearnWordsDatabaseConstructor : RoomDatabaseConstructor<LearnWordsDatabase> {
+@Suppress("KotlinNoActualForExpect")
+internal expect object LearnWordsDatabaseConstructor : RoomDatabaseConstructor<LearnWordsDatabase> {
         override fun initialize(): LearnWordsDatabase
 }

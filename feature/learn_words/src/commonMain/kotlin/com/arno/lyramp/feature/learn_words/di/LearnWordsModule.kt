@@ -3,9 +3,12 @@ package com.arno.lyramp.feature.learn_words.di
 import com.arno.lyramp.core.model.CefrDifficultyGroup
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
+import com.arno.lyramp.feature.extraction.domain.usecase.SaveWordUseCase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabase
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllLearnWordsUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.SaveLearnWordUseCase
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
@@ -22,6 +25,15 @@ val learnWordsModule = module {
         single { get<LearnWordsDatabase>().learnWordDao() }
         single { get<LearnWordsDatabase>().albumProgressDao() }
         single { LearnWordsRepository(dao = get()) }
+
+        single { SaveLearnWordUseCase(repository = get()) }
+        single { GetAllLearnWordsUseCase(repository = get()) }
+        single<SaveWordUseCase> {
+                val save = get<SaveLearnWordUseCase>()
+                SaveWordUseCase { word, translation, sourceLang, trackName, artists, lyricLine ->
+                        save(word, translation, sourceLang, trackName, artists, lyricLine)
+                }
+        }
 
         factory {
                 ChooseModeScreenModel(

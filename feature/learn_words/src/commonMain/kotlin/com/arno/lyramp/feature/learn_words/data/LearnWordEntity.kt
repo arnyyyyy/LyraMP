@@ -34,7 +34,11 @@ data class LearnWordEntity @OptIn(ExperimentalTime::class) constructor(
 ) {
         fun parseSources(): List<WordSource> =
                 if (sourcesJson.isBlank() || sourcesJson == "[]") emptyList()
-                else Json.decodeFromString(sourcesJson)
+                else try {
+                        Json.decodeFromString(sourcesJson)
+                } catch (_: Exception) {
+                        emptyList()
+                }
 
         companion object {
                 fun encodeSources(sources: List<WordSource>): String =

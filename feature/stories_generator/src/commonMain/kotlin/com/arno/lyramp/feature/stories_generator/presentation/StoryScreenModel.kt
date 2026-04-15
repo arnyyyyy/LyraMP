@@ -4,7 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
-import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllLearnWordsUseCase
 import com.arno.lyramp.feature.stories_generator.domain.LlamatikStoryGenerator
 import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadRepository
 import com.arno.lyramp.feature.stories_generator.model.DownloadableModel
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 internal class StoryScreenModel(
-        private val learnWordsRepository: LearnWordsRepository, // todo usecase
+        private val getAllLearnWords: GetAllLearnWordsUseCase,
         private val modelDownloadRepository: ModelDownloadRepository,
         private val getSelectedLanguageUseCase: GetSelectedLanguageUseCase
 ) : ScreenModel {
@@ -44,7 +44,7 @@ internal class StoryScreenModel(
 
         private fun loadWords() {
                 screenModelScope.launch {
-                        learnWordsRepository.getAllWords().collect { words ->
+                        getAllLearnWords().collect { words ->
                                 allWords = words
                                 val current = _uiState.value
                                 if (current is StoryUiState.Idle || current is StoryUiState.Ready) {
