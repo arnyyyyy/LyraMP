@@ -40,9 +40,7 @@ fun LanguageSelectorDropdown(
                                 .size(48.dp)
                                 .background(Color.White.copy(alpha = 0.2f), CircleShape)
                                 .clickable {
-                                        if (availableLanguages.size > 1) {
-                                                expanded = !expanded
-                                        }
+                                        expanded = !expanded
                                 },
                         contentAlignment = Alignment.Center
                 ) {
@@ -53,7 +51,7 @@ fun LanguageSelectorDropdown(
                 }
 
                 DropdownMenu(
-                        expanded = expanded && availableLanguages.size > 1,
+                        expanded = expanded,
                         onDismissRequest = { expanded = false }
                 ) {
                         availableLanguages.forEach { lang ->

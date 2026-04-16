@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.user_settings.di
 
 import com.arno.lyramp.feature.user_settings.data.UserSettingsRepository
+import com.arno.lyramp.feature.user_settings.domain.usecase.GetLanguageSettingsUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
@@ -15,6 +16,7 @@ val userSettingsModule = module {
         single { SaveSelectedLanguageUseCase(repository = get()) }
         single { GetLearningLanguagesUseCase(repository = get()) }
         single { ObserveSelectedLanguageUseCase(repository = get()) }
+        single { GetLanguageSettingsUseCase(getSelectedLanguage = get(), repository = get()) }
 
         factory { UserSettingsScreenModel(repository = get()) }
 }
