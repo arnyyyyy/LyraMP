@@ -48,4 +48,11 @@ internal class LearnWordsRepository(private val dao: LearnWordDao) {
         suspend fun markAsKnown(id: Long, isKnown: Boolean) = dao.updateKnown(id, isKnown)
 
         suspend fun toggleImportance(id: Long, isImportant: Boolean) = dao.updateImportance(id, isImportant)
+
+        suspend fun incrementProgress(id: Long, step: Float = 0.2f) {
+                val entity = getById(id) ?: return
+                if (entity.progress >= 1.0f) return
+                val newProgress = (entity.progress + step).coerceAtMost(1.0f)
+                updateProgress(id, newProgress)
+        }
 }
