@@ -9,6 +9,7 @@ plugins {
 
 kotlin {
 
+
         androidTarget {
                 compilerOptions {
                         jvmTarget.set(JvmTarget.JVM_11)
@@ -35,7 +36,22 @@ kotlin {
                         implementation(libs.koin.core)
                         implementation(compose.components.uiToolingPreview)
                         implementation(libs.kotlinx.coroutines.core)
+                        api(libs.kermit)
+                        api(libs.voyager.navigator)
+                        api(libs.voyager.screenmodel)
+                        implementation(libs.multiplatform.settings)
+                        implementation(libs.multiplatform.settings.no.arg)
                 }
+
+                iosMain.dependencies {
+                        implementation(libs.krypto)
+                }
+
+                androidMain.dependencies {
+                        implementation(libs.androidx.work.runtime)
+                        implementation(libs.koin.android)
+                }
+
         }
 }
 
