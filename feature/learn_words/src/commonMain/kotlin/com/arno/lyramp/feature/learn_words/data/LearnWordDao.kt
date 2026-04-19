@@ -47,9 +47,21 @@ internal interface LearnWordDao {
         @Query("SELECT * FROM learn_words WHERE albumId = :albumId ORDER BY trackIndex ASC, word ASC")
         suspend fun getByAlbumId(albumId: String): List<LearnWordEntity>
 
+        @Query("SELECT * FROM learn_words WHERE albumId = :albumId ORDER BY trackIndex ASC, word ASC")
+        fun observeByAlbumId(albumId: String): Flow<List<LearnWordEntity>>
+
         @Query("SELECT * FROM learn_words WHERE albumId = :albumId AND trackIndex = :trackIndex ORDER BY word ASC")
         suspend fun getByAlbumIdAndTrackIndex(albumId: String, trackIndex: Int): List<LearnWordEntity>
 
         @Query("SELECT COUNT(*) FROM learn_words WHERE albumId = :albumId AND trackIndex = :trackIndex AND progress >= 1.0")
         suspend fun countLearnedByAlbumAndTrack(albumId: String, trackIndex: Int): Int
+
+        @Query("SELECT word FROM learn_words WHERE sourceLang IS :sourceLang AND isKnown = 1")
+        suspend fun getKnownWords(sourceLang: String?): List<String>
+
+        @Query("SELECT word FROM learn_words WHERE sourceLang IS :sourceLang")
+        suspend fun getAllWordStrings(sourceLang: String?): List<String>
+
+        @Query("UPDATE learn_words SET albumId = :albumId, trackIndex = :trackIndex WHERE id = :id")
+        suspend fun updateAlbumInfo(id: Long, albumId: String, trackIndex: Int?)
 }

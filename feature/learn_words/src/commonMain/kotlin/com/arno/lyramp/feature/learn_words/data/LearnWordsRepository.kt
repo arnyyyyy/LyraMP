@@ -9,7 +9,10 @@ internal class LearnWordsRepository(private val dao: LearnWordDao) {
                 sourceLang: String?,
                 trackName: String,
                 artists: List<String>,
-                lyricLine: String
+                lyricLine: String,
+                albumId: String? = null,
+                trackIndex: Int? = null,
+                isKnown: Boolean = false
         ) {
                 val newSource = WordSource(
                         lyricLine = lyricLine,
@@ -27,13 +30,19 @@ internal class LearnWordsRepository(private val dao: LearnWordDao) {
                                 sources.add(newSource)
                                 dao.updateSources(existing.id, LearnWordEntity.encodeSources(sources))
                         }
+                        if (existing.albumId == null && albumId != null) {
+                                dao.updateAlbumInfo(existing.id, albumId, trackIndex)
+                        }
                 } else {
                         dao.insert(
                                 LearnWordEntity(
                                         word = word,
                                         translation = translation,
                                         sourceLang = sourceLang,
-                                        sourcesJson = LearnWordEntity.encodeSources(listOf(newSource))
+                                        sourcesJson = LearnWordEntity.encodeSources(listOf(newSource)),
+                                        isKnown = isKnown,
+                                        albumId = albumId,
+                                        trackIndex = trackIndex
                                 )
                         )
                 }
@@ -42,6 +51,10 @@ internal class LearnWordsRepository(private val dao: LearnWordDao) {
         fun getAllWords(): Flow<List<LearnWordEntity>> = dao.getAllAsFlow()
 
         suspend fun getById(id: Long): LearnWordEntity? = dao.findById(id)
+
+        suspend fun getByAlbumId(albumId: String): List<LearnWordEntity> = dao.getByAlbumId(albumId)
+
+        fun observeByAlbumId(albumId: String): Flow<List<LearnWordEntity>> = dao.observeByAlbumId(albumId)
 
         suspend fun updateProgress(id: Long, progress: Float) = dao.updateProgress(id, progress)
 

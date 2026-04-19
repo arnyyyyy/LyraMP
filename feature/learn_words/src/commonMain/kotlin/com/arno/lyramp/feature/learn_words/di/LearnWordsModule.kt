@@ -8,6 +8,11 @@ import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.learn_words.data.getLearnWordsDatabase
 import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllLearnWordsUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllUserWordStringsUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetKnownWordsUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByAlbumUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByTrackUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.ObserveLearnWordsByAlbumUseCase
 import com.arno.lyramp.feature.learn_words.domain.usecase.SaveLearnWordUseCase
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
@@ -23,11 +28,15 @@ import org.koin.dsl.module
 val learnWordsModule = module {
         single<LearnWordsDatabase> { getLearnWordsDatabase(get(named("learn_words"))) }
         single { get<LearnWordsDatabase>().learnWordDao() }
-        single { get<LearnWordsDatabase>().albumProgressDao() }
         single { LearnWordsRepository(dao = get()) }
 
         single { SaveLearnWordUseCase(repository = get()) }
         single { GetAllLearnWordsUseCase(repository = get()) }
+        single { GetKnownWordsUseCase(dao = get()) }
+        single { GetAllUserWordStringsUseCase(dao = get()) }
+        single { GetLearnWordsByTrackUseCase(dao = get()) }
+        single { GetLearnWordsByAlbumUseCase(repository = get()) }
+        single { ObserveLearnWordsByAlbumUseCase(repository = get()) }
         single<SaveWordUseCase> {
                 val save = get<SaveLearnWordUseCase>()
                 SaveWordUseCase { word, translation, sourceLang, trackName, artists, lyricLine ->
@@ -46,11 +55,13 @@ val learnWordsModule = module {
                 )
         }
 
-        factory { (mode: LearningMode, language: String?, cefrGroup: CefrDifficultyGroup?) ->
+        factory { (mode: LearningMode, language: String?, cefrGroup: CefrDifficultyGroup?, albumId: String?, trackIndex: Int?) ->
                 LearnWordsScreenModel(
                         mode = mode,
                         language = language,
                         cefrGroup = cefrGroup,
+                        albumId = albumId,
+                        trackIndex = trackIndex,
                         repository = get(),
                         getSpeechFilePath = get<GetSpeechFilePathUseCase>(),
                         classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
