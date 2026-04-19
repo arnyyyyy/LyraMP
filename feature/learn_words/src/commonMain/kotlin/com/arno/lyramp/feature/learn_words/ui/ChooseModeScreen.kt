@@ -159,9 +159,7 @@ object ChooseModeScreen : Screen {
                                                                                 },
                                                                                 onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
                                                                                 onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
-                                                                                onNavigateToSuggestions = {
-//                                                                                        navigator.push(screenFactory.wordSuggestionsScreen())
-                                                                                },
+                                                                                onNavigateToSuggestions = { navigator.push(screenFactory.albumSelectorScreen()) },
                                                                                 showSuggestions = showSuggestions,
                                                                                 wordCount = state.words.size
                                                                         )
@@ -173,9 +171,7 @@ object ChooseModeScreen : Screen {
                                                                         },
                                                                         onNavigateToStories = { navigator.push(screenFactory.storyGeneratorScreen()) },
                                                                         onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
-                                                                        onNavigateToSuggestions = {
-//                                                                                navigator.push(screenFactory.wordSuggestionsScreen())
-                                                                        },
+                                                                        onNavigateToSuggestions = { navigator.push(screenFactory.albumSelectorScreen()) },
                                                                         showSuggestions = showSuggestions,
                                                                         wordCount = state.words.size
                                                                 )

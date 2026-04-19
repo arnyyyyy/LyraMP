@@ -33,12 +33,14 @@ import org.koin.core.parameter.parametersOf
 internal class LearnWordsScreen(
         private val mode: LearningMode,
         private val language: String?,
-        private val cefrGroup: CefrDifficultyGroup?
+        private val cefrGroup: CefrDifficultyGroup?,
+        private val albumId: String? = null,
+        private val trackIndex: Int? = null
 ) : Screen {
         @Composable
         override fun Content() {
                 val screenModel = getScreenModel<LearnWordsScreenModel> {
-                        parametersOf(mode, language, cefrGroup)
+                        parametersOf(mode, language, cefrGroup, albumId, trackIndex)
                 }
                 val uiState by screenModel.uiState.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
