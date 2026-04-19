@@ -3,7 +3,7 @@ package com.arno.lyramp.feature.extraction.domain
 import com.arno.lyramp.core.model.CefrLevel
 import kotlin.collections.iterator
 
-internal object WordExtractionUtils {
+object WordExtractionUtils {
         private val latinRegexp = Regex("[\\p{L}'-]+")
         private val CJK_LANGUAGES = setOf("ja", "zh")
 

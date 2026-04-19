@@ -11,6 +11,9 @@ class SaveLearnWordUseCase internal constructor(
                 sourceLang: String?,
                 trackName: String,
                 artists: List<String>,
-                lyricLine: String
-        ) = repository.saveWord(word, translation, sourceLang, trackName, artists, lyricLine)
+                lyricLine: String,
+                albumId: String? = null,
+                trackIndex: Int? = null,
+                isKnown: Boolean = false
+        ) = repository.saveWord(word, translation, sourceLang, trackName, artists, lyricLine, albumId, trackIndex, isKnown)
 }

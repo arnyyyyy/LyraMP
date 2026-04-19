@@ -6,7 +6,9 @@ import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.extraction.domain.model.ExtractedWord
 import com.arno.lyramp.feature.extraction.domain.model.ExtractionResult
 import com.arno.lyramp.feature.extraction.domain.usecase.GetCefrVocabularyUseCase
+import com.arno.lyramp.feature.extraction.domain.usecase.GetExhaustedTrackIdsUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.GetShownWordsUseCase
+import com.arno.lyramp.feature.extraction.domain.usecase.MarkTrackExhaustedUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.MarkWordsAsShownUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
@@ -23,14 +25,19 @@ internal class Extractor(
         private val getCefrVocabulary: GetCefrVocabularyUseCase,
         private val getShownWords: GetShownWordsUseCase,
         val markAsShown: MarkWordsAsShownUseCase,
+        private val getExhaustedTrackIds: GetExhaustedTrackIdsUseCase,
+        private val markTrackExhausted: MarkTrackExhaustedUseCase,
 ) {
         private val log = Logger.withTag("LyricsWordsExtractor")
 
         internal suspend fun extractFromRecentTracks(
                 languageFilter: String? = null,
+                cefrFilter: Set<CefrLevel>? = null,
+                levelsKey: String? = null,
                 onProgress: (progress: Float, trackName: String) -> Unit = { _, _ -> }
         ): ExtractionResult = withContext(Dispatchers.IO) {
                 val shownWords = getShownWords()
+                val exhaustedIds = if (levelsKey != null) getExhaustedTrackIds(levelsKey) else emptySet()
 
                 val candidateTracks = getRecentTracks()
                         .filter { it.language in SUPPORTED_LANGUAGES }
@@ -38,12 +45,16 @@ internal class Extractor(
                                 if (languageFilter != null) tracks.filter { it.language == languageFilter }
                                 else tracks
                         }
+                        .filter { (it.id ?: "") !in exhaustedIds }
                         .take(MAX_TRACKS_TO_SCAN)
+
                 if (candidateTracks.isEmpty()) {
+                        log.i { "No candidate tracks (${exhaustedIds.size} exhausted, filter=$languageFilter)" }
                         return@withContext ExtractionResult(0, 0, 0)
                 }
 
-                val vocabByLang = candidateTracks.mapNotNull { it.language }.toSet().associateWith { lang -> getCefrVocabulary(lang) }
+                val vocabByLang = candidateTracks.mapNotNull { it.language }.toSet()
+                        .associateWith { lang -> getCefrVocabulary(lang) }
 
                 val allExtractedWords = mutableListOf<ExtractedWord>()
                 val seenWords = mutableSetOf<String>()
@@ -57,11 +68,28 @@ internal class Extractor(
 
                         try {
                                 coroutineContext.ensureActive()
-                                val result = processTrack(track, vocabByLang, shownWords, seenWords, allExtractedWords.size)
+                                val result = processTrack(
+                                        track, vocabByLang, shownWords, seenWords,
+                                        allExtractedWords.size, cefrFilter
+                                )
                                 if (result != null) {
                                         allExtractedWords.addAll(result.words)
                                         totalWordsInLyrics += result.totalWordsInLyrics
                                         processedTracks++
+
+                                        // If this track yielded no new words at this level → exhausted
+                                        val trackId = track.id
+                                        if (result.words.isEmpty() && levelsKey != null && trackId != null) {
+                                                markTrackExhausted(trackId, track.name, levelsKey)
+                                                log.d { "Track '${track.name}' exhausted for level $levelsKey" }
+                                        }
+                                } else {
+                                        val trackId = track.id
+                                        if (levelsKey != null && trackId != null) {
+                                                // No lyrics found → also mark as exhausted (no point retrying)
+                                                markTrackExhausted(trackId, track.name, levelsKey)
+                                                log.d { "Track '${track.name}' has no lyrics, marking exhausted" }
+                                        }
                                 }
                         } catch (e: CancellationException) {
                                 throw e
@@ -70,7 +98,9 @@ internal class Extractor(
                         }
                 }
 
-                val sorted = allExtractedWords.sortedWith(compareBy<ExtractedWord> { it.cefrLevel.ordinal }.thenBy { it.word })
+                val sorted = allExtractedWords.sortedWith(
+                        compareBy<ExtractedWord> { it.cefrLevel.ordinal }.thenBy { it.word }
+                )
                 markAsShown(sorted)
 
                 ExtractionResult(processedTracks, totalWordsInLyrics, sorted.size, sorted)
@@ -82,6 +112,7 @@ internal class Extractor(
                 shownWords: Set<String>,
                 seenWords: MutableSet<String>,
                 currentWordCount: Int,
+                cefrFilter: Set<CefrLevel>?,
         ): TrackProcessingResult? {
                 val trackLang = track.language ?: return null
                 val cefrVocab = vocabByLang[trackLang] ?: return null
@@ -100,6 +131,8 @@ internal class Extractor(
                         if (!seenWords.add(word) || word in shownWords) continue
 
                         val (lyricLine, cefrLevel) = info
+                        if (cefrFilter != null && cefrLevel !in cefrFilter) continue
+
                         extracted.add(
                                 ExtractedWord(
                                         word = word,
@@ -121,7 +154,7 @@ internal class Extractor(
         )
 
         private companion object {
-                const val MAX_TRACKS_TO_SCAN = 3
+                const val MAX_TRACKS_TO_SCAN = 5
                 const val MAX_NEW_WORDS = 30
                 val SUPPORTED_LANGUAGES = setOf("en", "fr", "de", "es", "it", "hu", "ja", "zh", "he", "ar")
         }

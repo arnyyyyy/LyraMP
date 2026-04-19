@@ -20,6 +20,8 @@ internal class LearnWordsScreenModel(
         private val mode: LearningMode,
         private val language: String?,
         private val cefrGroup: CefrDifficultyGroup?,
+        private val albumId: String? = null,
+        private val trackIndex: Int? = null,
         private val repository: LearnWordsRepository,
         private val getSpeechFilePath: GetSpeechFilePathUseCase,
         private val classifyWordsByCefr: ClassifyWordsByCefrUseCase,
@@ -36,7 +38,13 @@ internal class LearnWordsScreenModel(
         init {
                 screenModelScope.launch {
                         val allWords = repository.getAllWords().first()
-                        val filtered = if (language != null) allWords.filter { it.sourceLang == language } else allWords
+                        val baseFiltered = if (language != null) allWords.filter { it.sourceLang == language } else allWords
+
+                        val filtered = if (albumId != null && trackIndex != null) {
+                                baseFiltered.filter { it.albumId == albumId && it.trackIndex == trackIndex && !it.isKnown }
+                        } else {
+                                baseFiltered
+                        }
 
                         val wordsToUse = if (cefrGroup != null) {
                                 val grouped = withContext(Dispatchers.IO) {

@@ -2,9 +2,10 @@ package com.arno.lyramp.feature.extraction.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.extraction.background.ExtractionBackgroundTask
 import com.arno.lyramp.feature.extraction.domain.Extractor
 import com.arno.lyramp.feature.extraction.domain.WordSaver
-import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.GetLanguageSettingsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,11 +15,21 @@ import kotlinx.coroutines.launch
 internal class ExtractionScreenModel(
         private val extractor: Extractor,
         private val wordSaver: WordSaver,
-        private val getSelectedLanguage: GetSelectedLanguageUseCase,
+        private val getLanguageSettings: GetLanguageSettingsUseCase,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<ExtractionUiState>(ExtractionUiState.Idle)
         val uiState: StateFlow<ExtractionUiState> = _uiState.asStateFlow()
+
+        init {
+                val cached = ExtractionBackgroundTask.consumeCachedResult()
+                if (cached != null && cached.words.isNotEmpty()) {
+                        _uiState.value = ExtractionUiState.WordSelection(
+                                result = cached,
+                                selectedWords = emptySet()
+                        )
+                }
+        }
 
         fun startExtraction() {
                 if (_uiState.value is ExtractionUiState.Running) return
@@ -26,9 +37,11 @@ internal class ExtractionScreenModel(
                 _uiState.value = ExtractionUiState.Running()
                 screenModelScope.launch {
                         try {
-                                val languageFilter = getSelectedLanguage()
+                                val settings = getLanguageSettings()
                                 val result = extractor.extractFromRecentTracks(
-                                        languageFilter = languageFilter,
+                                        languageFilter = settings.lang,
+                                        cefrFilter = settings.cefrFilter,
+                                        levelsKey = settings.levelsKey,
                                         onProgress = { progress, trackName ->
                                                 _uiState.value = ExtractionUiState.Running(
                                                         progress = progress,

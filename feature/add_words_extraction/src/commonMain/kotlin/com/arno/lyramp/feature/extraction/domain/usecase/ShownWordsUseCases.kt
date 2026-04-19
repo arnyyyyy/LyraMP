@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.extraction.domain.usecase
 
 import com.arno.lyramp.feature.extraction.data.ExtractionShownWordsDao
+import com.arno.lyramp.feature.extraction.data.ExtractionShownWordsEntity
 import com.arno.lyramp.feature.extraction.data.ExtractionShownWordsMapper
 import com.arno.lyramp.feature.extraction.domain.model.ExtractedWord
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +18,19 @@ internal class MarkWordsAsShownUseCase(
                 }
         }
 }
+
+class MarkWordStringsAsShownUseCase internal constructor(
+        private val shownWordsDao: ExtractionShownWordsDao
+) {
+        suspend operator fun invoke(words: List<String>) {
+                withContext(Dispatchers.IO) {
+                        shownWordsDao.insertAll(words.map { ExtractionShownWordsEntity(word = it) })
+                }
+        }
+}
+
 // TODO: пока без репозитория, поэтому здесь диспатчеры, но потом лучше убрать
-internal class GetShownWordsUseCase(
+class GetShownWordsUseCase internal constructor(
         private val shownWordsDao: ExtractionShownWordsDao
 ) {
         suspend operator fun invoke(): Set<String> {
