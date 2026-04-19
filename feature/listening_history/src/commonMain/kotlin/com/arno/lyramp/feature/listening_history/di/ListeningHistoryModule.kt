@@ -10,12 +10,15 @@ import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 import com.arno.lyramp.feature.listening_history.data.getListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.domain.service.DynamicMusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetAlbumWithTracksUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetSuggestedAlbumsUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.buildMusicService
+import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguagesUseCase
@@ -50,6 +53,7 @@ val listeningHistoryModule = module {
 
         single { GetRecentTracksUseCase(repository = get()) }
         single { SaveTrackLanguagesUseCase(repository = get()) }
+        single { PrefillListeningHistoryUseCase(repository = get()) }
 
         single { GetListeningHistoryUseCase(repository = get()) }
         single { HideTrackUseCase(repository = get()) }
@@ -57,6 +61,8 @@ val listeningHistoryModule = module {
         single { SaveTrackLanguageUseCase(repository = get()) }
         single { AddManualTrackUseCase(repository = get()) }
         single { GetPlaylistUrlUseCase(getAuthPlaylistUrl = get()) }
+        single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
+        single { GetSuggestedAlbumsUseCase(dao = get()) }
         single {
                 val authToken = get<ProvideAuthTokenUseCase>()
                 val getPlaylistUrl = get<GetAuthPlaylistUseCase>()

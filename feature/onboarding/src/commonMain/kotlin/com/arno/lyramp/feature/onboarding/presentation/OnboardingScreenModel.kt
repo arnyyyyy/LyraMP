@@ -4,7 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
-import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguagesUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
 import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Error
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 internal class OnboardingScreenModel(
         private val musicService: MusicService,
         private val analyzeLanguages: AnalyzeLanguagesUseCase,
-        private val saveTrackLanguages: SaveTrackLanguagesUseCase
+        private val prefillListeningHistory: PrefillListeningHistoryUseCase
 ) : ScreenModel {
         private val _state = MutableStateFlow<OnboardingState>(Loading(OnboardingStep.LOADING_HISTORY))
         val state: StateFlow<OnboardingState> = _state.asStateFlow()
@@ -29,6 +29,7 @@ internal class OnboardingScreenModel(
         }
 
         internal fun retry() {
+                if (_state.value is Loading) return
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)
@@ -46,9 +47,7 @@ internal class OnboardingScreenModel(
                                 _state.value = Loading(OnboardingStep.ANALYZING_LANGUAGES)
                                 val result = analyzeLanguages(tracks)
 
-                                if (result.trackLanguages.isNotEmpty()) {
-                                        saveTrackLanguages(result.trackLanguages)
-                                }
+                                prefillListeningHistory(rawTracks, result.trackLanguages)
 
                                 _state.value = Success(
                                         step = OnboardingStep.SELECT_LANGUAGES,

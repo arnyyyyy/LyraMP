@@ -44,6 +44,19 @@ internal class ListeningHistoryRepository(
                 }
         }
 
+
+        suspend fun prefillFromOnboarding(
+                tracks: List<ListeningHistoryMusicTrack>,
+                trackLanguages: Map<String, String>
+        ) {
+                if (dao.count() > 0) return
+                val entities = tracks.reversed().map { track ->
+                        val lang = track.id?.let { trackLanguages[it] } ?: track.language
+                        track.copy(language = lang).toEntity()
+                }
+                if (entities.isNotEmpty()) dao.insertAll(entities)
+        }
+
         suspend fun hideTrack(trackId: String) {
                 dao.hideTrack(trackId)
         }
