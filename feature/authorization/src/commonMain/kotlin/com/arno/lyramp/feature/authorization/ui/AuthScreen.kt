@@ -40,10 +40,9 @@ import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
 import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
-import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthHolder
+import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.core.navigation.ScreenFactory
-import com.arno.lyramp.util.Log
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import cafe.adriel.voyager.koin.getScreenModel
@@ -62,54 +61,36 @@ object AuthScreen : Screen {
                 val navigator = LocalNavigator.current
                 val screenModel = getScreenModel<AuthorizationScreenModel>()
                 val screenFactory: ScreenFactory = koinInject()
+                val yandexAuthBus: YandexAuthBus = koinInject()
 
                 val state by screenModel.state.collectAsState()
 
                 LaunchedEffect(Unit) {
-                        YandexAuthHolder.authResultFlow.collect { result ->
+                        yandexAuthBus.flow.collect { result ->
                                 screenModel.onEvent(
                                         AuthEvent.OnAuthCodeReceived(
                                                 service = MusicServiceType.YANDEX,
                                                 code = "${result.token}_token_expiresIn_${result.expiresIn}"
                                         )
                                 )
+                                yandexAuthBus.consume()
                         }
                 }
 
                 LaunchedEffect(Unit) {
                         screenModel.news.collect { effect ->
                                 when (effect) {
-                                        AuthNews.NavigateToOnboarding -> {
-                                                try {
-                                                        navigator?.push(screenFactory.onboardingScreen())
-                                                } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "$TAG: navigation to Onboarding screen" }
-                                                }
-                                        }
+                                        AuthNews.NavigateToOnboarding ->
+                                                navigator?.push(screenFactory.onboardingScreen())
 
-                                        AuthNews.NavigateToApplePlaylistInput -> {
-                                                try {
-                                                        navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
-                                                } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "$TAG: navigation to Apple screen" }
-                                                }
-                                        }
+                                        AuthNews.NavigateToApplePlaylistInput ->
+                                                navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
 
-                                        AuthNews.NavigateToOptionalPlaylistInput -> {
-                                                try {
-                                                        navigator?.push(AuthPlaylistScreen(MusicServiceType.NONE))
-                                                } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "$TAG: navigation to Playlist input screen" }
-                                                }
-                                        }
+                                        AuthNews.NavigateToOptionalPlaylistInput ->
+                                                navigator?.push(AuthPlaylistScreen(MusicServiceType.NONE))
 
-                                        is AuthNews.LaunchAuth -> {
-                                                try {
-                                                        launchAuthUrl(effect.url, effect.service)
-                                                } catch (e: Throwable) {
-                                                        Log.logger.e(e) { "$TAG: launch auth failed for ${effect.service}" }
-                                                }
-                                        }
+                                        is AuthNews.LaunchAuth ->
+                                                launchAuthUrl(effect.url, effect.service)
                                 }
                         }
                 }
@@ -222,6 +203,4 @@ object AuthScreen : Screen {
                         LyraColors.OnGlassCardSecondary.copy(alpha = 0.08f)
                 )
         )
-
-        private const val TAG = "AuthorizationScreen"
 }

@@ -11,6 +11,8 @@ import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenMod
 import com.arno.lyramp.feature.authorization.data.YandexAuthRepository
 import com.arno.lyramp.feature.authorization.data.AppleAuthRepository
 import com.arno.lyramp.feature.authorization.data.OptionalPlaylistRepository
+import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
+import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBusProvider
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -18,6 +20,8 @@ val authModule = module {
         single { YandexAuthRepository(get(named("auth_storage"))) }
         single { AppleAuthRepository() }
         single { OptionalPlaylistRepository() }
+
+        single { YandexAuthBus().also { YandexAuthBusProvider.set(it) } }
 
         factory { AppStartUseCase(get(), get()) }
         factory { GetAuthPlaylistUseCase(get(), get()) }

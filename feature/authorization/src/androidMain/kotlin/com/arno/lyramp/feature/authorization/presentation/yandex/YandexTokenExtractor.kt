@@ -38,7 +38,7 @@ internal object YandexTokenExtractor {
 
                         if (accessToken.isNullOrEmpty()) return false
 
-                        YandexAuthHolder.emit(accessToken, expiresIn)
+                        YandexAuthBusProvider.get().emit(accessToken, expiresIn)
                         true
                 } catch (e: Exception) {
                         Log.e(TAG, "Token parsing failed: ${e.message}", e)

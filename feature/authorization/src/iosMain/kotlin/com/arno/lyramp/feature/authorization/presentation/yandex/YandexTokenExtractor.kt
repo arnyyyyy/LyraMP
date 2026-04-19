@@ -26,7 +26,7 @@ internal object YandexTokenExtractor {
                                 ?.value?.toLongOrNull()
 
                         if (!token.isNullOrEmpty()) {
-                                YandexAuthHolder.emit(token, expiresIn)
+                                YandexAuthBusProvider.get().emit(token, expiresIn)
                                 return true
                         }
 
@@ -53,7 +53,7 @@ internal object YandexTokenExtractor {
                                 return false
                         }
 
-                        YandexAuthHolder.emit(accessToken, expiresIn)
+                        YandexAuthBusProvider.get().emit(accessToken, expiresIn)
                         true
                 } catch (e: Throwable) {
                         NSLog("YandexAuth: Token parsing failed: ${e.message}")

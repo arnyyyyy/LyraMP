@@ -5,7 +5,6 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
-        alias(libs.plugins.ksp)
         alias(libs.plugins.serialization)
 }
 
@@ -38,7 +37,6 @@ kotlin {
                 }
 
                 iosMain.dependencies {
-                        implementation(libs.jetbrains.kotlinx.coroutines.core)
                 }
 
                 commonMain.dependencies {
@@ -83,9 +81,6 @@ android {
 }
 
 dependencies {
-        add("kspAndroid", libs.androidx.room.compiler)
-        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-        add("kspIosArm64", libs.androidx.room.compiler)
 }
 
 compose.resources {
