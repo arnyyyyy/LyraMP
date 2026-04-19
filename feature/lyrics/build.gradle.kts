@@ -39,10 +39,10 @@ kotlin {
                 }
 
                 iosMain.dependencies {
-                        implementation(libs.jetbrains.kotlinx.coroutines.core)
                 }
 
                 commonMain.dependencies {
+                        implementation(libs.ksoup)
                         implementation(project(":core"))
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))

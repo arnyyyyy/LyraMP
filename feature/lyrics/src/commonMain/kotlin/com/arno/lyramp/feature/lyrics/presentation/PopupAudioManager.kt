@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class PopupAudioManager(
         private val getSpeechFilePath: GetSpeechFilePathUseCase,
-        private val speechController: TranslationSpeechController = TranslationSpeechController(),
+        private val speechController: TranslationSpeechController,
 ) {
 
         internal fun stop() {

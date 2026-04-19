@@ -45,7 +45,10 @@ val lyricsModule = module {
                         getLyrics = get(),
                         customLyricsRepository = get(),
                         translateWord = get(),
-                        audioManager = PopupAudioManager(getSpeechFilePath = get()),
+                        audioManager = PopupAudioManager(
+                                getSpeechFilePath = get(),
+                                speechController = get(),
+                        ),
                         saveWordToLearn = get(),
                         lyricsTextParser = get(),
                         wordDifficultyProvider = get(),

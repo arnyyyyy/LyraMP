@@ -17,6 +17,7 @@ import com.arno.lyramp.feature.translation.api.TranslationResult
 import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,14 +52,13 @@ internal class LyricsScreenModel(
         private val _wordLevels = MutableStateFlow<Map<String, CefrLevel>>(emptyMap())
         val wordLevels: StateFlow<Map<String, CefrLevel>> = _wordLevels.asStateFlow()
 
-        val canShowDifficultyButton: Boolean
-                get() = selectedLanguage != null && wordDifficultyProvider != null
+        val canShowDifficultyButton = selectedLanguage != null && wordDifficultyProvider != null
 
         init {
                 loadLyrics()
         }
 
-        fun loadLyrics() {
+        private fun loadLyrics() {
                 screenModelScope.launch {
                         _uiState.value = Loading
                         try {
@@ -75,6 +75,8 @@ internal class LyricsScreenModel(
                                         is LyricsResult.Found -> _uiState.value = Success(lyricsTextParser.parse(result.lyrics))
                                         LyricsResult.NotFound -> _uiState.value = Error("Текст песни не найден")
                                 }
+                        } catch (e: CancellationException) {
+                                throw e
                         } catch (e: Throwable) {
                                 _uiState.value = Error(e.message ?: "Unknown error")
                         }
