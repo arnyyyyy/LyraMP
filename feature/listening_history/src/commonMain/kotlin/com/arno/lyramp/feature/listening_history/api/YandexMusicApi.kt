@@ -33,6 +33,12 @@ internal class YandexMusicApi(private val client: HttpClient) {
                 }.body()
         }
 
+        suspend fun getPlaylist(uid: Long, kind: Long): YandexPlaylistResponse {
+                return client.get("$BASE_URL/users/$uid/playlists/$kind") {
+                        header(HttpHeaders.Accept, "application/json")
+                }.body()
+        }
+
         // TODO: мейби все-таки не в listening_history_api
         suspend fun getAlbumWithTracks(token: String, albumId: String): YandexAlbumWithTracksResponse {
                 return client.get("$BASE_URL/albums/$albumId/with-tracks") {

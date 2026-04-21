@@ -9,7 +9,7 @@ internal class CompositeMusicService(private val services: List<MusicService>) :
                 val merged = mutableListOf<ListeningHistoryMusicTrack>()
 
                 for (service in services) {
-                        val result = runCatching { service.getListeningHistory(limit) }
+                        val result = runCatching { service.getListeningHistory(Int.MAX_VALUE) }
                         result.onFailure { e ->
                                 Log.logger.e(e) { "Error fetching listening history from ${service::class.simpleName}" }
                         }
@@ -19,6 +19,6 @@ internal class CompositeMusicService(private val services: List<MusicService>) :
                                 if (seen.add(key)) merged.add(track)
                         }
                 }
-                return merged.take(limit)
+                return merged
         }
 }

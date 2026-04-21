@@ -29,6 +29,9 @@ internal interface ListeningHistoryDao {
         @Query("UPDATE listening_history_tracks SET isShowing = 0 WHERE trackId = :trackId")
         suspend fun hideTrack(trackId: String)
 
+        @Query("SELECT trackId FROM listening_history_tracks WHERE isShowing = 0")
+        suspend fun getHiddenTrackIds(): List<String?>
+
         @Query("DELETE FROM listening_history_tracks")
         suspend fun deleteAll()
 }

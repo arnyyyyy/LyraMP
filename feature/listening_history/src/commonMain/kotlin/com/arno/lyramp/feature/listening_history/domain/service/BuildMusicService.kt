@@ -14,25 +14,25 @@ internal fun buildMusicService(
         yandexApi: YandexMusicApi,
         appleMusicApi: AppleMusicApi,
 ): MusicService {
-        val playlistUrl = getPlaylistUrl(MusicServiceType.NONE)
-        val hasPlaylist = !playlistUrl.isNullOrBlank()
+        val playlistUrl = getPlaylistUrl(MusicServiceType.NONE)?.takeIf { it.isNotBlank() }
 
-        val playlistService: MusicService? = if (hasPlaylist) {
+        val playlistService: MusicService? = playlistUrl?.let { url ->
                 when {
-                        playlistUrl.contains("music.apple.com") -> AppleMusicService(
+                        url.contains("music.apple.com") -> AppleMusicService(
                                 getPlaylistUrl = getPlaylistUrl,
                                 playlistSource = MusicServiceType.NONE,
                                 api = appleMusicApi,
                         )
 
-                        playlistUrl.contains("music.yandex") -> YandexPlaylistMusicService(
+                        url.contains("music.yandex") -> YandexPlaylistMusicService(
                                 getPlaylistUrl = getPlaylistUrl,
-                                api = appleMusicApi,
+                                htmlApi = appleMusicApi,
+                                yandexApi = yandexApi,
                         )
 
                         else -> null
                 }
-        } else null
+        }
 
         val lastService = getLastService()
         val authService: MusicService? = when (lastService) {

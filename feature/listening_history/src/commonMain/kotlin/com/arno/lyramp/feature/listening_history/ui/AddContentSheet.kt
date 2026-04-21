@@ -47,7 +47,6 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AddContentSheet(
-        currentPlaylistUrl: String = "",
         onSavePlaylistUrl: (String) -> Unit,
         onAddTrack: (name: String, artist: String) -> Unit,
         onDismiss: () -> Unit,
@@ -74,7 +73,6 @@ internal fun AddContentSheet(
                 },
         ) {
                 AddContentSheetContent(
-                        currentPlaylistUrl = currentPlaylistUrl,
                         onSavePlaylistUrl = onSavePlaylistUrl,
                         onAddTrack = onAddTrack,
                 )
@@ -83,11 +81,10 @@ internal fun AddContentSheet(
 
 @Composable
 private fun AddContentSheetContent(
-        currentPlaylistUrl: String,
         onSavePlaylistUrl: (String) -> Unit,
         onAddTrack: (name: String, artist: String) -> Unit,
 ) {
-        var playlistUrl by remember { mutableStateOf(currentPlaylistUrl) }
+        var playlistUrl by remember { mutableStateOf("") }
         var trackName by remember { mutableStateOf("") }
         var trackArtist by remember { mutableStateOf("") }
         var trackAdded by remember { mutableStateOf(false) }

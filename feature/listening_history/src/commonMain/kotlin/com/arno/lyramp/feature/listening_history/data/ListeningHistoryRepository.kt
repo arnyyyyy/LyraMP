@@ -50,9 +50,10 @@ internal class ListeningHistoryRepository(
                 trackLanguages: Map<String, String>
         ) {
                 if (dao.count() > 0) return
-                val entities = tracks.reversed().map { track ->
-                        val lang = track.id?.let { trackLanguages[it] } ?: track.language
-                        track.copy(language = lang).toEntity()
+                val entities = tracks.takeLast(MAX_ONBOARDING_SIZE).reversed().map { track ->
+                        val explicit = track.id?.let { trackLanguages[it] } ?: track.language
+                        val resolved = explicit ?: detectLanguage(track.name)
+                        track.copy(language = resolved).toEntity()
                 }
                 if (entities.isNotEmpty()) dao.insertAll(entities)
         }
@@ -65,9 +66,9 @@ internal class ListeningHistoryRepository(
                 dao.updateLanguage(trackId, language)
         }
 
-        suspend fun addManualTrack(name: String, artist: String): ListeningHistoryMusicTrack {
+        suspend fun addManualTrack(name: String, artist: String, language: String? = null): ListeningHistoryMusicTrack {
                 val id = "${name}||${artist}"
-                val language = detectLanguage(name)
+                val language = language ?: detectLanguage(name)
                 val entity = ListeningHistoryTrackEntity(
                         trackId = id,
                         albumId = null,
@@ -89,6 +90,7 @@ internal class ListeningHistoryRepository(
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
                 val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
                 val cachedIds = cached.map { it.trackId ?: "${it.name}||${it.artists}" }.toSet()
+                val hiddenIds = dao.getHiddenTrackIds().filterNotNull().toSet()
 
                 val manualIds = cachedIds.filter { it.contains("||") }.toSet()
 
@@ -99,7 +101,10 @@ internal class ListeningHistoryRepository(
                         else dao.deleteAll()
                 }
 
-                val toInsert = fresh.filter { (((it.id ?: "${it.name}||${it.artists.joinToString(",")}")) !in cachedIds) }
+                val toInsert = fresh.filter { track ->
+                        val id = track.id ?: "${track.name}||${track.artists.joinToString(",")}"
+                        id !in cachedIds && id !in hiddenIds
+                }
                 if (toInsert.isNotEmpty())
                         dao.insertAll(toInsert.reversed().map { it.withDetectedLanguage().toEntity() })
         }
@@ -111,5 +116,9 @@ internal class ListeningHistoryRepository(
         }
 
         private fun List<ListeningHistoryMusicTrack>.filterNonNative(): List<ListeningHistoryMusicTrack> =
-                filter { it.language != "ru" }
+                filter { it.language != null && it.language != "ru" } // AA? TODO?
+
+        companion object {
+                private const val MAX_ONBOARDING_SIZE = 40
+        }
 }

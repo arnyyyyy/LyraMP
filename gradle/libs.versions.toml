@@ -9,7 +9,7 @@ room = "2.8.4"
 sqlite = "2.6.2"
 ksp = "2.3.5"
 basicSound = "+"
-composeMultiplatform = "1.9.1"
+composeMultiplatform = "1.10.3"
 media3 = "1.9.2"
 kermit = "2.0.8"
 korio = "4.0.10"
@@ -27,11 +27,14 @@ okio = "3.16.4"
 voyagerNavigator = "1.0.1"
 voyagerScreenModel = "1.1.0-beta03"
 browser = "1.9.0"
+work-runtime = "2.10.1"
 security-crypto = "1.1.0-alpha06"
 dependency-analysis = "3.6.1"
 koin = "4.1.1"
+ksoup = "0.2.5"
 
 [libraries]
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 basic-sound = { module = "app.lexilabs.basic:basic-sound", version.ref = "basicSound" }
 coil3-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
 coil3-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil3" }
@@ -64,6 +67,7 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyagerNavigator" }
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyagerNavigator" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }

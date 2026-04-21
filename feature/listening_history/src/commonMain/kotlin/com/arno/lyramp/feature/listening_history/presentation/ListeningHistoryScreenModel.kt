@@ -27,7 +27,6 @@ internal class ListeningHistoryScreenModel(
         private val hideTrack: HideTrackUseCase,
         private val updateTrackLanguage: UpdateTrackLanguageUseCase,
         private val addManualTrack: AddManualTrackUseCase,
-        private val getPlaylistUrl: GetPlaylistUrlUseCase,
         private val savePlaylistUrl: SavePlaylistUrlUseCase,
         observeSelectedLanguage: ObserveSelectedLanguageUseCase,
         private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
@@ -147,9 +146,7 @@ internal class ListeningHistoryScreenModel(
                         updateFilteredTracks()
                 }
         }
-
-        fun getPlaylistUrl(): String = getPlaylistUrl.invoke()
-
+        
         fun onPlaylistUrlChanged(url: String) {
                 savePlaylistUrl(url)
                 refresh()
@@ -157,7 +154,7 @@ internal class ListeningHistoryScreenModel(
 
         fun addManualTrack(name: String, artist: String) {
                 screenModelScope.launch {
-                        val track = addManualTrack.invoke(name, artist)
+                        val track = addManualTrack.invoke(name, artist, selectedLanguage.value)
                         _allTracks.value = listOf(track) + _allTracks.value
                         refreshLanguagesInternal()
                 }

@@ -42,8 +42,9 @@ val listeningHistoryModule = module {
                 val yandexApi = get<YandexMusicApi>()
                 val appleMusicApi = get<AppleMusicApi>()
 
-                val initial = buildMusicService(getLastService, authToken, getPlaylistUrl, yandexApi, appleMusicApi)
-                DynamicMusicService(initial)
+                DynamicMusicService(
+                        factory = { buildMusicService(getLastService, authToken, getPlaylistUrl, yandexApi, appleMusicApi) }
+                )
         }
         single<MusicService> { get<DynamicMusicService>() }
 
@@ -64,18 +65,8 @@ val listeningHistoryModule = module {
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
         single { GetSuggestedAlbumsUseCase(dao = get()) }
         single {
-                val authToken = get<ProvideAuthTokenUseCase>()
-                val getPlaylistUrl = get<GetAuthPlaylistUseCase>()
-                val getLastService = get<GetLastAuthorizedServiceUseCase>()
-                val yandexApi = get<YandexMusicApi>()
-                val appleMusicApi = get<AppleMusicApi>()
-
                 SavePlaylistUrlUseCase(
                         saveAuthPlaylistUrl = get(),
-                        dynamicMusicService = get(),
-                        musicServiceFactory = {
-                                buildMusicService(getLastService, authToken, getPlaylistUrl, yandexApi, appleMusicApi)
-                        },
                 )
         }
 
@@ -85,7 +76,6 @@ val listeningHistoryModule = module {
                         hideTrack = get(),
                         updateTrackLanguage = get(),
                         addManualTrack = get(),
-                        getPlaylistUrl = get(),
                         savePlaylistUrl = get(),
                         observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),

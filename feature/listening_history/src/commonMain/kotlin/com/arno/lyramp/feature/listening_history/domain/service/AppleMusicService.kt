@@ -15,10 +15,16 @@ internal class AppleMusicService(
         private val parser by lazy { AppleMusicParser() }
 
         override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
-                val playlist = getPlaylistUrl(playlistSource) ?: error("Failed to get Apple Music playlist URL")
+                val playlist = getPlaylistUrl(playlistSource)
+                if (playlist.isNullOrBlank()) {
+                        Log.logger.w { "AppleMusicService: no playlist URL for source" }
+                        return emptyList()
+                }
 
                 return runCatching {
-                        api.loadPlaylistHtml(playlist).let(parser::parse).take(limit)
-                }.onFailure { Log.logger.e(it) { "AppleMusicService: failed to load playlist" } }.getOrThrow()
+                        val html = api.loadPlaylistHtml(playlist)
+                        val tracks = parser.parse(html).take(limit)
+                        tracks
+                }.onFailure { Log.logger.e(it) { "AppleMusicService: failed to load playlist $playlist" } }.getOrThrow()
         }
 }

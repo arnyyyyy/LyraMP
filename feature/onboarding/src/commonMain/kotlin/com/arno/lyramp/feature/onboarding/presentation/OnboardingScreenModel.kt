@@ -25,11 +25,15 @@ internal class OnboardingScreenModel(
         val state: StateFlow<OnboardingState> = _state.asStateFlow()
 
         init {
-                retry()
+                load()
         }
 
         internal fun retry() {
                 if (_state.value is Loading) return
+                load()
+        }
+
+        private fun load() {
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)

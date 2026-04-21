@@ -67,6 +67,7 @@ kotlin {
                         implementation(libs.koin.compose)
                         implementation(libs.androidx.room.runtime)
                         implementation(libs.androidx.sqlite.bundled)
+                        implementation(libs.ksoup)
                 }
 
                 commonTest.dependencies {

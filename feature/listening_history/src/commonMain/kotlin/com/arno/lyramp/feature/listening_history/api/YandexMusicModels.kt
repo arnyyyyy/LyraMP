@@ -81,6 +81,20 @@ internal data class TracksResponseWrapper(
 )
 
 @Serializable
+internal data class YandexPlaylistResponse(
+        val result: YandexPlaylistResult? = null
+) {
+        @Serializable
+        data class YandexPlaylistResult(
+                val uid: Long? = null,
+                val kind: Long? = null,
+                val title: String? = null,
+                val trackCount: Int? = null,
+                val tracks: List<YandexTrackItem>? = null
+        )
+}
+
+@Serializable
 internal data class YandexAlbumWithTracksResponse(
         val result: YandexAlbumFull? = null
 )

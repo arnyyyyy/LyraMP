@@ -91,7 +91,6 @@ object ShowListeningHistoryScreen : Screen {
 
                 if (showAddContentSheet) {
                         AddContentSheet(
-                                currentPlaylistUrl = screenModel.getPlaylistUrl(),
                                 onSavePlaylistUrl = { url ->
                                         screenModel.onPlaylistUrlChanged(url)
                                         showAddContentSheet = false
