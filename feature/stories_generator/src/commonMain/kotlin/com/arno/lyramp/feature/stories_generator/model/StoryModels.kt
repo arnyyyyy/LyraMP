@@ -1,14 +1,34 @@
 package com.arno.lyramp.feature.stories_generator.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class StoryWord(
         val word: String,
         val translation: String,
 )
 
+enum class StoryGenre(val displayName: String, val emoji: String, val promptHint: String) {
+        COMEDY("Комедия", "😂", "funny and lighthearted comedy"),
+        HORROR("Ужасы", "👻", "creepy horror with suspense"),
+        DRAMA("Драма", "🎭", "emotional dramatic story"),
+        ACTION("Боевик", "💥", "action-packed thriller");
+
+        companion object {
+                fun random(): StoryGenre = entries.random()
+        }
+}
+
 data class GeneratedStory(
+        val id: Long = 0L,
+        val title: String,
+        val genre: StoryGenre,
         val text: String,
         val wordsUsed: List<StoryWord>,
-        val generationTimeMs: Long
+        val language: String,
+        val generationTimeMs: Long = 0L,
+        val createdAt: Long = 0L,
+        val isRead: Boolean = false
 )
 
 enum class DownloadableModel(
@@ -29,4 +49,3 @@ enum class DownloadableModel(
                 description = "Требования:  ≥4 ГБ RAM"
         )
 }
-

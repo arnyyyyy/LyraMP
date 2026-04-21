@@ -1,12 +1,14 @@
 package com.arno.lyramp.core.background
 
-object BackgroundTaskRegistry {
-        private val factories = mutableMapOf<String, () -> BackgroundTask>()
+import org.koin.core.Koin
 
-        fun register(taskId: String, factory: () -> BackgroundTask) {
+object BackgroundTaskRegistry {
+        private val factories = mutableMapOf<String, (Koin) -> BackgroundTask>()
+
+        fun register(taskId: String, factory: (Koin) -> BackgroundTask) {
                 factories[taskId] = factory
         }
 
-        fun create(taskId: String): BackgroundTask? = factories[taskId]?.invoke()
+        fun create(taskId: String, koin: Koin): BackgroundTask? = factories[taskId]?.invoke(koin)
         fun allTaskIds(): Set<String> = factories.keys.toSet()
 }

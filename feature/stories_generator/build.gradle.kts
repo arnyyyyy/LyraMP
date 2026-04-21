@@ -5,6 +5,9 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
+        alias(libs.plugins.ksp)
+        alias(libs.plugins.androidx.room)
+        alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -32,6 +35,7 @@ kotlin {
         sourceSets {
                 androidMain.dependencies {
                         implementation(libs.koin.android)
+                        implementation(libs.androidx.room.sqlite.wrapper)
                 }
 
                 iosMain.dependencies {
@@ -53,10 +57,13 @@ kotlin {
                         implementation(libs.voyager.koin)
 
                         implementation(libs.kotlinx.coroutines.core)
+                        implementation(libs.kotlinx.serialization.json)
                         implementation(libs.kermit)
                         implementation(libs.koin.core)
                         implementation(libs.ktor.client.core)
                         implementation(libs.llamatik)
+                        implementation(libs.androidx.room.runtime)
+                        implementation(libs.androidx.sqlite.bundled)
                 }
 
                 commonTest.dependencies {
@@ -77,6 +84,16 @@ android {
                 sourceCompatibility = JavaVersion.VERSION_11
                 targetCompatibility = JavaVersion.VERSION_11
         }
+}
+
+dependencies {
+        add("kspAndroid", libs.androidx.room.compiler)
+        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+        add("kspIosArm64", libs.androidx.room.compiler)
+}
+
+room {
+        schemaDirectory("$projectDir/schemas")
 }
 
 compose.resources {

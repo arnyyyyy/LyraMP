@@ -25,7 +25,7 @@ class IosBackgroundTaskManager : BackgroundTaskManager {
                         ) { bgTask ->
                                 if (bgTask == null) return@registerForTaskWithIdentifier
                                 scope.launch {
-                                        val task = BackgroundTaskRegistry.create(taskId)
+                                        val task = BackgroundTaskRegistry.create(taskId, org.koin.mp.KoinPlatform.getKoin())
                                         if (task == null) {
                                                 bgTask.setTaskCompletedWithSuccess(false)
                                                 return@launch

@@ -1,6 +1,5 @@
 package com.arno.lyramp.feature.extraction.domain
 
-import co.touchlab.kermit.Logger
 import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.extraction.domain.model.ExtractedWord
@@ -13,6 +12,7 @@ import com.arno.lyramp.feature.extraction.domain.usecase.MarkWordsAsShownUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
+import com.arno.lyramp.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -28,8 +28,6 @@ internal class Extractor(
         private val getExhaustedTrackIds: GetExhaustedTrackIdsUseCase,
         private val markTrackExhausted: MarkTrackExhaustedUseCase,
 ) {
-        private val log = Logger.withTag("LyricsWordsExtractor")
-
         internal suspend fun extractFromRecentTracks(
                 languageFilter: String? = null,
                 cefrFilter: Set<CefrLevel>? = null,
@@ -48,10 +46,7 @@ internal class Extractor(
                         .filter { (it.id ?: "") !in exhaustedIds }
                         .take(MAX_TRACKS_TO_SCAN)
 
-                if (candidateTracks.isEmpty()) {
-                        log.i { "No candidate tracks (${exhaustedIds.size} exhausted, filter=$languageFilter)" }
-                        return@withContext ExtractionResult(0, 0, 0)
-                }
+                if (candidateTracks.isEmpty()) return@withContext ExtractionResult(0, 0, 0)
 
                 val vocabByLang = candidateTracks.mapNotNull { it.language }.toSet()
                         .associateWith { lang -> getCefrVocabulary(lang) }
@@ -77,24 +72,20 @@ internal class Extractor(
                                         totalWordsInLyrics += result.totalWordsInLyrics
                                         processedTracks++
 
-                                        // If this track yielded no new words at this level → exhausted
                                         val trackId = track.id
                                         if (result.words.isEmpty() && levelsKey != null && trackId != null) {
                                                 markTrackExhausted(trackId, track.name, levelsKey)
-                                                log.d { "Track '${track.name}' exhausted for level $levelsKey" }
                                         }
                                 } else {
                                         val trackId = track.id
                                         if (levelsKey != null && trackId != null) {
-                                                // No lyrics found → also mark as exhausted (no point retrying)
                                                 markTrackExhausted(trackId, track.name, levelsKey)
-                                                log.d { "Track '${track.name}' has no lyrics, marking exhausted" }
                                         }
                                 }
                         } catch (e: CancellationException) {
                                 throw e
                         } catch (e: Exception) {
-                                log.w(e) { "Failed to process track: ${track.name}" }
+                                Log.logger.w(e) { "Failed to process track: ${track.name}" }
                         }
                 }
 

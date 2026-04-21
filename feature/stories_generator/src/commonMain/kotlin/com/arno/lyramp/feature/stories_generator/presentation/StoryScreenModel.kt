@@ -7,8 +7,10 @@ import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllLearnWordsUseCase
 import com.arno.lyramp.feature.stories_generator.domain.LlamatikStoryGenerator
 import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadRepository
+import com.arno.lyramp.feature.stories_generator.data.GeneratedStoryRepository
 import com.arno.lyramp.feature.stories_generator.model.DownloadableModel
 import com.arno.lyramp.feature.stories_generator.model.ModelDownloadState
+import com.arno.lyramp.feature.stories_generator.model.StoryGenre
 import com.arno.lyramp.feature.stories_generator.model.StoryWord
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +20,8 @@ import kotlinx.coroutines.launch
 internal class StoryScreenModel(
         private val getAllLearnWords: GetAllLearnWordsUseCase,
         private val modelDownloadRepository: ModelDownloadRepository,
-        private val getSelectedLanguageUseCase: GetSelectedLanguageUseCase
+        private val getSelectedLanguageUseCase: GetSelectedLanguageUseCase,
+        private val repository: GeneratedStoryRepository
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<StoryUiState>(StoryUiState.Idle)
@@ -182,11 +185,15 @@ internal class StoryScreenModel(
 
                 screenModelScope.launch {
                         try {
+                                val genre = StoryGenre.random()
                                 val story = generator.generateStory(
                                         selectedWords,
-                                        language = currentLanguage ?: "en"
+                                        language = currentLanguage ?: "en",
+                                        genre = genre
                                 )
-                                _uiState.value = StoryUiState.StoryGenerated(story)
+                                val newId = repository.save(story, isManual = true)
+                                val saved = if (newId > 0L) story.copy(id = newId) else story
+                                _uiState.value = StoryUiState.StoryGenerated(saved)
                         } catch (e: Exception) {
                                 _uiState.value = StoryUiState.Error(
                                         e.message ?: "Ошибка генерации"

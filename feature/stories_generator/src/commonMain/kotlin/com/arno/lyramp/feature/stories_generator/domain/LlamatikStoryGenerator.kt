@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.stories_generator.domain
 
 import com.arno.lyramp.feature.stories_generator.model.GeneratedStory
+import com.arno.lyramp.feature.stories_generator.model.StoryGenre
 import com.arno.lyramp.feature.stories_generator.model.StoryWord
 import com.arno.lyramp.util.Log
 import com.llamatik.library.platform.LlamaBridge
@@ -39,24 +40,30 @@ class LlamatikStoryGenerator {
         @OptIn(ExperimentalTime::class)
         suspend fun generateStory(
                 words: List<StoryWord>,
-                language: String
+                language: String,
+                genre: StoryGenre = StoryGenre.DRAMA
         ): GeneratedStory {
                 val startTime = Clock.System.now().toEpochMilliseconds()
 
                 applyGenerationParams()
                 val raw = withContext(Dispatchers.IO) {
                         LlamaBridge.generateWithContext(
-                                systemPrompt = SYSTEM_PROMPT,
+                                systemPrompt = systemPromptFor(genre),
                                 contextBlock = "",
-                                userPrompt = buildUserPrompt(words, language)
+                                userPrompt = buildUserPrompt(words, language, genre)
                         )
                 }
                 val text = cleanResponse(raw)
+                val title = deriveTitle(text, genre)
                 val elapsed = Clock.System.now().toEpochMilliseconds() - startTime
                 return GeneratedStory(
+                        title = title,
+                        genre = genre,
                         text = text,
                         wordsUsed = words,
-                        generationTimeMs = elapsed
+                        language = language,
+                        generationTimeMs = elapsed,
+                        createdAt = Clock.System.now().toEpochMilliseconds()
                 )
         }
 
@@ -75,18 +82,27 @@ class LlamatikStoryGenerator {
                 return text.trim()
         }
 
-        private fun buildUserPrompt(words: List<StoryWord>, language: String): String {
+        private fun deriveTitle(text: String, genre: StoryGenre): String {
+                val firstSentence = text.substringBefore('.')
+                        .substringBefore('\n')
+                        .trim()
+                if (firstSentence.isEmpty()) return genre.displayName
+                val words = firstSentence.split(" ").take(6).joinToString(" ")
+                return words.ifBlank { genre.displayName }
+        }
+
+        private fun systemPromptFor(genre: StoryGenre): String =
+                "You are a storyteller. Given a list of words and a genre (${genre.promptHint}), " +
+                    "write a short story (3-5 sentences) using all of them in the requested genre."
+
+        private fun buildUserPrompt(words: List<StoryWord>, language: String, genre: StoryGenre): String {
                 val selected = words
                         .map { it.word.lowercase() }
                         .filter { it.length > 2 }
-                        .take(3)
+                        .take(8)
                 val wordList = selected.joinToString(", ")
 
-                return "Write a story using ALL OF words:$wordList"
-        }
-
-        private companion object {
-                const val SYSTEM_PROMPT = "You are a storyteller. Given a list of words, write a short story (3-5 sentences) using all of them."
+                return "Genre: ${genre.promptHint}. Write a story using ALL OF words: $wordList"
                 // TODO ЯЗЫК
         }
 }

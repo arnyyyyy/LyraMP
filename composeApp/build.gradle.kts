@@ -69,6 +69,7 @@ kotlin {
                         implementation(project(":feature:music_streaming"))
                         implementation(project(":feature:user_settings"))
                         implementation(project(":feature:stories_generator"))
+                        implementation(project(":feature:album_suggestion"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)

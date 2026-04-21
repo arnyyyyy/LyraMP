@@ -74,7 +74,7 @@ class LyraBackgroundWorker(
         override suspend fun doWork(): Result {
                 val taskId = inputData.getString(KEY_TASK_ID) ?: return Result.failure()
 
-                val task = BackgroundTaskRegistry.create(taskId)
+                val task = BackgroundTaskRegistry.create(taskId, org.koin.mp.KoinPlatform.getKoin())
                 if (task == null) {
                         Log.logger.e { "No task registered for id=$taskId" }
                         return Result.failure()

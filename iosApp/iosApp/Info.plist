@@ -17,5 +17,16 @@
             </dict>
         </array>
 
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>processing</string>
+            <string>fetch</string>
+        </array>
+        <key>BGTaskSchedulerPermittedIdentifiers</key>
+        <array>
+            <string>lyra_extraction_background</string>
+            <string>lyra_story_pregeneration</string>
+        </array>
+
     </dict>
 </plist>
