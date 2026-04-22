@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.extraction.domain
 
 import com.arno.lyramp.core.model.CefrLevel
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.extraction.domain.model.ExtractedWord
 import com.arno.lyramp.feature.extraction.domain.model.ExtractionResult
@@ -38,7 +39,7 @@ internal class Extractor(
                 val exhaustedIds = if (levelsKey != null) getExhaustedTrackIds(levelsKey) else emptySet()
 
                 val candidateTracks = getRecentTracks()
-                        .filter { it.language in SUPPORTED_LANGUAGES }
+                        .filter { it.language in LyraLang.SUPPORTED }
                         .let { tracks ->
                                 if (languageFilter != null) tracks.filter { it.language == languageFilter }
                                 else tracks
@@ -147,6 +148,5 @@ internal class Extractor(
         private companion object {
                 const val MAX_TRACKS_TO_SCAN = 5
                 const val MAX_NEW_WORDS = 30
-                val SUPPORTED_LANGUAGES = setOf("en", "fr", "de", "es", "it", "hu", "ja", "zh", "he", "ar")
         }
 }

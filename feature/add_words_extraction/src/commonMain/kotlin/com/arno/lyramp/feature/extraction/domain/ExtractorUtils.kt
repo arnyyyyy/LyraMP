@@ -1,11 +1,11 @@
 package com.arno.lyramp.feature.extraction.domain
 
 import com.arno.lyramp.core.model.CefrLevel
+import com.arno.lyramp.core.model.LyraLang
 import kotlin.collections.iterator
 
 object WordExtractionUtils {
         private val latinRegexp = Regex("[\\p{L}'-]+")
-        private val CJK_LANGUAGES = setOf("ja", "zh")
 
         fun extractUniqueWords(
                 lyrics: String,
@@ -14,7 +14,7 @@ object WordExtractionUtils {
         ): Map<String, Pair<String, CefrLevel>> {
                 val lines = lyrics.lineSequence().filter { it.isNotBlank() }.toList()
 
-                return if (language in CJK_LANGUAGES) {
+                return if (language in LyraLang.CJK) {
                         extractBySubstring(lines, cefrVocab)
                 } else {
                         extractByRegex(lines, cefrVocab, language)
