@@ -14,11 +14,12 @@ import com.arno.lyramp.feature.listening_history.domain.usecase.GetAlbumWithTrac
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetSuggestedAlbumsUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
-import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistUrlUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.buildMusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguagesUseCase
@@ -61,7 +62,7 @@ val listeningHistoryModule = module {
         single { UpdateTrackLanguageUseCase(repository = get()) }
         single { SaveTrackLanguageUseCase(repository = get()) }
         single { AddManualTrackUseCase(repository = get()) }
-        single { GetPlaylistUrlUseCase(getAuthPlaylistUrl = get()) }
+        single { GetPlaylistSourcesUseCase(getAuthPlaylistUrl = get()) }
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
         single { GetSuggestedAlbumsUseCase(repository = get()) }
         single {
@@ -69,6 +70,7 @@ val listeningHistoryModule = module {
                         saveAuthPlaylistUrl = get(),
                 )
         }
+        single { RemovePlaylistSourceUseCase(savePlaylistUrl = get(), saveAuthPlaylistUrl = get()) }
 
         factory {
                 ListeningHistoryScreenModel(
@@ -77,6 +79,8 @@ val listeningHistoryModule = module {
                         updateTrackLanguage = get(),
                         addManualTrack = get(),
                         savePlaylistUrl = get(),
+                        getPlaylistSources = get(),
+                        removePlaylistSource = get(),
                         observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),

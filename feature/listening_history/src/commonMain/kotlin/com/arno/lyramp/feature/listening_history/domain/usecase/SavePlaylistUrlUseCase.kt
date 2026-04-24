@@ -6,8 +6,8 @@ import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 internal class SavePlaylistUrlUseCase(
         private val saveAuthPlaylistUrl: SaveAuthPlaylistUrlUseCase,
 ) {
-        operator fun invoke(url: String) {
-                saveAuthPlaylistUrl(MusicServiceType.NONE, url.takeIf { it.isNotBlank() })
+        operator fun invoke(url: String?) {
+                saveAuthPlaylistUrl(MusicServiceType.NONE, url?.takeIf { it.isNotBlank() })
         }
 }
 

@@ -4,10 +4,12 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
+import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
-import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistUrlUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.UpdateTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
@@ -28,6 +30,8 @@ internal class ListeningHistoryScreenModel(
         private val updateTrackLanguage: UpdateTrackLanguageUseCase,
         private val addManualTrack: AddManualTrackUseCase,
         private val savePlaylistUrl: SavePlaylistUrlUseCase,
+        private val getPlaylistSources: GetPlaylistSourcesUseCase,
+        private val removePlaylistSource: RemovePlaylistSourceUseCase,
         observeSelectedLanguage: ObserveSelectedLanguageUseCase,
         private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
         private val getLearningLanguages: GetLearningLanguagesUseCase,
@@ -49,7 +53,11 @@ internal class ListeningHistoryScreenModel(
         private val _isRefreshing = MutableStateFlow(false)
         val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+        private val _playlistSources = MutableStateFlow<List<PlaylistSource>>(emptyList())
+        val playlistSources: StateFlow<List<PlaylistSource>> = _playlistSources.asStateFlow()
+
         init {
+                refreshPlaylistSources()
                 loadHistory()
                 screenModelScope.launch {
                         selectedLanguage.collect { updateFilteredTracks() }
@@ -146,9 +154,16 @@ internal class ListeningHistoryScreenModel(
                         updateFilteredTracks()
                 }
         }
-        
+
         fun onPlaylistUrlChanged(url: String) {
                 savePlaylistUrl(url)
+                refreshPlaylistSources()
+                refresh()
+        }
+
+        fun removePlaylistSource(sourceId: String) {
+                removePlaylistSource.invoke(sourceId)
+                refreshPlaylistSources()
                 refresh()
         }
 
@@ -158,5 +173,9 @@ internal class ListeningHistoryScreenModel(
                         _allTracks.value = listOf(track) + _allTracks.value
                         refreshLanguagesInternal()
                 }
+        }
+
+        private fun refreshPlaylistSources() {
+                _playlistSources.value = getPlaylistSources()
         }
 }

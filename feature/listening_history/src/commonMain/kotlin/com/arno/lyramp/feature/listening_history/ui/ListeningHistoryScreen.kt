@@ -65,6 +65,7 @@ object ShowListeningHistoryScreen : Screen {
                 val isRefreshing by screenModel.isRefreshing.collectAsState()
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
+                val playlistSources by screenModel.playlistSources.collectAsState()
 
                 val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
                 val settingsState by userSettingsScreenModel.state.collectAsState()
@@ -91,13 +92,14 @@ object ShowListeningHistoryScreen : Screen {
 
                 if (showAddContentSheet) {
                         AddContentSheet(
+                                playlistSources = playlistSources,
                                 onSavePlaylistUrl = { url ->
                                         screenModel.onPlaylistUrlChanged(url)
-                                        showAddContentSheet = false
                                 },
                                 onAddTrack = { name, artist ->
                                         screenModel.addManualTrack(name, artist)
                                 },
+                                onRemovePlaylistSource = screenModel::removePlaylistSource,
                                 onDismiss = { showAddContentSheet = false },
                         )
                 }
