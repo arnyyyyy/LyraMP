@@ -8,6 +8,7 @@ import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.feature.listening_practice.StreamingPlayer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,6 +73,8 @@ internal class ListeningPracticeScreenModel(
                                                 updateReadyState()
                                         }
                                 }
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } catch (e: Exception) {
                                 _uiState.value = ListeningPracticeUiState.Error(e.message ?: "Неизвестная ошибка")
                         }

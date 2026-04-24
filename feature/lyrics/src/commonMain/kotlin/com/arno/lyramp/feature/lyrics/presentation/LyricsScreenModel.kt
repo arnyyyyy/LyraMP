@@ -236,4 +236,9 @@ internal class LyricsScreenModel(
                         }
                 }
         }
+
+        override fun onDispose() {
+                audioManager.stop()
+                super.onDispose()
+        }
 }

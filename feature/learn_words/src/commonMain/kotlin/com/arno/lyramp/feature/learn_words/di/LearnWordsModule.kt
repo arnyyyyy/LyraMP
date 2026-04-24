@@ -1,7 +1,6 @@
 package com.arno.lyramp.feature.learn_words.di
 
 import com.arno.lyramp.core.model.CefrDifficultyGroup
-import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.SaveWordUseCase
 import com.arno.lyramp.feature.learn_words.data.LearnWordsDatabase
@@ -14,6 +13,7 @@ import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByAlbumUs
 import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByTrackUseCase
 import com.arno.lyramp.feature.learn_words.domain.usecase.ObserveLearnWordsByAlbumUseCase
 import com.arno.lyramp.feature.learn_words.domain.usecase.SaveLearnWordUseCase
+import com.arno.lyramp.feature.learn_words.presentation.AllWordsListScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
@@ -47,11 +47,18 @@ val learnWordsModule = module {
         factory {
                 ChooseModeScreenModel(
                         repository = get(),
-                        classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
                         observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
-                        getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
+                )
+        }
+
+        factory { (language: String?) ->
+                AllWordsListScreenModel(
+                        language = language,
+                        repository = get(),
+                        classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
+                        getSpeechFilePath = get<GetSpeechFilePathUseCase>(),
                 )
         }
 

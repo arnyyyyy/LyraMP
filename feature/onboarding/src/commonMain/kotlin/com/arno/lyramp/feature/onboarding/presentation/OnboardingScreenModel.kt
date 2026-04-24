@@ -11,6 +11,7 @@ import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Error
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Loading
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Success
 import com.arno.lyramp.util.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,6 +60,8 @@ internal class OnboardingScreenModel(
                                         languages = result.languages
                                 )
 
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } catch (e: Exception) {
                                 Log.logger.e(e) { "$TAG: error during onboarding" }
                                 _state.value = Error(e.message ?: "Неизвестная ошибка")

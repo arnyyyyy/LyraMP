@@ -1,9 +1,13 @@
 package com.arno.lyramp.feature.extraction.data
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
-@Entity(tableName = "extraction_shown_words")
+internal const val LEGACY_GLOBAL_SHOWN_LANGUAGE = "__legacy_global__"
+
+@Entity(
+        tableName = "extraction_shown_words", primaryKeys = ["word", "language"],
+)
 internal data class ExtractionShownWordsEntity(
-        @PrimaryKey val word: String
+        val word: String,
+        val language: String,
 )

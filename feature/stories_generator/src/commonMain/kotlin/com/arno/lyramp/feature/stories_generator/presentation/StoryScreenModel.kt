@@ -12,6 +12,7 @@ import com.arno.lyramp.feature.stories_generator.model.DownloadableModel
 import com.arno.lyramp.feature.stories_generator.model.ModelDownloadState
 import com.arno.lyramp.feature.stories_generator.model.StoryGenre
 import com.arno.lyramp.feature.stories_generator.model.StoryWord
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -89,6 +90,8 @@ internal class StoryScreenModel(
                                                     "Возможно, не хватает памяти — попробуйте модель поменьше."
                                         )
                                 }
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } catch (e: Exception) {
                                 modelInitStarted = false
                                 _modelState.value = ModelDownloadState.Error(
@@ -194,6 +197,8 @@ internal class StoryScreenModel(
                                 val newId = repository.save(story, isManual = true)
                                 val saved = if (newId > 0L) story.copy(id = newId) else story
                                 _uiState.value = StoryUiState.StoryGenerated(saved)
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } catch (e: Exception) {
                                 _uiState.value = StoryUiState.Error(
                                         e.message ?: "Ошибка генерации"

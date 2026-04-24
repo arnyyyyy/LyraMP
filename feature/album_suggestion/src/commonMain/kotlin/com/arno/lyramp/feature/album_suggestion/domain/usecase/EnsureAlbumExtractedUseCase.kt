@@ -66,7 +66,7 @@ internal class EnsureAlbumExtractedUseCase(
                 onProgress: ((extracted: Int, total: Int) -> Unit)?
         ) = coroutineScope {
                 val allUserWords = getAllUserWords(settings.lang)
-                val shownWords = getShownWords()
+                val shownWords = getShownWords.forExtraction(settings.lang)
                 val excludedWords = allUserWords + shownWords
                 val semaphore = Semaphore(4)
                 var completed = 0

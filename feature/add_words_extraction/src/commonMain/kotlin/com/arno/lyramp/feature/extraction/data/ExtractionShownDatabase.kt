@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
 @Database(
-        entities = [ExtractionShownWordsEntity::class, ExtractionTrackStatusEntity::class], version = 2
+        entities = [ExtractionShownWordsEntity::class, ExtractionTrackStatusEntity::class], version = 3
 )
 @ConstructedBy(ExtractionDatabaseConstructor::class)
 internal abstract class ExtractionShownDatabase : RoomDatabase() {
@@ -37,9 +37,28 @@ internal val MIGRATION_1_2 = object : Migration(1, 2) {
         }
 }
 
+internal val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(connection: SQLiteConnection) {
+                val legacy = LEGACY_GLOBAL_SHOWN_LANGUAGE
+                connection.execSQL(
+                        """CREATE TABLE IF NOT EXISTS extraction_shown_words_new (
+                                word TEXT NOT NULL,
+                                language TEXT NOT NULL,
+                                PRIMARY KEY(word, language)
+                        )"""
+                )
+                connection.execSQL(
+                        "INSERT OR IGNORE INTO extraction_shown_words_new (word, language) " +
+                                "SELECT word, '$legacy' FROM extraction_shown_words"
+                )
+                connection.execSQL("DROP TABLE extraction_shown_words")
+                connection.execSQL("ALTER TABLE extraction_shown_words_new RENAME TO extraction_shown_words")
+        }
+}
+
 internal fun getExtractionDatabase(builder: RoomDatabase.Builder<ExtractionShownDatabase>): ExtractionShownDatabase {
         return builder
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .setDriver(BundledSQLiteDriver())
                 .setQueryCoroutineContext(Dispatchers.IO)
                 .build()

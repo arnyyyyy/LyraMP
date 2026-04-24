@@ -10,11 +10,9 @@ internal interface ExtractionShownWordsDao {
         @Insert(onConflict = OnConflictStrategy.IGNORE)
         suspend fun insertAll(words: List<ExtractionShownWordsEntity>)
 
-        @Query("SELECT word FROM extraction_shown_words")
-        suspend fun getAllShownWords(): List<String>
+        @Query("SELECT word FROM extraction_shown_words WHERE language = :language")
+        suspend fun getWordsForLanguage(language: String): List<String>
 
-//        @Query("SELECT EXISTS(SELECT 1 FROM extraction_shown_words WHERE word = :word)")
-//        suspend fun checkIfWordShown(word: String): Boolean {
-//                return getAllShownWords().contains(word)
-//        }
+        @Query("SELECT word FROM extraction_shown_words WHERE language = :trackLanguage OR language = :legacyGlobal")
+        suspend fun getWordsForExtraction(trackLanguage: String, legacyGlobal: String): List<String>
 }

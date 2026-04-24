@@ -7,9 +7,6 @@ import com.arno.lyramp.feature.extraction.data.CefrRepository
 import com.arno.lyramp.feature.extraction.domain.WordExtractionUtils
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.LyricsResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
 
 internal class ExtractAlbumWordsUseCase(
         private val getLyrics: GetLyricsUseCase,
@@ -23,17 +20,17 @@ internal class ExtractAlbumWordsUseCase(
                 cefrFilter: Set<CefrLevel>,
                 knownWords: Set<String>,
                 language: String = "en"
-        ): List<SuggestedWord> = withContext(Dispatchers.IO) {
+        ): List<SuggestedWord> {
                 val cefrVocab = cefrRepository.getVocabularyMap(language)
 
                 val lyricsText = when (val result = getLyrics(artists, trackTitle, trackId)) {
                         is LyricsResult.Found -> result.lyrics
-                        LyricsResult.NotFound -> return@withContext emptyList()
+                        LyricsResult.NotFound -> return emptyList()
                 }
 
                 val wordToInfo = WordExtractionUtils.extractUniqueWords(lyricsText, cefrVocab, language)
 
-                wordToInfo
+                return wordToInfo
                         .filter { (word, info) ->
                                 val (_, level) = info
                                 word !in knownWords && level in cefrFilter

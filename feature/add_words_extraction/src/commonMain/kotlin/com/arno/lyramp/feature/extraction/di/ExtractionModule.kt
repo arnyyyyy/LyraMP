@@ -5,7 +5,8 @@ import com.arno.lyramp.core.model.WordDifficultyProvider
 import com.arno.lyramp.feature.extraction.background.ExtractionBackgroundTask
 import com.arno.lyramp.feature.extraction.data.CefrRepository
 import com.arno.lyramp.feature.extraction.data.ExtractionShownDatabase
-import com.arno.lyramp.feature.extraction.data.ExtractionShownWordsMapper
+import com.arno.lyramp.feature.extraction.data.ShownWordsRepository
+import com.arno.lyramp.feature.extraction.data.TrackStatusRepository
 import com.arno.lyramp.feature.extraction.data.getExtractionDatabase
 import com.arno.lyramp.feature.extraction.domain.Extractor
 import com.arno.lyramp.feature.extraction.domain.WordSaver
@@ -29,17 +30,18 @@ val extractionModule = module {
         single<ExtractionShownDatabase> { getExtractionDatabase(get(named("extraction"))) }
         single { get<ExtractionShownDatabase>().extractionShownWordsDao() }
         single { get<ExtractionShownDatabase>().extractionTrackStatusDao() }
-        single { ExtractionShownWordsMapper() }
+        single { ShownWordsRepository(dao = get()) }
+        single { TrackStatusRepository(dao = get()) }
         single { CefrRepository() }
         single<WordDifficultyProvider> { get<CefrRepository>() }
 
         single { GetCefrVocabularyUseCase(cefrRepository = get()) }
         single { ClassifyWordsByCefrUseCase(cefrRepository = get()) }
-        single { GetShownWordsUseCase(shownWordsDao = get()) }
-        single { MarkWordsAsShownUseCase(shownWordsDao = get(), mapper = get()) }
-        single { MarkWordStringsAsShownUseCase(shownWordsDao = get()) }
-        single { GetExhaustedTrackIdsUseCase(dao = get()) }
-        single { MarkTrackExhaustedUseCase(dao = get()) }
+        single { GetShownWordsUseCase(repository = get()) }
+        single { MarkWordsAsShownUseCase(repository = get()) }
+        single { MarkWordStringsAsShownUseCase(repository = get()) }
+        single { GetExhaustedTrackIdsUseCase(repository = get()) }
+        single { MarkTrackExhaustedUseCase(repository = get()) }
 
         single {
                 Extractor(

@@ -35,7 +35,6 @@ internal class Extractor(
                 levelsKey: String? = null,
                 onProgress: (progress: Float, trackName: String) -> Unit = { _, _ -> }
         ): ExtractionResult = withContext(Dispatchers.IO) {
-                val shownWords = getShownWords()
                 val exhaustedIds = if (levelsKey != null) getExhaustedTrackIds(levelsKey) else emptySet()
 
                 val candidateTracks = getRecentTracks()
@@ -64,8 +63,10 @@ internal class Extractor(
 
                         try {
                                 coroutineContext.ensureActive()
+                                val trackLang = track.language ?: continue
+                                val shownWordsForTrack = getShownWords.forExtraction(trackLang)
                                 val result = processTrack(
-                                        track, vocabByLang, shownWords, seenWords,
+                                        track, vocabByLang, shownWordsForTrack, seenWords,
                                         allExtractedWords.size, cefrFilter
                                 )
                                 if (result != null) {

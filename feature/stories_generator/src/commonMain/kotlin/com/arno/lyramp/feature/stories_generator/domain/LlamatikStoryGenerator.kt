@@ -5,8 +5,8 @@ import com.arno.lyramp.feature.stories_generator.model.StoryGenre
 import com.arno.lyramp.feature.stories_generator.model.StoryWord
 import com.arno.lyramp.util.Log
 import com.llamatik.library.platform.LlamaBridge
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -26,10 +26,12 @@ class LlamatikStoryGenerator {
         }
 
         suspend fun loadModelFromPath(modelPath: String): Boolean {
-                return withContext(Dispatchers.IO) {
+                return withContext(Dispatchers.Default) {
                         try {
                                 _isModelLoaded = LlamaBridge.initGenerateModel(modelPath)
                                 _isModelLoaded
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } catch (_: Exception) {
                                 _isModelLoaded = false
                                 false
@@ -46,7 +48,7 @@ class LlamatikStoryGenerator {
                 val startTime = Clock.System.now().toEpochMilliseconds()
 
                 applyGenerationParams()
-                val raw = withContext(Dispatchers.IO) {
+                val raw = withContext(Dispatchers.Default) {
                         LlamaBridge.generateWithContext(
                                 systemPrompt = systemPromptFor(genre),
                                 contextBlock = "",

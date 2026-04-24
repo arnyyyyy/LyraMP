@@ -33,6 +33,9 @@ class IosBackgroundTaskManager : BackgroundTaskManager {
                                         try {
                                                 val success = task.execute()
                                                 bgTask.setTaskCompletedWithSuccess(success)
+                                        } catch (ce: kotlinx.coroutines.CancellationException) {
+                                                bgTask.setTaskCompletedWithSuccess(false)
+                                                throw ce
                                         } catch (e: Exception) {
                                                 Log.logger.e(e) { "background task failed: $taskId" }
                                                 bgTask.setTaskCompletedWithSuccess(false)
