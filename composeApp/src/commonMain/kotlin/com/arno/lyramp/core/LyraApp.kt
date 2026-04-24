@@ -1,8 +1,12 @@
 package com.arno.lyramp.core
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
+import com.arno.lyramp.core.ui.iosBackSwipe
 import com.arno.lyramp.feature.authorization.ui.AuthScreen
 import com.arno.lyramp.feature.main.ui.MainScreen
 import com.arno.lyramp.feature.authorization.domain.AppStartDestination
@@ -20,6 +24,9 @@ fun LyraApp() {
         }
 
         Navigator(initialScreen) { nav ->
-                SlideTransition(nav)
+                Box(
+                        modifier = Modifier.fillMaxSize().iosBackSwipe(enabled = nav.canPop) { nav.pop() }) {
+                        SlideTransition(nav)
+                }
         }
 }

@@ -4,6 +4,8 @@ import com.arno.lyramp.core.background.IosBackgroundTaskManager
 import com.arno.lyramp.core.background.BackgroundTaskRegistry
 import com.arno.lyramp.core.background.TaskSchedule
 import com.arno.lyramp.di.appModules
+import com.arno.lyramp.di.iosNetworkModule
+import com.arno.lyramp.di.networkModule
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 
@@ -11,7 +13,7 @@ import org.koin.mp.KoinPlatform
 object KoinInitializer {
         fun initialize() {
                 startKoin {
-                        modules(appModules)
+                        modules(appModules - networkModule + iosNetworkModule)
                 }
 
                 val taskManager = IosBackgroundTaskManager()
