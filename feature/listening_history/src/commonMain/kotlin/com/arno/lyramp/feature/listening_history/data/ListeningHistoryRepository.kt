@@ -38,6 +38,8 @@ internal class ListeningHistoryRepository(
                 }
         }
 
+        suspend fun getAllTracks() = dao.getAll().map { it.toDomain() }
+
         suspend fun saveTrackLanguages(trackLanguages: Map<String, String>) {
                 trackLanguages.forEach { (trackId, language) ->
                         dao.updateLanguage(trackId, language)

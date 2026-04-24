@@ -31,6 +31,8 @@ internal class AnalyzeLanguagesUseCase(
                                                         track.id?.let { id -> trackLanguages[id] = lang }
                                                 }
                                         }
+                                } catch (ce: kotlinx.coroutines.CancellationException) {
+                                        throw ce
                                 } catch (e: Exception) {
                                         Log.logger.e(e) { "AnalyzeLanguagesUseCase: failed to detect language" }
                                 }

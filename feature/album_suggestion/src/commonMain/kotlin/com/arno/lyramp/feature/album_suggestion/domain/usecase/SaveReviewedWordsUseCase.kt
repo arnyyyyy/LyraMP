@@ -17,7 +17,7 @@ internal class SaveReviewedWordsUseCase(
                 lang: String
         ): Int {
                 val allWordStrings = words.map { it.word }
-                markWordsAsShown(allWordStrings)
+                markWordsAsShown(allWordStrings, lang)
                 repository.removeCandidateWords(albumId, allWordStrings)
 
                 var totalPromoted = 0

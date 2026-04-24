@@ -63,7 +63,7 @@ val listeningHistoryModule = module {
         single { AddManualTrackUseCase(repository = get()) }
         single { GetPlaylistUrlUseCase(getAuthPlaylistUrl = get()) }
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
-        single { GetSuggestedAlbumsUseCase(dao = get()) }
+        single { GetSuggestedAlbumsUseCase(repository = get()) }
         single {
                 SavePlaylistUrlUseCase(
                         saveAuthPlaylistUrl = get(),

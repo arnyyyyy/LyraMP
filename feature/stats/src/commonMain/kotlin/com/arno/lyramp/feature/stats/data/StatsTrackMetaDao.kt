@@ -6,16 +6,13 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-internal interface TrackStatsMetaDao {
+internal interface StatsTrackMetaDao {
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun upsert(row: TrackStatsMetaEntity)
+        suspend fun upsert(row: StatsTrackMetaEntity)
 
         @Query("SELECT * FROM track_stats_meta WHERE language = :language")
-        suspend fun getForLanguage(language: String): List<TrackStatsMetaEntity>
+        suspend fun getForLanguage(language: String): List<StatsTrackMetaEntity>
 
         @Query("SELECT trackId FROM track_stats_meta")
         suspend fun getAllProcessedTrackIds(): List<String>
-
-        @Query("SELECT COUNT(*) FROM track_stats_meta WHERE language = :language")
-        suspend fun countForLanguage(language: String): Int
 }

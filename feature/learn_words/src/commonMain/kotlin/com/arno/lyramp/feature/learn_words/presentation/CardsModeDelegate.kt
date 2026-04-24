@@ -6,11 +6,8 @@ import com.arno.lyramp.feature.translation.domain.GetSpeechFilePathUseCase
 import com.arno.lyramp.feature.translation.domain.WordInfo as TranslationWordInfo
 import com.arno.lyramp.feature.translation.speech.TranslationSpeechController
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 internal class CardsModeDelegate(
         private val shuffledWords: List<LearnWordEntity>,
@@ -145,9 +142,7 @@ internal class CardsModeDelegate(
                                         translation = word.translation,
                                         sourceLang = word.sourceLang
                                 )
-                                val filePath = withContext(Dispatchers.IO) {
-                                        getSpeechFilePath(wordInfo)
-                                }
+                                val filePath = getSpeechFilePath(wordInfo)
                                 if (filePath != null) {
                                         speechController.play(filePath)
                                 }
