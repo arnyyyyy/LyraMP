@@ -15,4 +15,8 @@
     <string name="add_content_track_artist">Исполнитель</string>
     <string name="add_content_track_add">Добавить</string>
     <string name="add_content_track_added">Трек добавлен ✓</string>
+    <string name="add_content_sources_section">Источники</string>
+    <string name="add_content_sources_list_section">Подключённые плейлисты</string>
+    <string name="add_content_sources_empty">Пока нет подключённых плейлистов</string>
+    <string name="add_content_sources_delete">Удалить источник</string>
 </resources>

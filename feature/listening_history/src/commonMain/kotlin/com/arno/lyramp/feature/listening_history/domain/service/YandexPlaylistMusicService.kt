@@ -13,20 +13,20 @@ internal class YandexPlaylistMusicService(
 ) : MusicService {
         private val parser by lazy { YandexPlaylistParser() }
 
-        override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
+        override suspend fun getListeningHistory(limit: Int?): List<ListeningHistoryMusicTrack> {
                 val url = playlistUrlProvider() ?: error("No Yandex playlist URL")
                 val html = htmlApi.loadPlaylistHtml(url)
 
                 val ownerInfo = parser.extractOwnerInfo(html)
                 if (ownerInfo != null) {
-                        val apiTracks = loadFromApi(ownerInfo.uid, ownerInfo.kind, limit)
+                        val apiTracks = loadFromApi(ownerInfo.uid, ownerInfo.kind)
                         if (apiTracks != null) return apiTracks
                 }
-                val tracks = parser.parse(html).take(limit)
-                return tracks
+                val tracks = parser.parse(html)
+                return if (limit != null) tracks.take(limit) else tracks
         }
 
-        private suspend fun loadFromApi(uid: Long, kind: Long, limit: Int): List<ListeningHistoryMusicTrack>? {
+        private suspend fun loadFromApi(uid: Long, kind: Long): List<ListeningHistoryMusicTrack>? {
                 return runCatching {
                         val response = yandexApi.getPlaylist(uid, kind)
                         val trackItems = response.result?.tracks.orEmpty()
@@ -42,7 +42,7 @@ internal class YandexPlaylistMusicService(
                                                 )
                                         }
                                 }
-                                .take(limit)
+
                 }.onFailure {
                         Log.logger.e(it) { "YandexPlaylistMusicService: API request failed, falling back to HTML" }
                 }.getOrNull()

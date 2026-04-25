@@ -4,13 +4,7 @@ import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.util.Log
-
-internal data class AnalysisResult(
-        val languages: Map<String, Int>,
-        val trackLanguages: Map<String, String>
-)
-
-private val cyrillicRegex = Regex("[\u0400-\u04FF]")
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class AnalyzeLanguagesUseCase(
         private val translateWordWithState: TranslateWordWithStateUseCase
@@ -19,9 +13,10 @@ internal class AnalyzeLanguagesUseCase(
                 val languageCounts = mutableMapOf<String, Int>()
                 val trackLanguages = mutableMapOf<String, String>()
 
-                tracks
-                        .filter { !cyrillicRegex.containsMatchIn(it.name) }
-                        .take(35)
+                var analysedTracksSize = 0
+
+                tracks.asSequence().filter { !CYRILLIC_REGEX.containsMatchIn(it.name) }
+                        .take(MAX_TRACKS)
                         .forEach { track ->
                                 try {
                                         val result = translateWordWithState(track.name)
@@ -29,9 +24,10 @@ internal class AnalyzeLanguagesUseCase(
                                                 result.translationWithLang.sourceLanguage?.let { lang ->
                                                         languageCounts[lang] = (languageCounts[lang] ?: 0) + 1
                                                         track.id?.let { id -> trackLanguages[id] = lang }
+                                                        analysedTracksSize++
                                                 }
                                         }
-                                } catch (ce: kotlinx.coroutines.CancellationException) {
+                                } catch (ce: CancellationException) {
                                         throw ce
                                 } catch (e: Exception) {
                                         Log.logger.e(e) { "AnalyzeLanguagesUseCase: failed to detect language" }
@@ -40,9 +36,15 @@ internal class AnalyzeLanguagesUseCase(
 
                 val languages = languageCounts.toList()
                         .sortedByDescending { it.second }
-                        .take(4)
+                        .take(TOP_LANGUAGES)
                         .toMap()
 
-                return AnalysisResult(languages = languages, trackLanguages = trackLanguages)
+                return AnalysisResult(languages, trackLanguages, analysedTracksSize)
+        }
+
+        private companion object {
+                const val MAX_TRACKS = 35
+                const val TOP_LANGUAGES = 4
+                val CYRILLIC_REGEX = Regex("[\u0400-\u04FF]")
         }
 }

@@ -4,7 +4,6 @@ import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 internal class ListeningHistoryRepository(
@@ -12,7 +11,7 @@ internal class ListeningHistoryRepository(
         private val dao: ListeningHistoryDao,
         private val detectLanguage: DetectLanguageUseCase,
 ) {
-        fun getListeningHistory(limit: Int = 50): Flow<List<ListeningHistoryMusicTrack>> = flow {
+        fun getListeningHistory(limit: Int) = flow {
                 val cachedTracks = dao.getAll()
 
                 if (cachedTracks.isNotEmpty()) {
@@ -27,15 +26,13 @@ internal class ListeningHistoryRepository(
                 }
         }
 
-        suspend fun getRecentTracks(): List<TrackInfo> {
-                return dao.getAll().map { entity ->
-                        TrackInfo(
-                                id = entity.trackId,
-                                name = entity.name,
-                                artists = entity.artists,
-                                language = entity.language
-                        )
-                }
+        suspend fun getRecentTracks() = dao.getAll().map { entity ->
+                TrackInfo(
+                        id = entity.trackId,
+                        name = entity.name,
+                        artists = entity.artists,
+                        language = entity.language
+                )
         }
 
         suspend fun getAllTracks() = dao.getAll().map { it.toDomain() }
@@ -45,7 +42,6 @@ internal class ListeningHistoryRepository(
                         dao.updateLanguage(trackId, language)
                 }
         }
-
 
         suspend fun prefillFromOnboarding(
                 tracks: List<ListeningHistoryMusicTrack>,
@@ -60,13 +56,11 @@ internal class ListeningHistoryRepository(
                 if (entities.isNotEmpty()) dao.insertAll(entities)
         }
 
-        suspend fun hideTrack(trackId: String) {
-                dao.hideTrack(trackId)
-        }
+        suspend fun hideTrack(trackId: String) = dao.hideTrack(trackId)
 
-        suspend fun updateTrackLanguage(trackId: String, language: String) {
-                dao.updateLanguage(trackId, language)
-        }
+
+        suspend fun updateTrackLanguage(trackId: String, language: String) = dao.updateLanguage(trackId, language)
+
 
         suspend fun addManualTrack(name: String, artist: String, language: String? = null): ListeningHistoryMusicTrack {
                 val id = "${name}||${artist}"
@@ -90,9 +84,7 @@ internal class ListeningHistoryRepository(
                 )
         }
 
-        suspend fun deleteTracksBySourceId(sourceId: String) {
-                dao.deleteBySourceId(sourceId)
-        }
+        suspend fun deleteTracksBySourceId(sourceId: String) = dao.deleteBySourceId(sourceId)
 
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
                 val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
@@ -143,7 +135,7 @@ internal class ListeningHistoryRepository(
         private fun List<ListeningHistoryMusicTrack>.filterNonNative(): List<ListeningHistoryMusicTrack> =
                 filter { it.language != null && it.language != "ru" } // AA? TODO?
 
-        companion object {
-                private const val MAX_ONBOARDING_SIZE = 40
+        private companion object {
+                const val MAX_ONBOARDING_SIZE = 35
         }
 }

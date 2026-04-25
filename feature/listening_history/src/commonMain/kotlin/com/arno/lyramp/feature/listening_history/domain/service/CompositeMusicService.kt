@@ -4,12 +4,12 @@ import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrac
 import com.arno.lyramp.util.Log
 
 internal class CompositeMusicService(private val services: List<MusicService>) : MusicService {
-        override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
+        override suspend fun getListeningHistory(limit: Int?): List<ListeningHistoryMusicTrack> {
                 val seen = mutableSetOf<String>()
                 val merged = mutableListOf<ListeningHistoryMusicTrack>()
 
                 for (service in services) {
-                        val result = runCatching { service.getListeningHistory(Int.MAX_VALUE) }
+                        val result = runCatching { service.getListeningHistory(limit) }
                         result.onFailure { e ->
                                 Log.logger.e(e) { "Error fetching listening history from ${service::class.simpleName}" }
                         }
@@ -19,6 +19,6 @@ internal class CompositeMusicService(private val services: List<MusicService>) :
                                 if (seen.add(key)) merged.add(track)
                         }
                 }
-                return merged
+                return if (limit != null) merged.take(limit) else merged
         }
 }

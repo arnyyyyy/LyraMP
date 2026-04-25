@@ -31,28 +31,17 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.arno.lyramp.core.navigation.ScreenFactory
-import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingScreenModel
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.StoryProgressBar
 import cafe.adriel.voyager.koin.getScreenModel
+import com.arno.lyramp.core.model.LyraLang
+import com.arno.lyramp.feature.onboarding.presentation.OnboardingStep
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.onboarding.resources.Res
 import com.arno.lyramp.feature.onboarding.resources.continue_next
 import com.arno.lyramp.feature.onboarding.resources.done
-import com.arno.lyramp.feature.onboarding.resources.lang_chinese
-import com.arno.lyramp.feature.onboarding.resources.lang_english
-import com.arno.lyramp.feature.onboarding.resources.lang_french
-import com.arno.lyramp.feature.onboarding.resources.lang_german
-import com.arno.lyramp.feature.onboarding.resources.lang_hebrew
-import com.arno.lyramp.feature.onboarding.resources.lang_hungarian
-import com.arno.lyramp.feature.onboarding.resources.lang_italian
-import com.arno.lyramp.feature.onboarding.resources.lang_japanese
-import com.arno.lyramp.feature.onboarding.resources.lang_korean
-import com.arno.lyramp.feature.onboarding.resources.lang_portuguese
-import com.arno.lyramp.feature.onboarding.resources.lang_russian
-import com.arno.lyramp.feature.onboarding.resources.lang_spanish
 import com.arno.lyramp.feature.onboarding.resources.error
 import com.arno.lyramp.feature.onboarding.resources.found_languages
 import com.arno.lyramp.feature.onboarding.resources.loading_history
@@ -105,7 +94,7 @@ object OnboardingScreen : Screen {
                                                         is OnboardingState.Loading -> LoadingContent(currentState.step)
                                                         is OnboardingState.Success -> SuccessContent(
                                                                 languages = currentState.languages,
-                                                                tracksCount = currentState.tracks.size,
+                                                                tracksCount = currentState.analysedTracksSize,
                                                                 onContinue = { navigator?.replaceAll(screenFactory.mainScreen()) }
                                                         )
 
@@ -229,7 +218,7 @@ private fun LanguageItem(language: String, count: Int) {
                 verticalAlignment = Alignment.CenterVertically
         ) {
                 Text(
-                        text = getLanguageName(language),
+                        text = LyraLang.displayName(language),
                         fontSize = 16.sp, fontWeight = FontWeight.Medium,
                         color = LyraColors.OnGlassCard
                 )
@@ -279,24 +268,5 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
                                 Text(stringResource(Res.string.retry))
                         }
                 }
-        }
-}
-
-@Composable
-private fun getLanguageName(code: String): String {
-        return when (code.lowercase()) {
-                "en" -> stringResource(Res.string.lang_english)
-                "ru" -> stringResource(Res.string.lang_russian)
-                "es" -> stringResource(Res.string.lang_spanish)
-                "fr" -> stringResource(Res.string.lang_french)
-                "de" -> stringResource(Res.string.lang_german)
-                "it" -> stringResource(Res.string.lang_italian)
-                "pt" -> stringResource(Res.string.lang_portuguese)
-                "ja" -> stringResource(Res.string.lang_japanese)
-                "ko" -> stringResource(Res.string.lang_korean)
-                "zh" -> stringResource(Res.string.lang_chinese)
-                "hu" -> stringResource(Res.string.lang_hungarian)
-                "iw" -> stringResource(Res.string.lang_hebrew)
-                else -> "🌍 $code"
         }
 }

@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.onboarding.model
+package com.arno.lyramp.feature.onboarding.presentation
 
 internal enum class OnboardingStep {
         ENTER_PLAYLIST_URL,

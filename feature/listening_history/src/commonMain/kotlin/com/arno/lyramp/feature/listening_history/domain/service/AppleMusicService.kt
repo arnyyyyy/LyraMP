@@ -11,7 +11,7 @@ internal class AppleMusicService(
 ) : MusicService {
         private val parser by lazy { AppleMusicParser() }
 
-        override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
+        override suspend fun getListeningHistory(limit: Int?): List<ListeningHistoryMusicTrack> {
                 val playlist = playlistUrlProvider()
                 if (playlist.isNullOrBlank()) {
                         Log.logger.w { "AppleMusicService: no playlist URL for source" }
@@ -20,8 +20,8 @@ internal class AppleMusicService(
 
                 return runCatching {
                         val html = api.loadPlaylistHtml(playlist)
-                        val tracks = parser.parse(html).take(limit)
-                        tracks
+                        val tracks = parser.parse(html)
+                        if (limit != null) tracks.take(limit) else tracks
                 }.onFailure { Log.logger.e(it) { "AppleMusicService: failed to load playlist $playlist" } }.getOrThrow()
         }
 }

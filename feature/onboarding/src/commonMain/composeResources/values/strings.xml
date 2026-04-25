@@ -3,23 +3,10 @@
     <string name="loading_history">Загружаем музыку...</string>
     <string name="lang_analyze">Анализируем языки...</string>
     <string name="done">Готово!</string>
-    <string name="analyzed_res">Проанализировано %1$d треков</string>
+    <string name="analyzed_res">Проанализировано %1$d  последних треков</string>
     <string name="found_languages">Найденные языки:</string>
     <string name="continue_next">Продолжить</string>
     <string name="error">Ошибка</string>
     <string name="retry">Попробовать снова</string>
     <string name="tracks_count">%1$d треков</string>
-
-    <string name="lang_english">🇬🇧 Английский</string>
-    <string name="lang_russian">🇷🇺 Русский</string>
-    <string name="lang_spanish">🇪🇸 Испанский</string>
-    <string name="lang_french">🇫🇷 Французский</string>
-    <string name="lang_german">🇩🇪 Немецкий</string>
-    <string name="lang_italian">🇮🇹 Итальянский</string>
-    <string name="lang_portuguese">🇵🇹 Португальский</string>
-    <string name="lang_japanese">🇯🇵 Японский</string>
-    <string name="lang_korean">🇰🇷 Корейский</string>
-    <string name="lang_chinese">🇨🇳 Китайский</string>
-    <string name="lang_hungarian">🇭🇺 Венгерский</string>
-    <string name="lang_hebrew">🇮🇱 Иврит</string>
 </resources>

@@ -6,7 +6,6 @@ import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
-import com.arno.lyramp.feature.onboarding.model.OnboardingStep
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Error
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Loading
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Success
@@ -38,7 +37,7 @@ internal class OnboardingScreenModel(
                 screenModelScope.launch {
                         try {
                                 _state.value = Loading(OnboardingStep.LOADING_HISTORY)
-                                val rawTracks = musicService.getListeningHistory(limit = 120)
+                                val rawTracks = musicService.getListeningHistory()
 
                                 if (rawTracks.isEmpty()) {
                                         _state.value = Error("Не удалось загрузить треки")
@@ -57,7 +56,8 @@ internal class OnboardingScreenModel(
                                 _state.value = Success(
                                         step = OnboardingStep.SELECT_LANGUAGES,
                                         tracks = tracks,
-                                        languages = result.languages
+                                        languages = result.languages,
+                                        analysedTracksSize = result.analysedTracksSize
                                 )
 
                         } catch (ce: CancellationException) {
@@ -70,6 +70,6 @@ internal class OnboardingScreenModel(
         }
 
         private companion object {
-                private const val TAG = "OnboardingScreenModel"
+                const val TAG = "OnboardingScreenModel"
         }
 }

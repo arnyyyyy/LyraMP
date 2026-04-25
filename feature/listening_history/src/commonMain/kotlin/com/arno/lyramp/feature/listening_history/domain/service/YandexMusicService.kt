@@ -15,7 +15,7 @@ internal class YandexMusicService(
 ) : MusicService {
         private val tracksMapper = YandexTracksMapper()
 
-        override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> =
+        override suspend fun getListeningHistory(limit: Int?): List<ListeningHistoryMusicTrack> =
                 withContext(Dispatchers.Default) {
                         val token = authToken(MusicServiceType.YANDEX)
                         if (token == null) error("YandexMusicService: No valid access token available!")
@@ -37,7 +37,7 @@ internal class YandexMusicService(
                                 val enrichedTrackItems =
                                         tracksMapper.enrichTracksWithFullInfo(basicTrackItems, fullTracks)
 
-                                enrichedTrackItems
+                                val mapped = enrichedTrackItems
                                         .mapNotNull { trackItem ->
                                                 trackItem.track?.let { track ->
                                                         ListeningHistoryMusicTrack(
@@ -50,7 +50,7 @@ internal class YandexMusicService(
                                                         )
                                                 }
                                         }
-                                        .take(limit)
+                                if (limit != null) mapped.take(limit) else mapped
                         }
                                 .onFailure {
                                         Log.logger.e(it) { "YandexMusicService:  Failed to load liked tracks" }
