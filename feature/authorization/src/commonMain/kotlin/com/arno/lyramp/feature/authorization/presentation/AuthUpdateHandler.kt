@@ -18,12 +18,6 @@ internal class AuthUpdateHandler {
                                                         news = AuthNews.NavigateToOnboarding
                                                 )
 
-                                        MusicServiceType.APPLE ->
-                                                AuthCommand(
-                                                        state = state.copy(isLoading = false),
-                                                        news = AuthNews.NavigateToApplePlaylistInput
-                                                )
-
                                         MusicServiceType.NONE ->
                                                 AuthCommand(
                                                         state = state.copy(isLoading = false),

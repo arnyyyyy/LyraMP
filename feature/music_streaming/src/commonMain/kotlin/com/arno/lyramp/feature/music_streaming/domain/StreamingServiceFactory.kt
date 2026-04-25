@@ -1,24 +1,28 @@
 package com.arno.lyramp.feature.music_streaming.domain
 
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.util.Log
 
 class StreamingServiceFactory(
         private val yandexStreamingService: YandexStreamingService,
-        private val appleStreamingService: AppleStreamingService,
         private val getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
 ) {
         fun getService(): StreamingService {
                 val authorizedService = getLastAuthorizedService()
 
-                return when (authorizedService) {
-                        "YANDEX" -> yandexStreamingService
+                if (authorizedService == null) {
+                        Log.logger.w { "No authorized streaming service found, defaulting to Yandex" }
+                        return yandexStreamingService
+                }
 
-                        "APPLE" -> appleStreamingService
+                val type = MusicServiceType.valueOf(authorizedService)
 
-                        else -> {
+                return when (type) {
+                        MusicServiceType.YANDEX -> yandexStreamingService
+                        MusicServiceType.NONE -> {
                                 Log.logger.w { "No authorized streaming service found, defaulting to Yandex" }
-                                yandexStreamingService
+                                yandexStreamingService // TODO?
                         }
                 }
         }

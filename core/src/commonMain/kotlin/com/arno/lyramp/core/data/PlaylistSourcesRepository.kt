@@ -1,10 +1,10 @@
-package com.arno.lyramp.feature.listening_history.data
+package com.arno.lyramp.core.data
 
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-internal class PlaylistSourcesRepository {
+class PlaylistSourcesRepository {
         private val settings = Settings()
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -35,7 +35,7 @@ internal class PlaylistSourcesRepository {
         @Serializable
         private data class PlaylistSourcesPayload(val urls: List<String>)
 
-        private companion object {
+        companion object {
                 const val PLAYLIST_SOURCES_KEY = "listening_history_playlist_sources"
         }
 }

@@ -6,9 +6,6 @@ internal data class PlaylistSource(
         val url: String,
 ) {
         companion object {
-                const val LEGACY_OPTIONAL_PLAYLIST_ID = "legacy_optional_playlist"
-                const val APPLE_PLAYLIST_ID = "apple_playlist"
-
                 fun storedPlaylistId(url: String): String = "stored_playlist:$url"
         }
 }

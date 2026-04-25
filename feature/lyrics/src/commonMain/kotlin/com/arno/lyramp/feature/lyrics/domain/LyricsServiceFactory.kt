@@ -11,13 +11,12 @@ internal class LyricsServiceFactory(
 ) {
         fun getPrimaryService(): LyricsService = when (currentService()) {
                 MusicServiceType.YANDEX -> yandexLyricsService
-                MusicServiceType.APPLE -> geniusLyricsService
                 MusicServiceType.NONE, null -> geniusLyricsService
         }
 
         fun getFallbackService(): LyricsService = when (currentService()) {
                 MusicServiceType.YANDEX -> geniusLyricsService
-                MusicServiceType.APPLE, MusicServiceType.NONE, null -> lyricsOvhService
+                MusicServiceType.NONE, null -> lyricsOvhService
         }
 
         private fun currentService(): MusicServiceType? = getLastAuthorizedService()?.let {

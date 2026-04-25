@@ -26,11 +26,6 @@ internal class AuthorizationScreenModel(
                 when (event) {
                         is AuthEvent.OnLoginClick -> {
                                 when (event.service) {
-                                        MusicServiceType.APPLE -> {
-                                                processUpdate(AuthUpdate.SuccessNavigate(MusicServiceType.APPLE))
-                                                return
-                                        }
-
                                         MusicServiceType.NONE -> {
                                                 processUpdate(AuthUpdate.SuccessNavigate(MusicServiceType.NONE))
                                                 return

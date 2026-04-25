@@ -5,6 +5,7 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
+        alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -41,6 +42,7 @@ kotlin {
                         api(libs.voyager.screenmodel)
                         implementation(libs.multiplatform.settings)
                         implementation(libs.multiplatform.settings.no.arg)
+                        implementation(libs.kotlinx.serialization.json)
                 }
 
                 iosMain.dependencies {

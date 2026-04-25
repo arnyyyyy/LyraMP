@@ -30,16 +30,13 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.arno.lyramp.core.navigation.ScreenFactory
+import com.arno.lyramp.feature.authorization.domain.CompleteNoAuthOnboardingUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
-import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
-import com.arno.lyramp.feature.authorization.domain.SaveAuthPlaylistUrlUseCase
-import com.arno.lyramp.feature.authorization.domain.SkipAuthorizationUseCase
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.StoryProgressBar
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.resources.Res
 import com.arno.lyramp.feature.authorization.resources.add_playlist
-import com.arno.lyramp.feature.authorization.resources.apple_music
 import com.arno.lyramp.feature.authorization.resources.auth_playlist
 import com.arno.lyramp.feature.authorization.resources.auth_playlist_link_label
 import com.arno.lyramp.feature.authorization.resources.continue_next
@@ -53,44 +50,27 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
         override fun Content() {
                 val navigator = LocalNavigator.current
                 val screenFactory: ScreenFactory = koinInject()
-                val getPlaylistUrl: GetAuthPlaylistUseCase = koinInject()
-                val savePlaylistUrl: SaveAuthPlaylistUrlUseCase = koinInject()
-                val skipAuth: SkipAuthorizationUseCase = koinInject()
+                val completeNoAuth: CompleteNoAuthOnboardingUseCase = koinInject()
 
                 when (service) {
-                        MusicServiceType.APPLE -> {
-                                AuthPlaylistScreenContent(
-                                        title = stringResource(Res.string.apple_music),
-                                        initialUrl = getPlaylistUrl(service) ?: "",
-                                        buttonColor = LyraColors.AppleMusic,
-                                        showSkip = false,
-                                        onContinue = { url ->
-                                                savePlaylistUrl(service, url.takeIf { it.isNotBlank() })
-                                                navigator?.push(screenFactory.onboardingScreen())
-                                        },
-                                        onSkip = {}
-                                )
-                        }
-
                         MusicServiceType.NONE -> {
                                 AuthPlaylistScreenContent(
                                         title = stringResource(Res.string.add_playlist),
-                                        initialUrl = getPlaylistUrl(service) ?: "",
+                                        initialUrl = "",
                                         buttonColor = LyraOnSurfaceVariant,
                                         showSkip = true,
                                         onContinue = { url ->
-                                                savePlaylistUrl(service, url.takeIf { it.isNotBlank() })
+                                                completeNoAuth(url)
                                                 navigator?.push(screenFactory.onboardingScreen())
                                         },
                                         onSkip = {
-                                                skipAuth()
+                                                completeNoAuth(null)
                                                 navigator?.replaceAll(screenFactory.mainScreen())
                                         }
                                 )
                         }
 
-                        else -> { /* No-op */
-                        }
+                        else -> Unit
                 }
         }
 }

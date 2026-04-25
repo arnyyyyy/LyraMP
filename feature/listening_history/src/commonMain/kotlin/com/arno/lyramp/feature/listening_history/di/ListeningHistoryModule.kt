@@ -1,13 +1,12 @@
 package com.arno.lyramp.feature.listening_history.di
 
-import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
+import com.arno.lyramp.core.data.PlaylistSourcesRepository
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
-import com.arno.lyramp.feature.listening_history.data.PlaylistSourcesRepository
 import com.arno.lyramp.feature.listening_history.data.getListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.domain.service.DynamicMusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
@@ -39,7 +38,6 @@ val listeningHistoryModule = module {
 
         single<DynamicMusicService> {
                 val authToken = get<ProvideAuthTokenUseCase>()
-                val getPlaylistUrl = get<GetAuthPlaylistUseCase>()
                 val getPlaylistSources = get<GetPlaylistSourcesUseCase>()
                 val getLastService = get<GetLastAuthorizedServiceUseCase>()
                 val yandexApi = get<YandexMusicApi>()
@@ -50,7 +48,6 @@ val listeningHistoryModule = module {
                                 buildMusicService(
                                         getLastService = getLastService,
                                         authToken = authToken,
-                                        getPlaylistUrl = getPlaylistUrl,
                                         getPlaylistSources = getPlaylistSources,
                                         yandexApi = yandexApi,
                                         appleMusicApi = appleMusicApi,
@@ -74,7 +71,7 @@ val listeningHistoryModule = module {
         single { UpdateTrackLanguageUseCase(repository = get()) }
         single { SaveTrackLanguageUseCase(repository = get()) }
         single { AddManualTrackUseCase(repository = get()) }
-        single { GetPlaylistSourcesUseCase(repository = get(), getAuthPlaylistUrl = get()) }
+        single { GetPlaylistSourcesUseCase(repository = get()) }
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
         single { GetSuggestedAlbumsUseCase(repository = get()) }
         single {
@@ -86,7 +83,6 @@ val listeningHistoryModule = module {
                 RemovePlaylistSourceUseCase(
                         listeningHistoryRepository = get(),
                         repository = get(),
-                        saveAuthPlaylistUrl = get(),
                 )
         }
 

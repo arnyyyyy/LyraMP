@@ -1,6 +1,5 @@
 package com.arno.lyramp.feature.authorization.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,11 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -25,9 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,15 +39,13 @@ import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.core.navigation.ScreenFactory
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import cafe.adriel.voyager.koin.getScreenModel
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.resources.Res
-import com.arno.lyramp.feature.authorization.resources.apple_icon
 import com.arno.lyramp.feature.authorization.resources.auth_continue_without_auth
+import com.arno.lyramp.feature.authorization.resources.auth_login_with_yandex
 import com.arno.lyramp.feature.authorization.resources.auth_select_service
-import com.arno.lyramp.feature.authorization.resources.yandex_icon
 import org.koin.compose.koinInject
 
 object AuthScreen : Screen {
@@ -82,9 +76,6 @@ object AuthScreen : Screen {
                                 when (effect) {
                                         AuthNews.NavigateToOnboarding ->
                                                 navigator?.push(screenFactory.onboardingScreen())
-
-                                        AuthNews.NavigateToApplePlaylistInput ->
-                                                navigator?.push(AuthPlaylistScreen(MusicServiceType.APPLE))
 
                                         AuthNews.NavigateToOptionalPlaylistInput ->
                                                 navigator?.push(AuthPlaylistScreen(MusicServiceType.NONE))
@@ -136,30 +127,26 @@ object AuthScreen : Screen {
                                                                 modifier = Modifier.padding(bottom = 24.dp)
                                                         )
 
-                                                        Row(
-                                                                verticalAlignment = Alignment.CenterVertically,
-                                                                horizontalArrangement = Arrangement.Center
+                                                        Button(
+                                                                onClick = { onAuthClick(MusicServiceType.YANDEX) },
+                                                                enabled = !state.isLoading,
+                                                                modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .height(52.dp),
+                                                                shape = RoundedCornerShape(26.dp),
+                                                                colors = ButtonDefaults.buttonColors(
+                                                                        containerColor = LyraColors.Yandex,
+                                                                        contentColor = LyraColors.AccentOnAccent,
+                                                                        disabledContainerColor = LyraColors.Yandex.copy(alpha = 0.5f),
+                                                                        disabledContentColor = LyraColors.AccentOnAccent.copy(alpha = 0.5f),
+                                                                ),
+                                                                contentPadding = PaddingValues(horizontal = 16.dp),
                                                         ) {
-                                                                authTypes.forEachIndexed { _, (service, icon, color) ->
-                                                                        Button(
-                                                                                onClick = { onAuthClick(service) },
-                                                                                enabled = !state.isLoading,
-                                                                                modifier = Modifier
-                                                                                        .padding(horizontal = 12.dp)
-                                                                                        .size(48.dp)
-                                                                                        .clip(RoundedCornerShape(24.dp)),
-                                                                                shape = RoundedCornerShape(24.dp),
-                                                                                colors = ButtonDefaults.outlinedButtonColors(containerColor = color),
-                                                                                contentPadding = PaddingValues(0.dp),
-                                                                        ) {
-                                                                                Image(
-                                                                                        painter = painterResource(icon),
-                                                                                        contentDescription = service.name,
-                                                                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)),
-                                                                                        contentScale = ContentScale.Fit
-                                                                                )
-                                                                        }
-                                                                }
+                                                                Text(
+                                                                        stringResource(Res.string.auth_login_with_yandex),
+                                                                        fontSize = 16.sp,
+                                                                        fontWeight = FontWeight.Bold,
+                                                                )
                                                         }
 
                                                         Text(
@@ -168,7 +155,7 @@ object AuthScreen : Screen {
                                                                 fontWeight = FontWeight.Bold,
                                                                 color = LyraColors.OnGlassCardSecondary,
                                                                 modifier = Modifier
-                                                                        .padding(top = 14.dp)
+                                                                        .padding(top = 18.dp)
                                                                         .clickable {
                                                                                 onAuthClick(MusicServiceType.NONE)
                                                                         },
@@ -188,19 +175,4 @@ object AuthScreen : Screen {
                         }
                 }
         }
-
-        val authTypes = listOf(
-//                Triple(
-//                        MusicServiceType.SPOTIFY, Res.drawable.spotify_icon,
-//                        LyraColors.Spotify.copy(alpha = 0.12f)
-//                ),
-                Triple(
-                        MusicServiceType.YANDEX, Res.drawable.yandex_icon,
-                        LyraColors.Yandex.copy(alpha = 0.12f)
-                ),
-                Triple(
-                        MusicServiceType.APPLE, Res.drawable.apple_icon,
-                        LyraColors.OnGlassCardSecondary.copy(alpha = 0.08f)
-                )
-        )
 }

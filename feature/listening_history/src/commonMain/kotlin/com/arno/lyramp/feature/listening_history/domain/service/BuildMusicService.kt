@@ -1,25 +1,21 @@
 package com.arno.lyramp.feature.listening_history.domain.service
 
-import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
-import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 
 internal fun buildMusicService(
         getLastService: GetLastAuthorizedServiceUseCase,
         authToken: ProvideAuthTokenUseCase,
-        getPlaylistUrl: GetAuthPlaylistUseCase,
         getPlaylistSources: GetPlaylistSourcesUseCase,
         yandexApi: YandexMusicApi,
         appleMusicApi: AppleMusicApi,
 ): MusicService {
         val lastService = getLastService()
         val playlistServices = getPlaylistSources()
-                .filterNot { lastService == "APPLE" && it.id == PlaylistSource.APPLE_PLAYLIST_ID }
                 .mapNotNull { source ->
                         val url = source.url
                         when {
@@ -44,14 +40,13 @@ internal fun buildMusicService(
                         }
                 }
 
-        val authService: MusicService? = when (lastService) {
-                "YANDEX" -> YandexMusicService(authToken = authToken, api = yandexApi)
-                "APPLE" -> AppleMusicService(
-                        playlistUrlProvider = { getPlaylistUrl(MusicServiceType.APPLE) },
-                        api = appleMusicApi,
-                )
-
-                else -> null
+        val authService: MusicService? = if (lastService == null) {
+                null
+        } else {
+                when (MusicServiceType.valueOf(lastService)) {
+                        MusicServiceType.YANDEX -> YandexMusicService(authToken = authToken, api = yandexApi)
+                        MusicServiceType.NONE -> null
+                }
         }
 
         val services = listOfNotNull(authService) + playlistServices

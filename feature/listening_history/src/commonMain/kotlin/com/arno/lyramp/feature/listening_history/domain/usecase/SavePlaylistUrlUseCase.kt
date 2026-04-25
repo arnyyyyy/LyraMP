@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.listening_history.domain.usecase
 
-import com.arno.lyramp.feature.listening_history.data.PlaylistSourcesRepository
+import com.arno.lyramp.core.data.PlaylistSourcesRepository
 
 internal class SavePlaylistUrlUseCase(
         private val repository: PlaylistSourcesRepository,
