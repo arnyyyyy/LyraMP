@@ -26,9 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.core.model.LyraLang.getLanguageFlag
 import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
 import com.arno.lyramp.ui.theme.LyraColorScheme
-import com.arno.lyramp.util.getLanguageFlag
 
 @Composable
 internal fun LanguageChip(

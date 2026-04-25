@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arno.lyramp.core.model.LyraLang.getLanguageFlag
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.listeningHistory.resources.Res
 import com.arno.lyramp.feature.listeningHistory.resources.lyrics
@@ -56,7 +57,6 @@ import com.arno.lyramp.feature.listeningHistory.resources.practice
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.ui.theme.LyraNonTransparentSurface
-import com.arno.lyramp.util.getLanguageFlag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt

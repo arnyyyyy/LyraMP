@@ -137,6 +137,8 @@ fun EmptyStateCard(
         icon: String = "🔎",
         title: String,
         subtitle: String? = null,
+        actionLabel: String? = null,
+        onAction: (() -> Unit)? = null,
 ) {
         Box(
                 modifier = Modifier.fillMaxWidth(0.85f)
@@ -162,6 +164,19 @@ fun EmptyStateCard(
                                         color = LyraColorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center
                                 )
+                        }
+                        if (actionLabel != null && onAction != null) {
+                                Spacer(modifier = Modifier.height(20.dp))
+                                Button(
+                                        onClick = onAction,
+                                        colors = ButtonDefaults.buttonColors(containerColor = LyraColorScheme.primary),
+                                        shape = RoundedCornerShape(12.dp),
+                                ) {
+                                        Text(
+                                                text = actionLabel,
+                                                fontWeight = FontWeight.SemiBold,
+                                        )
+                                }
                         }
                 }
         }

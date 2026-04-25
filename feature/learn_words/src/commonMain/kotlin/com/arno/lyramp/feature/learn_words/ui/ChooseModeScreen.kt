@@ -32,6 +32,7 @@ import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeUiState
 import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.init_extraction_card_title
 import com.arno.lyramp.feature.learn_words.resources.nav_words
 import com.arno.lyramp.feature.learn_words.resources.notebook_icon
 import com.arno.lyramp.feature.learn_words.resources.words_empty_subtitle
@@ -119,6 +120,8 @@ object ChooseModeScreen : Screen {
                                                                 icon = stringResource(Res.string.notebook_icon),
                                                                 title = stringResource(Res.string.words_empty_title),
                                                                 subtitle = stringResource(Res.string.words_empty_subtitle),
+                                                                actionLabel = stringResource(Res.string.init_extraction_card_title),
+                                                                onAction = { navigator.push(screenFactory.extractionScreen()) },
                                                         )
                                                 }
 

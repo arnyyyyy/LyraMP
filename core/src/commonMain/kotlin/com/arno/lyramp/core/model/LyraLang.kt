@@ -22,4 +22,39 @@ object LyraLang {
         )
 
         fun displayName(code: String) = DISPLAY_NAMES[code.lowercase()] ?: "🌍 $code"
+
+        fun getLanguageFlag(languageCode: String): String {
+                return when (languageCode.lowercase()) {
+                        "en" -> "🇬🇧"
+                        "es" -> "🇪🇸"
+                        "fr" -> "🇫🇷"
+                        "de" -> "🇩🇪"
+                        "it" -> "🇮🇹"
+                        "pt" -> "🇵🇹"
+                        "ru" -> "🇷🇺"
+                        "ja" -> "🇯🇵"
+                        "ko" -> "🇰🇷"
+                        "zh" -> "🇨🇳"
+                        "ar" -> "🇸🇦"
+                        "tr" -> "🇹🇷"
+                        "pl" -> "🇵🇱"
+                        "nl" -> "🇳🇱"
+                        "sv" -> "🇸🇪"
+                        "da" -> "🇩🇰"
+                        "fi" -> "🇫🇮"
+                        "no" -> "🇳🇴"
+                        "cs" -> "🇨🇿"
+                        "uk" -> "🇺🇦"
+                        "el" -> "🇬🇷"
+                        "he" -> "🇮🇱"
+                        "iw" -> "🇮🇱"
+                        "hu" -> "🇭🇺"
+                        "hi" -> "🇮🇳"
+                        "th" -> "🇹🇭"
+                        "vi" -> "🇻🇳"
+                        "id" -> "🇮🇩"
+                        "ms" -> "🇲🇾"
+                        else -> "🌐 + $languageCode"
+                }
+        }
 }

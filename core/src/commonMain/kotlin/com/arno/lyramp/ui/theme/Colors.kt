@@ -7,6 +7,7 @@ val LyraOnPrimary = Color.White
 val LyraError = Color(0xFFD32F2F)
 val LyraOnError = Color.White
 val LyraSurface = Color.White
+val  LyraNonTransparentSurface = Color(0xFFF3F3F4)
 val LyraOnSurface = Color(0xFF2C3E50)
 val LyraSurfaceVariant = Color(0xFFF9F9F9)
 val LyraOnSurfaceVariant = Color(0xFF7F8C8D)

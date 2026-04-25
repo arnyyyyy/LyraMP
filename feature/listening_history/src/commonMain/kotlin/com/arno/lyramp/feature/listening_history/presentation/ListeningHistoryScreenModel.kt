@@ -88,11 +88,13 @@ internal class ListeningHistoryScreenModel(
         }
 
         private fun refreshLanguagesInternal() {
+                val trackCountByLanguage = _allTracks.value.groupBy { it.language }.mapValues { it.value.size }
                 val learningLanguages = getLearningLanguages()
                 val languages = if (learningLanguages.isNotEmpty()) {
-                        learningLanguages.sorted().toList()
+                        learningLanguages.filter { (trackCountByLanguage[it] ?: 0) > 3 }.sorted().toList()
                 } else {
-                        _allTracks.value.mapNotNull { it.language }.distinct().sorted()
+                        _allTracks.value.mapNotNull { it.language }.distinct()
+                                .filter { (trackCountByLanguage[it] ?: 0) > 3 }.sorted()
                 }
                 _availableLanguages.value = languages
 

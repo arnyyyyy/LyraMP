@@ -251,7 +251,7 @@ private fun AllWordsEntryCard(
 }
 
 @Composable
-private fun MusicFeatureCard(
+internal fun MusicFeatureCard(
         icon: String,
         title: String,
         onClick: () -> Unit
