@@ -99,6 +99,7 @@ val listeningHistoryModule = module {
                         saveSelectedLanguage = get<SaveSelectedLanguageUseCase>(),
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
                         getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
+                        completeYandexLogin = get(),
                 )
         }
 }

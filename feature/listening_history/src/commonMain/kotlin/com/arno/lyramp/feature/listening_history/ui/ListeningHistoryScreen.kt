@@ -14,6 +14,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,7 +32,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.core.model.YANDEX_AUTH_URL
 import com.arno.lyramp.core.navigation.ScreenFactory
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
+import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
+import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState
 import com.arno.lyramp.ui.OnboardingBackground
@@ -66,6 +71,16 @@ object ShowListeningHistoryScreen : Screen {
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
                 val playlistSources by screenModel.playlistSources.collectAsState()
+                val isYandexAuthorized by screenModel.isYandexAuthorized.collectAsState()
+
+                val yandexAuthBus: YandexAuthBus = koinInject()
+
+                LaunchedEffect(Unit) {
+                        yandexAuthBus.flow.collect { result ->
+                                screenModel.onYandexLoginSuccess(result.token, result.expiresIn)
+                                yandexAuthBus.consume()
+                        }
+                }
 
                 val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
                 val settingsState by userSettingsScreenModel.state.collectAsState()
@@ -93,6 +108,10 @@ object ShowListeningHistoryScreen : Screen {
                 if (showAddContentSheet) {
                         AddContentSheet(
                                 playlistSources = playlistSources,
+                                showYandexLoginButton = !isYandexAuthorized,
+                                onLoginWithYandex = {
+                                        launchAuthUrl(YANDEX_AUTH_URL, MusicServiceType.YANDEX)
+                                },
                                 onSavePlaylistUrl = { url ->
                                         screenModel.onPlaylistUrlChanged(url)
                                 },

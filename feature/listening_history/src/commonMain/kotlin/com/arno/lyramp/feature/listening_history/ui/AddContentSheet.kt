@@ -57,12 +57,16 @@ import com.arno.lyramp.feature.listeningHistory.resources.add_content_track_sect
 import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
+import com.arno.lyramp.feature.listeningHistory.resources.add_content_login_yandex
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AddContentSheet(
         playlistSources: List<PlaylistSource>,
+        showYandexLoginButton: Boolean,
+        onLoginWithYandex: () -> Unit,
         onSavePlaylistUrl: (String) -> Unit,
         onAddTrack: (name: String, artist: String) -> Unit,
         onRemovePlaylistSource: (String) -> Unit,
@@ -91,6 +95,8 @@ internal fun AddContentSheet(
         ) {
                 AddContentSheetContent(
                         playlistSources = playlistSources,
+                        showYandexLoginButton = showYandexLoginButton,
+                        onLoginWithYandex = onLoginWithYandex,
                         onSavePlaylistUrl = onSavePlaylistUrl,
                         onAddTrack = onAddTrack,
                         onRemovePlaylistSource = onRemovePlaylistSource,
@@ -101,6 +107,8 @@ internal fun AddContentSheet(
 @Composable
 private fun AddContentSheetContent(
         playlistSources: List<PlaylistSource>,
+        showYandexLoginButton: Boolean,
+        onLoginWithYandex: () -> Unit,
         onSavePlaylistUrl: (String) -> Unit,
         onAddTrack: (name: String, artist: String) -> Unit,
         onRemovePlaylistSource: (String) -> Unit,
@@ -124,6 +132,8 @@ private fun AddContentSheetContent(
                         ) {
                                 when (page) {
                                         0 -> AddSourcePage(
+                                                showYandexLoginButton = showYandexLoginButton,
+                                                onLoginWithYandex = onLoginWithYandex,
                                                 onSavePlaylistUrl = onSavePlaylistUrl,
                                                 onAddTrack = onAddTrack,
                                         )
@@ -142,6 +152,8 @@ private fun AddContentSheetContent(
 
 @Composable
 private fun AddSourcePage(
+        showYandexLoginButton: Boolean,
+        onLoginWithYandex: () -> Unit,
         onSavePlaylistUrl: (String) -> Unit,
         onAddTrack: (name: String, artist: String) -> Unit,
 ) {
@@ -244,6 +256,20 @@ private fun AddSourcePage(
                         height = 44.dp,
                         enabled = trackName.isNotBlank() && trackArtist.isNotBlank(),
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (showYandexLoginButton) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        LyraFilledButton(
+                                text = stringResource(Res.string.add_content_login_yandex),
+                                onClick = onLoginWithYandex,
+                                modifier = Modifier.fillMaxWidth(),
+                                height = 48.dp,
+                                containerColor = LyraColors.Yandex,
+                                contentColor = LyraColors.AccentOnAccent,
+                        )
+                }
         }
 }
 

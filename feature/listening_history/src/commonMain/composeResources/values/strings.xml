@@ -7,6 +7,7 @@
     <string name="practice">Практика</string>
     <string name="lyrics">Текст</string>
     <string name="add_content_title">Добавить</string>
+    <string name="add_content_login_yandex">Войти через Яндекс</string>
     <string name="add_content_playlist_section">Плейлист</string>
     <string name="add_content_playlist_url_label">Ссылка на плейлист (Apple / Yandex)</string>
     <string name="add_content_playlist_save">Сохранить</string>
