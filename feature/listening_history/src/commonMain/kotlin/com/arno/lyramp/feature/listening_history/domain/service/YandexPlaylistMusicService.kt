@@ -1,7 +1,5 @@
 package com.arno.lyramp.feature.listening_history.domain.service
 
-import com.arno.lyramp.feature.authorization.domain.GetAuthPlaylistUseCase
-import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.mapper.YandexPlaylistParser
@@ -9,14 +7,14 @@ import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrac
 import com.arno.lyramp.util.Log
 
 internal class YandexPlaylistMusicService(
-        private val getPlaylistUrl: GetAuthPlaylistUseCase,
+        private val playlistUrlProvider: () -> String?,
         private val htmlApi: AppleMusicApi,
         private val yandexApi: YandexMusicApi,
 ) : MusicService {
         private val parser by lazy { YandexPlaylistParser() }
 
         override suspend fun getListeningHistory(limit: Int): List<ListeningHistoryMusicTrack> {
-                val url = getPlaylistUrl(MusicServiceType.NONE) ?: error("No Yandex playlist URL")
+                val url = playlistUrlProvider() ?: error("No Yandex playlist URL")
                 val html = htmlApi.loadPlaylistHtml(url)
 
                 val ownerInfo = parser.extractOwnerInfo(html)

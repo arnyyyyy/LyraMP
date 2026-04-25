@@ -8,5 +8,6 @@ data class ListeningHistoryMusicTrack(
         val albumName: String? = null,
         val imageUrl: String? = null,
         val hasText: Boolean = false,
-        val language: String? = null
+        val language: String? = null,
+        val sourceId: String? = null,
 )

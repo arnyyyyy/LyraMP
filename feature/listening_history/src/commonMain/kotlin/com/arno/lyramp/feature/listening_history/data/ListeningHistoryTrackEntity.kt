@@ -14,6 +14,7 @@ internal data class ListeningHistoryTrackEntity(
         val artists: String,
         val albumName: String?,
         val imageUrl: String?,
+        val sourceId: String?,
         @ColumnInfo(defaultValue = "1")
         val isShowing: Boolean = true
 )

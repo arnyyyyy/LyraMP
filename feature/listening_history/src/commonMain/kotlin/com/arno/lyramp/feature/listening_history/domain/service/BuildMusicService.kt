@@ -6,47 +6,54 @@ import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
+import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 
 internal fun buildMusicService(
         getLastService: GetLastAuthorizedServiceUseCase,
         authToken: ProvideAuthTokenUseCase,
         getPlaylistUrl: GetAuthPlaylistUseCase,
+        getPlaylistSources: GetPlaylistSourcesUseCase,
         yandexApi: YandexMusicApi,
         appleMusicApi: AppleMusicApi,
 ): MusicService {
-        val playlistUrl = getPlaylistUrl(MusicServiceType.NONE)?.takeIf { it.isNotBlank() }
-
-        val playlistService: MusicService? = playlistUrl?.let { url ->
-                when {
-                        url.contains("music.apple.com") -> AppleMusicService(
-                                getPlaylistUrl = getPlaylistUrl,
-                                playlistSource = MusicServiceType.NONE,
-                                api = appleMusicApi,
-                        )
-
-                        url.contains("music.yandex") -> YandexPlaylistMusicService(
-                                getPlaylistUrl = getPlaylistUrl,
-                                htmlApi = appleMusicApi,
-                                yandexApi = yandexApi,
-                        )
-
-                        else -> null
-                }
-        }
-
         val lastService = getLastService()
+        val playlistServices = getPlaylistSources()
+                .filterNot { lastService == "APPLE" && it.id == PlaylistSource.APPLE_PLAYLIST_ID }
+                .mapNotNull { source ->
+                        val url = source.url
+                        when {
+                                url.contains("music.apple.com") -> SourceTaggedMusicService(
+                                        sourceId = source.id,
+                                        delegate = AppleMusicService(
+                                                playlistUrlProvider = { url },
+                                                api = appleMusicApi,
+                                        ),
+                                )
+
+                                url.contains("music.yandex") -> SourceTaggedMusicService(
+                                        sourceId = source.id,
+                                        delegate = YandexPlaylistMusicService(
+                                                playlistUrlProvider = { url },
+                                                htmlApi = appleMusicApi,
+                                                yandexApi = yandexApi,
+                                        ),
+                                )
+
+                                else -> null
+                        }
+                }
+
         val authService: MusicService? = when (lastService) {
                 "YANDEX" -> YandexMusicService(authToken = authToken, api = yandexApi)
-                "APPLE" -> AppleMusicService(getPlaylistUrl = getPlaylistUrl, playlistSource = MusicServiceType.APPLE, api = appleMusicApi)
+                "APPLE" -> AppleMusicService(
+                        playlistUrlProvider = { getPlaylistUrl(MusicServiceType.APPLE) },
+                        api = appleMusicApi,
+                )
+
                 else -> null
         }
 
-        return when {
-                authService != null && playlistService != null ->
-                        CompositeMusicService(listOf(authService, playlistService))
-
-                authService != null -> authService
-                playlistService != null -> playlistService
-                else -> EmptyMusicService()
-        }
+        val services = listOfNotNull(authService) + playlistServices
+        return if (services.isEmpty()) EmptyMusicService() else CompositeMusicService(services)
 }

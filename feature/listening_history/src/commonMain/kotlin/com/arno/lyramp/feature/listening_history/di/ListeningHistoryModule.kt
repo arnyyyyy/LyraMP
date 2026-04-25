@@ -7,6 +7,7 @@ import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
+import com.arno.lyramp.feature.listening_history.data.PlaylistSourcesRepository
 import com.arno.lyramp.feature.listening_history.data.getListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.domain.service.DynamicMusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
@@ -39,16 +40,27 @@ val listeningHistoryModule = module {
         single<DynamicMusicService> {
                 val authToken = get<ProvideAuthTokenUseCase>()
                 val getPlaylistUrl = get<GetAuthPlaylistUseCase>()
+                val getPlaylistSources = get<GetPlaylistSourcesUseCase>()
                 val getLastService = get<GetLastAuthorizedServiceUseCase>()
                 val yandexApi = get<YandexMusicApi>()
                 val appleMusicApi = get<AppleMusicApi>()
 
                 DynamicMusicService(
-                        factory = { buildMusicService(getLastService, authToken, getPlaylistUrl, yandexApi, appleMusicApi) }
+                        factory = {
+                                buildMusicService(
+                                        getLastService = getLastService,
+                                        authToken = authToken,
+                                        getPlaylistUrl = getPlaylistUrl,
+                                        getPlaylistSources = getPlaylistSources,
+                                        yandexApi = yandexApi,
+                                        appleMusicApi = appleMusicApi,
+                                )
+                        }
                 )
         }
         single<MusicService> { get<DynamicMusicService>() }
 
+        single { PlaylistSourcesRepository() }
         single<ListeningHistoryDatabase> { getListeningHistoryDatabase(get(named("listening_history"))) }
         single { get<ListeningHistoryDatabase>().listeningHistoryDao() }
         single { ListeningHistoryRepository(musicService = get(), dao = get(), detectLanguage = get<DetectLanguageUseCase>()) }
@@ -62,15 +74,21 @@ val listeningHistoryModule = module {
         single { UpdateTrackLanguageUseCase(repository = get()) }
         single { SaveTrackLanguageUseCase(repository = get()) }
         single { AddManualTrackUseCase(repository = get()) }
-        single { GetPlaylistSourcesUseCase(getAuthPlaylistUrl = get()) }
+        single { GetPlaylistSourcesUseCase(repository = get(), getAuthPlaylistUrl = get()) }
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
         single { GetSuggestedAlbumsUseCase(repository = get()) }
         single {
                 SavePlaylistUrlUseCase(
+                        repository = get(),
+                )
+        }
+        single {
+                RemovePlaylistSourceUseCase(
+                        listeningHistoryRepository = get(),
+                        repository = get(),
                         saveAuthPlaylistUrl = get(),
                 )
         }
-        single { RemovePlaylistSourceUseCase(savePlaylistUrl = get(), saveAuthPlaylistUrl = get()) }
 
         factory {
                 ListeningHistoryScreenModel(

@@ -9,7 +9,8 @@ internal fun ListeningHistoryTrackEntity.toDomain() = ListeningHistoryMusicTrack
         artists = artists.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         albumName = albumName,
         imageUrl = imageUrl,
-        language = language
+        language = language,
+        sourceId = sourceId,
 )
 
 internal fun ListeningHistoryMusicTrack.toEntity() = ListeningHistoryTrackEntity(
@@ -19,5 +20,6 @@ internal fun ListeningHistoryMusicTrack.toEntity() = ListeningHistoryTrackEntity
         artists = artists.joinToString(","),
         albumName = albumName,
         imageUrl = imageUrl,
-        language = language
+        language = language,
+        sourceId = sourceId,
 )

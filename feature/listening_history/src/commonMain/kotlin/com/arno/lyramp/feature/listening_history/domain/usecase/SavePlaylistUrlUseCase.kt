@@ -1,13 +1,12 @@
 package com.arno.lyramp.feature.listening_history.domain.usecase
 
-import com.arno.lyramp.feature.authorization.domain.SaveAuthPlaylistUrlUseCase
-import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
+import com.arno.lyramp.feature.listening_history.data.PlaylistSourcesRepository
 
 internal class SavePlaylistUrlUseCase(
-        private val saveAuthPlaylistUrl: SaveAuthPlaylistUrlUseCase,
+        private val repository: PlaylistSourcesRepository,
 ) {
-        operator fun invoke(url: String?) {
-                saveAuthPlaylistUrl(MusicServiceType.NONE, url?.takeIf { it.isNotBlank() })
+        operator fun invoke(url: String) {
+                repository.add(url)
         }
 }
 

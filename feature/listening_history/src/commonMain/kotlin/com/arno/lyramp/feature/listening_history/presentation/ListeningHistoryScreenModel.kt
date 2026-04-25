@@ -162,9 +162,13 @@ internal class ListeningHistoryScreenModel(
         }
 
         fun removePlaylistSource(sourceId: String) {
-                removePlaylistSource.invoke(sourceId)
-                refreshPlaylistSources()
-                refresh()
+                screenModelScope.launch {
+                        removePlaylistSource.invoke(sourceId)
+                        refreshPlaylistSources()
+                        _allTracks.value = _allTracks.value.filter { it.sourceId != sourceId }
+                        updateFilteredTracks()
+                        refresh()
+                }
         }
 
         fun addManualTrack(name: String, artist: String) {

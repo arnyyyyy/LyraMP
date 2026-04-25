@@ -79,6 +79,7 @@ internal class ListeningHistoryRepository(
                         artists = artist,
                         albumName = null,
                         imageUrl = null,
+                        sourceId = null,
                 )
                 dao.insertAll(listOf(entity))
                 return ListeningHistoryMusicTrack(
@@ -89,10 +90,16 @@ internal class ListeningHistoryRepository(
                 )
         }
 
+        suspend fun deleteTracksBySourceId(sourceId: String) {
+                dao.deleteBySourceId(sourceId)
+        }
+
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
                 val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
                 val cachedIds = cached.map { it.trackId ?: "${it.name}||${it.artists}" }.toSet()
                 val hiddenIds = dao.getHiddenTrackIds().filterNotNull().toSet()
+
+                backfillMissingSourceIds(fresh)
 
                 val manualIds = cachedIds.filter { it.contains("||") }.toSet()
 
@@ -109,6 +116,22 @@ internal class ListeningHistoryRepository(
                 }
                 if (toInsert.isNotEmpty())
                         dao.insertAll(toInsert.reversed().map { it.withDetectedLanguage().toEntity() })
+        }
+
+        private suspend fun backfillMissingSourceIds(fresh: List<ListeningHistoryMusicTrack>) {
+                fresh.forEach { track ->
+                        val sourceId = track.sourceId ?: return@forEach
+                        val trackId = track.id
+                        if (trackId != null) {
+                                dao.backfillSourceIdByTrackId(trackId, sourceId)
+                        } else {
+                                dao.backfillSourceIdByTitleAndArtists(
+                                        name = track.name,
+                                        artists = track.artists.joinToString(","), // TODO НОРМАЛЬНЫЙ СЕРИАЛАЙЗЕР
+                                        sourceId = sourceId,
+                                )
+                        }
+                }
         }
 
         private suspend fun ListeningHistoryMusicTrack.withDetectedLanguage(): ListeningHistoryMusicTrack {
