@@ -1,5 +1,7 @@
 package com.arno.lyramp.feature.authorization.ui
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,11 +9,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,12 +46,14 @@ import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.core.navigation.ScreenFactory
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.painterResource
 import cafe.adriel.voyager.koin.getScreenModel
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.authorization.resources.Res
 import com.arno.lyramp.feature.authorization.resources.auth_continue_without_auth
 import com.arno.lyramp.feature.authorization.resources.auth_login_with_yandex
 import com.arno.lyramp.feature.authorization.resources.auth_select_service
+import com.arno.lyramp.feature.authorization.resources.yandex_icon
 import org.koin.compose.koinInject
 
 object AuthScreen : Screen {
@@ -105,7 +113,7 @@ object AuthScreen : Screen {
                                                         .widthIn(max = 400.dp)
                                                         .fillMaxWidth(0.85f)
                                                         .background(
-                                                                LyraColors.Accent,
+                                                                Color.White,
                                                                 RoundedCornerShape(20.dp)
                                                         )
                                                         .border(
@@ -130,23 +138,29 @@ object AuthScreen : Screen {
                                                         Button(
                                                                 onClick = { onAuthClick(MusicServiceType.YANDEX) },
                                                                 enabled = !state.isLoading,
-                                                                modifier = Modifier
-                                                                        .fillMaxWidth()
-                                                                        .height(52.dp),
-                                                                shape = RoundedCornerShape(26.dp),
+                                                                modifier = Modifier.height(52.dp),
+                                                                shape = RoundedCornerShape(18.dp),
                                                                 colors = ButtonDefaults.buttonColors(
-                                                                        containerColor = LyraColors.Yandex,
-                                                                        contentColor = LyraColors.AccentOnAccent,
-                                                                        disabledContainerColor = LyraColors.Yandex.copy(alpha = 0.5f),
-                                                                        disabledContentColor = LyraColors.AccentOnAccent.copy(alpha = 0.5f),
+                                                                        containerColor = Color.White,
+                                                                        contentColor = Color.DarkGray
                                                                 ),
+                                                                border = BorderStroke(width = 4.dp, color = LyraColors.Yandex),
                                                                 contentPadding = PaddingValues(horizontal = 16.dp),
                                                         ) {
-                                                                Text(
-                                                                        stringResource(Res.string.auth_login_with_yandex),
-                                                                        fontSize = 16.sp,
-                                                                        fontWeight = FontWeight.Bold,
-                                                                )
+                                                                Row(
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                ) {
+                                                                        Image(
+                                                                                painter = painterResource(Res.drawable.yandex_icon),
+                                                                                contentDescription = null,
+                                                                                modifier = Modifier.size(24.dp),
+                                                                        )
+                                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                                        Text(
+                                                                                stringResource(Res.string.auth_login_with_yandex),
+                                                                                fontSize = 18.sp,
+                                                                        )
+                                                                }
                                                         }
 
                                                         Text(

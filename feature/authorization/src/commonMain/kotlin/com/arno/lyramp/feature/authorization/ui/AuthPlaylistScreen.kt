@@ -41,7 +41,7 @@ import com.arno.lyramp.feature.authorization.resources.auth_playlist
 import com.arno.lyramp.feature.authorization.resources.auth_playlist_link_label
 import com.arno.lyramp.feature.authorization.resources.continue_next
 import com.arno.lyramp.feature.authorization.resources.continue_skip
-import com.arno.lyramp.ui.theme.LyraOnSurfaceVariant
+import com.arno.lyramp.ui.theme.LyraPrimary
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -57,7 +57,6 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
                                 AuthPlaylistScreenContent(
                                         title = stringResource(Res.string.add_playlist),
                                         initialUrl = "",
-                                        buttonColor = LyraOnSurfaceVariant,
                                         showSkip = true,
                                         onContinue = { url ->
                                                 completeNoAuth(url)
@@ -79,7 +78,6 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
 private fun AuthPlaylistScreenContent(
         title: String,
         initialUrl: String,
-        buttonColor: Color,
         showSkip: Boolean = false,
         onContinue: (String) -> Unit,
         onSkip: () -> Unit = {}
@@ -139,7 +137,7 @@ private fun AuthPlaylistScreenContent(
                                                                 },
                                                                 modifier = Modifier.fillMaxWidth(),
                                                                 colors = ButtonDefaults.buttonColors(
-                                                                        containerColor = buttonColor,
+                                                                        containerColor = LyraPrimary,
                                                                         contentColor = Color.White
                                                                 ),
                                                                 shape = RoundedCornerShape(12.dp),
