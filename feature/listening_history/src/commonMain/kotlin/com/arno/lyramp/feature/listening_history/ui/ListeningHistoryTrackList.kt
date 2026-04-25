@@ -55,6 +55,7 @@ import com.arno.lyramp.feature.listeningHistory.resources.lyrics
 import com.arno.lyramp.feature.listeningHistory.resources.practice
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
+import com.arno.lyramp.ui.theme.LyraNonTransparentSurface
 import com.arno.lyramp.util.getLanguageFlag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -294,8 +295,9 @@ private fun TrackItem(
         Row(
                 modifier = Modifier
                         .fillMaxWidth()
-                        .background(LyraColorScheme.surface.copy(alpha = 0.95f), RoundedCornerShape(16.dp))
+                        .background(LyraNonTransparentSurface, RoundedCornerShape(16.dp))
                         .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(16.dp))
+                        .clickable(onClick = onLyricsClick)
                         .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
