@@ -15,6 +15,8 @@ internal data class ListeningHistoryTrackEntity(
         val albumName: String?,
         val imageUrl: String?,
         val sourceId: String?,
+        @ColumnInfo(defaultValue = "0")
+        val yandexResolveAttempted: Boolean = false,
         @ColumnInfo(defaultValue = "1")
         val isShowing: Boolean = true
 )

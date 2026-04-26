@@ -14,12 +14,14 @@ import com.arno.lyramp.feature.listening_history.domain.usecase.GetAlbumWithTrac
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetSuggestedAlbumsUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetLocalListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.buildMusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemainingsByYandexUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SaveTrackLanguagesUseCase
@@ -67,6 +69,7 @@ val listeningHistoryModule = module {
         single { PrefillListeningHistoryUseCase(repository = get()) }
 
         single { GetListeningHistoryUseCase(repository = get()) }
+        single { GetLocalListeningHistoryUseCase(repository = get()) }
         single { HideTrackUseCase(repository = get()) }
         single { UpdateTrackLanguageUseCase(repository = get()) }
         single { SaveTrackLanguageUseCase(repository = get()) }
@@ -74,6 +77,7 @@ val listeningHistoryModule = module {
         single { GetPlaylistSourcesUseCase(repository = get()) }
         single { GetAlbumWithTracksUseCase(api = get(), provideAuthToken = get()) }
         single { GetSuggestedAlbumsUseCase(repository = get()) }
+        single { ResolveRemainingsByYandexUseCase(repository = get(), api = get(), provideAuthToken = get()) }
         single {
                 SavePlaylistUrlUseCase(
                         repository = get(),
@@ -89,7 +93,8 @@ val listeningHistoryModule = module {
         factory {
                 ListeningHistoryScreenModel(
                         getListeningHistory = get(),
-                        hideTrack = get(),
+                        getLocalListeningHistory = get(),
+                        hideTrackUseCase = get(),
                         updateTrackLanguage = get(),
                         addManualTrack = get(),
                         savePlaylistUrl = get(),
@@ -100,6 +105,7 @@ val listeningHistoryModule = module {
                         getLearningLanguages = get<GetLearningLanguagesUseCase>(),
                         getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
                         completeYandexLogin = get(),
+                        resolveRemainingsByYandex = get(),
                 )
         }
 }

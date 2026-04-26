@@ -1,5 +1,6 @@
 package com.arno.lyramp.feature.listening_history.data
 
+import com.arno.lyramp.core.model.LyraLang.foldLatinDiacritics
 import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
@@ -11,17 +12,18 @@ internal class ListeningHistoryRepository(
         private val dao: ListeningHistoryDao,
         private val detectLanguage: DetectLanguageUseCase,
 ) {
-        fun getListeningHistory(limit: Int) = flow {
+        fun getListeningHistory(languageDetectionLimit: Int) = flow {
                 val cachedTracks = dao.getAll()
 
                 if (cachedTracks.isNotEmpty()) {
-                        emit(cachedTracks.map { it.toDomain() }.filterNonNative())
-                        val fresh = musicService.getListeningHistory(limit)
+                        val fresh = musicService.getListeningHistory(limit = null)
                         applyDiff(cachedTracks, fresh)
+                        detectLanguagesForNextBatch(languageDetectionLimit)
                         emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 } else {
-                        val tracks = musicService.getListeningHistory(limit)
-                        dao.insertAll(tracks.reversed().map { it.withDetectedLanguage().toEntity() })
+                        val tracks = musicService.getListeningHistory(limit = null)
+                        dao.insertAll(tracks.reversed().map { it.toEntity() })
+                        detectLanguagesForNextBatch(languageDetectionLimit)
                         emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 }
         }
@@ -36,6 +38,38 @@ internal class ListeningHistoryRepository(
         }
 
         suspend fun getAllTracks() = dao.getAll().map { it.toDomain() }
+
+        suspend fun getVisibleTracks() = dao.getAll().map { it.toDomain() }.filterNonNative()
+
+        suspend fun getTracksMissingYandexIds() = dao.getTracksMissingYandexIds().map { entity ->
+                TrackResolutionCandidate(
+                        localId = entity.localId,
+                        name = entity.name,
+                        artists = entity.artists.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                )
+        }
+
+        suspend fun markYandexResolveAttempted(localId: Long) = dao.markYandexResolveAttempted(localId)
+
+        suspend fun resolveTrackByLocalId(
+                localId: Long,
+                newTrackId: String,
+                albumId: String?,
+                albumName: String?,
+                artists: List<String>,
+        ) {
+                if (dao.hasShowingTrackIdExceptLocalId(newTrackId, localId)) {
+                        dao.deleteByLocalId(localId)
+                } else {
+                        dao.resolveTrackByLocalId(
+                                localId = localId,
+                                newTrackId = newTrackId,
+                                albumId = albumId,
+                                albumName = albumName,
+                                artists = artists.joinToString(","),
+                        )
+                }
+        }
 
         suspend fun saveTrackLanguages(trackLanguages: Map<String, String>) {
                 trackLanguages.forEach { (trackId, language) ->
@@ -56,7 +90,7 @@ internal class ListeningHistoryRepository(
                 if (entities.isNotEmpty()) dao.insertAll(entities)
         }
 
-        suspend fun hideTrack(trackId: String) = dao.hideTrack(trackId)
+        suspend fun hideTrack(track: ListeningHistoryMusicTrack) = dao.hideTrackByKey(track.stableKey())
 
 
         suspend fun updateTrackLanguage(trackId: String, language: String) = dao.updateLanguage(trackId, language)
@@ -87,27 +121,67 @@ internal class ListeningHistoryRepository(
         suspend fun deleteTracksBySourceId(sourceId: String) = dao.deleteBySourceId(sourceId)
 
         private suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
-                val freshIds = fresh.map { it.id ?: "${it.name}||${it.artists.joinToString(",")}" }.toSet()
-                val cachedIds = cached.map { it.trackId ?: "${it.name}||${it.artists}" }.toSet()
-                val hiddenIds = dao.getHiddenTrackIds().filterNotNull().toSet()
+                val freshIds = fresh.map { it.stableKey() }.toSet()
+                val freshTitleKeys = fresh.map { it.titleArtistKey() }.toSet()
+                val cachedIds = cached.map { it.stableKey() }.toSet()
+                val cachedTitleKeys = cached.map { it.titleArtistKey() }.toSet()
+                val hiddenIds = dao.getHiddenTrackKeys().toSet()
 
                 backfillMissingSourceIds(fresh)
 
-                val manualIds = cachedIds.filter { it.contains("||") }.toSet()
+                val manualIds = cached
+                        .filter { it.sourceId == null && it.trackId?.contains("||") == true }
+                        .map { it.stableKey() }
+                        .toSet()
 
-                val toDelete = (cachedIds - freshIds) - manualIds
+                val matchedByTitleIds = cached
+                        .filter { it.titleArtistKey() in freshTitleKeys }
+                        .map { it.stableKey() }
+                        .toSet()
+
+                val toDelete = (cachedIds - freshIds - matchedByTitleIds) - manualIds
                 if (toDelete.isNotEmpty()) {
-                        val remaining = (freshIds + manualIds).toList()
-                        if (remaining.isNotEmpty()) dao.deleteNotIn(remaining)
-                        else dao.deleteAll()
+                        val remaining = (freshIds + matchedByTitleIds + manualIds).toList()
+                        if (remaining.isNotEmpty()) dao.deleteShowingNotIn(remaining)
+                        else dao.deleteAllShowing()
                 }
 
                 val toInsert = fresh.filter { track ->
-                        val id = track.id ?: "${track.name}||${track.artists.joinToString(",")}"
-                        id !in cachedIds && id !in hiddenIds
+                        val id = track.stableKey()
+                        id !in cachedIds &&
+                            track.titleArtistKey() !in cachedTitleKeys &&
+                            id !in hiddenIds
                 }
-                if (toInsert.isNotEmpty())
-                        dao.insertAll(toInsert.reversed().map { it.withDetectedLanguage().toEntity() })
+                if (toInsert.isNotEmpty()) {
+                        dao.insertAll(toInsert.reversed().map { it.toEntity() })
+                }
+        }
+
+        private suspend fun detectLanguagesForNextBatch(limit: Int) {
+                if (limit <= 0) return
+                dao.getTracksWithoutLanguage().balancedBySource(limit).forEach { track ->
+                        val detected = detectLanguage(track.name) ?: return@forEach
+                        dao.updateLanguageByLocalId(track.localId, detected)
+                }
+        }
+
+        private fun List<ListeningHistoryTrackEntity>.balancedBySource(limit: Int): List<ListeningHistoryTrackEntity> {
+                val buckets = groupBy { it.sourceId ?: MANUAL_SOURCE_KEY }
+                        .values
+                        .map { it.toMutableList() }
+                        .toMutableList()
+                val result = mutableListOf<ListeningHistoryTrackEntity>()
+
+                while (result.size < limit && buckets.isNotEmpty()) {
+                        val iterator = buckets.iterator()
+                        while (iterator.hasNext() && result.size < limit) {
+                                val bucket = iterator.next()
+                                result += bucket.removeFirst()
+                                if (bucket.isEmpty()) iterator.remove()
+                        }
+                }
+
+                return result
         }
 
         private suspend fun backfillMissingSourceIds(fresh: List<ListeningHistoryMusicTrack>) {
@@ -126,16 +200,26 @@ internal class ListeningHistoryRepository(
                 }
         }
 
-        private suspend fun ListeningHistoryMusicTrack.withDetectedLanguage(): ListeningHistoryMusicTrack {
-                if (language != null) return this
-                val detected = detectLanguage(name) ?: return this
-                return copy(language = detected)
-        }
-
         private fun List<ListeningHistoryMusicTrack>.filterNonNative(): List<ListeningHistoryMusicTrack> =
                 filter { it.language != null && it.language != "ru" } // AA? TODO?
 
+        private fun ListeningHistoryMusicTrack.stableKey() = id?.takeIf { it.isNotBlank() } ?: "$name||${artists.joinToString(",")}"
+
+        private fun ListeningHistoryTrackEntity.stableKey() = trackId?.takeIf { it.isNotBlank() } ?: "$name||$artists"
+
+        private fun ListeningHistoryMusicTrack.titleArtistKey() = "$name||${artists.joinToString(",")}".normalizedKey()
+
+        private fun ListeningHistoryTrackEntity.titleArtistKey() = "$name||$artists".normalizedKey()
+
+        private fun String.normalizedKey(): String =
+                lowercase()
+                        .foldLatinDiacritics()
+                        .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+                        .replace(Regex("\\s+"), " ")
+                        .trim()
+
         private companion object {
                 const val MAX_ONBOARDING_SIZE = 35
+                const val MANUAL_SOURCE_KEY = "__manual__"
         }
 }

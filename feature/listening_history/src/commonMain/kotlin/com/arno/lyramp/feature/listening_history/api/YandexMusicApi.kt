@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -36,6 +37,16 @@ internal class YandexMusicApi(private val client: HttpClient) {
         suspend fun getPlaylist(uid: Long, kind: Long): YandexPlaylistResponse {
                 return client.get("$BASE_URL/users/$uid/playlists/$kind") {
                         header(HttpHeaders.Accept, "application/json")
+                }.body()
+        }
+
+        suspend fun searchTracks(token: String, text: String): YandexSearchResponse {
+                return client.get("$BASE_URL/search") {
+                        header(HttpHeaders.Authorization, "OAuth $token")
+                        header(HttpHeaders.Accept, "application/json")
+                        parameter("text", text)
+                        parameter("type", "track")
+                        parameter("page", 0)
                 }.body()
         }
 

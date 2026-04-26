@@ -5,6 +5,6 @@ import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 internal class GetListeningHistoryUseCase(
         private val repository: ListeningHistoryRepository
 ) {
-        operator fun invoke(limit: Int = 100) = repository.getListeningHistory(limit)
+        operator fun invoke(languageDetectionLimit: Int = 35) = repository.getListeningHistory(languageDetectionLimit)
 }
 

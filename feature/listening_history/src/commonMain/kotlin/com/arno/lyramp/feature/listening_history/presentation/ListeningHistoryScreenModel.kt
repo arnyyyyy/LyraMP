@@ -8,9 +8,11 @@ import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.GetLocalListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemainingsByYandexUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.UpdateTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
@@ -27,7 +29,8 @@ import kotlinx.coroutines.launch
 
 internal class ListeningHistoryScreenModel(
         private val getListeningHistory: GetListeningHistoryUseCase,
-        private val hideTrack: HideTrackUseCase,
+        private val getLocalListeningHistory: GetLocalListeningHistoryUseCase,
+        private val hideTrackUseCase: HideTrackUseCase,
         private val updateTrackLanguage: UpdateTrackLanguageUseCase,
         private val addManualTrack: AddManualTrackUseCase,
         private val savePlaylistUrl: SavePlaylistUrlUseCase,
@@ -38,6 +41,7 @@ internal class ListeningHistoryScreenModel(
         private val getLearningLanguages: GetLearningLanguagesUseCase,
         private val getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
         private val completeYandexLogin: CompleteYandexLoginUseCase,
+        private val resolveRemainingsByYandex: ResolveRemainingsByYandexUseCase,
 ) : ScreenModel {
 
         private val _isYandexAuthorized = MutableStateFlow(getLastAuthorizedService() == MusicServiceType.YANDEX.name)
@@ -72,14 +76,7 @@ internal class ListeningHistoryScreenModel(
 
         private fun loadHistory() {
                 screenModelScope.launch {
-                        getListeningHistory()
-                                .catch { e ->
-                                        _uiState.value = Error(e.message ?: "Unknown error")
-                                }
-                                .collect { tracks ->
-                                        _allTracks.value = tracks
-                                        refreshLanguagesInternal()
-                                }
+                        loadHistoryInternal(resolveAfterLoad = true)
                 }
         }
 
@@ -125,14 +122,7 @@ internal class ListeningHistoryScreenModel(
                 screenModelScope.launch {
                         _isRefreshing.value = true
                         try {
-                                getListeningHistory()
-                                        .catch { e ->
-                                                _uiState.value = Error(e.message ?: "Unknown error")
-                                        }
-                                        .collect { tracks ->
-                                                _allTracks.value = tracks
-                                                refreshLanguagesInternal()
-                                        }
+                                loadHistoryInternal(resolveAfterLoad = true)
                         } finally {
                                 _isRefreshing.value = false
                         }
@@ -144,10 +134,10 @@ internal class ListeningHistoryScreenModel(
         }
 
         fun hideTrack(track: ListeningHistoryMusicTrack) {
-                val trackId = track.id ?: return
                 screenModelScope.launch {
-                        hideTrack(trackId)
-                        _allTracks.value = _allTracks.value.filter { it.id != trackId }
+                        hideTrackUseCase(track)
+                        val key = track.stableKey()
+                        _allTracks.value = _allTracks.value.filter { it.stableKey() != key }
                         updateFilteredTracks()
                 }
         }
@@ -196,4 +186,34 @@ internal class ListeningHistoryScreenModel(
                 _isYandexAuthorized.value = getLastAuthorizedService() == MusicServiceType.YANDEX.name
                 refresh()
         }
+
+        private suspend fun loadHistoryInternal(resolveAfterLoad: Boolean) {
+                if (_allTracks.value.isEmpty()) collectLocalListeningHistory()
+
+                val networkTracks = fetchListeningHistory() ?: return
+                if (resolveAfterLoad && _isYandexAuthorized.value) {
+                        resolveRemainingsByYandex()
+                        collectLocalListeningHistory()
+                } else {
+                        applyTracks(networkTracks)
+                }
+        }
+
+        private suspend fun fetchListeningHistory(): List<ListeningHistoryMusicTrack>? {
+                var latest: List<ListeningHistoryMusicTrack>? = null
+                getListeningHistory()
+                        .catch { e -> _uiState.value = Error(e.message ?: "Unknown error") }
+                        .collect { tracks -> latest = tracks }
+                return latest
+        }
+
+        private suspend fun collectLocalListeningHistory() = applyTracks(getLocalListeningHistory())
+
+        private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>) {
+                _allTracks.value = tracks
+                refreshLanguagesInternal()
+        }
+
+        private fun ListeningHistoryMusicTrack.stableKey(): String =
+                id?.takeIf { it.isNotBlank() } ?: "$name||${artists.joinToString(",")}"
 }

@@ -95,6 +95,21 @@ internal data class YandexPlaylistResponse(
 }
 
 @Serializable
+internal data class YandexSearchResponse(
+        val result: YandexSearchResult? = null,
+)
+
+@Serializable
+internal data class YandexSearchResult(
+        val tracks: YandexSearchTracks? = null,
+)
+
+@Serializable
+internal data class YandexSearchTracks(
+        val results: List<YandexTrack>? = null,
+)
+
+@Serializable
 internal data class YandexAlbumWithTracksResponse(
         val result: YandexAlbumFull? = null
 )
