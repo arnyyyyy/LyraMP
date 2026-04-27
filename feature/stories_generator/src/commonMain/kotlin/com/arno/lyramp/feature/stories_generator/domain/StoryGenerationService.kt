@@ -15,7 +15,8 @@ internal class StoryGenerationService(
         private val getAllLearnWords: GetAllLearnWordsUseCase,
         private val modelDownloadRepository: ModelDownloadRepository,
         private val getSelectedLanguage: GetSelectedLanguageUseCase,
-        private val repository: GeneratedStoryRepository
+        private val repository: GeneratedStoryRepository,
+        private val generator: LlamatikStoryGenerator,
 ) {
         suspend fun generateAndSaveOne(
                 wordsCount: Int = STORY_WORDS_COUNT,
@@ -29,28 +30,22 @@ internal class StoryGenerationService(
                 val candidates = words.filter { it.sourceLang == language || it.sourceLang == null }
                 if (candidates.size < MIN_WORDS) return@withLock null
 
-                val generator = LlamatikStoryGenerator()
-                try {
-                        if (!generator.loadModelFromPath(modelPath)) {
-                                return@withLock null
-                        }
-                        val (selected, genre) = pickUniqueCombo(
-                                candidates = candidates,
-                                language = language,
-                                wordsCount = wordsCount,
-                                maxAttempts = maxNoDuplicateSearchAttempts
-                        ) ?: run { return@withLock null }
+                if (!generator.loadModelFromPath(modelPath)) return@withLock null
 
-                        val story = generator.generateStory(selected, language, genre)
-                        val newId = repository.save(story, isManual = false)
-                        if (newId <= 0L) {
-                                null
-                        } else {
-                                repository.trimToSize(MAX_CATALOG_SIZE)
-                                story.copy(id = newId)
-                        }
-                } finally {
-                        generator.release()
+                val (selected, genre) = pickUniqueCombo(
+                        candidates = candidates,
+                        language = language,
+                        wordsCount = wordsCount,
+                        maxAttempts = maxNoDuplicateSearchAttempts
+                ) ?: run { return@withLock null }
+
+                val story = generator.generateStory(selected, language, genre)
+                val newId = repository.save(story, isManual = false)
+                if (newId <= 0L) {
+                        null
+                } else {
+                        repository.trimToSize(MAX_CATALOG_SIZE)
+                        story.copy(id = newId)
                 }
         }
 

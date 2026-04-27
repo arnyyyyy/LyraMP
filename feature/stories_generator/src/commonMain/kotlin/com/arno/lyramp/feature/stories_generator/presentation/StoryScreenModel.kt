@@ -22,7 +22,8 @@ internal class StoryScreenModel(
         private val getAllLearnWords: GetAllLearnWordsUseCase,
         private val modelDownloadRepository: ModelDownloadRepository,
         private val getSelectedLanguageUseCase: GetSelectedLanguageUseCase,
-        private val repository: GeneratedStoryRepository
+        private val repository: GeneratedStoryRepository,
+        private val generator: LlamatikStoryGenerator,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<StoryUiState>(StoryUiState.Idle)
@@ -34,7 +35,6 @@ internal class StoryScreenModel(
         private val _activeModel = MutableStateFlow<DownloadableModel?>(null)
         val activeModel: StateFlow<DownloadableModel?> = _activeModel.asStateFlow()
 
-        private var generator: LlamatikStoryGenerator = LlamatikStoryGenerator()
         private var modelInitStarted = false
 
         private var allWords: List<LearnWordEntity> = emptyList()
@@ -76,11 +76,9 @@ internal class StoryScreenModel(
 
                 screenModelScope.launch {
                         try {
-                                val llamatik = LlamatikStoryGenerator()
                                 val modelPath = modelDownloadRepository.getModelFilePath(model)
-                                val loaded = llamatik.loadModelFromPath(modelPath)
+                                val loaded = generator.loadModelFromPath(modelPath)
                                 if (loaded) {
-                                        generator = llamatik
                                         _activeModel.value = model
                                         _modelState.value = ModelDownloadState.Downloaded
                                 } else {
@@ -106,7 +104,6 @@ internal class StoryScreenModel(
                         val current = _activeModel.value
                         if (current != null && current != model) {
                                 generator.release()
-                                generator = LlamatikStoryGenerator()
                                 modelInitStarted = false
                                 modelDownloadRepository.deleteModel(current)
                         }
@@ -122,12 +119,13 @@ internal class StoryScreenModel(
         }
 
         fun deleteModel() {
-                generator.release()
-                generator = LlamatikStoryGenerator()
-                modelInitStarted = false
-                modelDownloadRepository.deleteAllModels()
-                _activeModel.value = null
-                _modelState.value = ModelDownloadState.NotDownloaded
+                screenModelScope.launch {
+                        generator.release()
+                        modelInitStarted = false
+                        modelDownloadRepository.deleteAllModels()
+                        _activeModel.value = null
+                        _modelState.value = ModelDownloadState.NotDownloaded
+                }
         }
 
         private fun rebuildReadyState() {
@@ -211,7 +209,5 @@ internal class StoryScreenModel(
                 rebuildReadyState()
         }
 
-        override fun onDispose() {
-                generator.release()
-        }
+        override fun onDispose() {}
 }

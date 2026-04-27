@@ -6,6 +6,7 @@ import com.arno.lyramp.feature.stories_generator.background.StoryCatalogBackgrou
 import com.arno.lyramp.feature.stories_generator.data.GeneratedStoriesDatabase
 import com.arno.lyramp.feature.stories_generator.data.GeneratedStoryRepository
 import com.arno.lyramp.feature.stories_generator.data.getGeneratedStoriesDatabase
+import com.arno.lyramp.feature.stories_generator.domain.LlamatikStoryGenerator
 import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadRepository
 import com.arno.lyramp.feature.stories_generator.domain.StoryGenerationService
 import com.arno.lyramp.feature.stories_generator.presentation.StoriesCatalogScreenModel
@@ -17,6 +18,7 @@ import org.koin.dsl.module
 
 val storyGeneratorModule = module {
         single<ModelDownloadRepository> { ModelDownloadRepository() }
+        single { LlamatikStoryGenerator() }
 
         single<GeneratedStoriesDatabase> { getGeneratedStoriesDatabase(get(named("generated_stories"))) }
         single { get<GeneratedStoriesDatabase>().generatedStoryDao() }
@@ -27,7 +29,8 @@ val storyGeneratorModule = module {
                         getAllLearnWords = get<GetAllLearnWordsUseCase>(),
                         modelDownloadRepository = get(),
                         getSelectedLanguage = get<GetSelectedLanguageUseCase>(),
-                        repository = get()
+                        repository = get(),
+                        generator = get(),
                 )
         }
 
@@ -36,7 +39,8 @@ val storyGeneratorModule = module {
                         getAllLearnWords = get(),
                         modelDownloadRepository = get(),
                         getSelectedLanguageUseCase = get(),
-                        repository = get()
+                        repository = get(),
+                        generator = get(),
                 )
         }
 
