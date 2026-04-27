@@ -30,14 +30,10 @@ import com.arno.lyramp.feature.listening_practice.resources.Res
 import com.arno.lyramp.feature.listening_practice.resources.accuracy
 import com.arno.lyramp.feature.listening_practice.resources.back
 import com.arno.lyramp.feature.listening_practice.resources.correct
-import com.arno.lyramp.feature.listening_practice.resources.correct_stat
-import com.arno.lyramp.feature.listening_practice.resources.correct_ticked
 import com.arno.lyramp.feature.listening_practice.resources.incorrect
-import com.arno.lyramp.feature.listening_practice.resources.incorrect_ticked
 import com.arno.lyramp.feature.listening_practice.resources.practice_completed
 import com.arno.lyramp.feature.listening_practice.resources.result
 import com.arno.lyramp.feature.listening_practice.resources.retry
-import com.arno.lyramp.feature.listening_practice.resources.user_ans
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
 import org.jetbrains.compose.resources.stringResource
@@ -46,7 +42,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ListeningPracticeCompletedScreen(
         state: ListeningPracticeUiState.Completed,
         onRestart: () -> Unit,
-        onBack: () -> Unit
+        onBack: () -> Unit,
 ) {
         val scrollState = rememberScrollState()
 
@@ -55,32 +51,32 @@ internal fun ListeningPracticeCompletedScreen(
                         .fillMaxSize()
                         .background(LyraColorScheme.surface, RoundedCornerShape(16.dp))
                         .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(16.dp))
-                        .padding(24.dp)
+                        .padding(24.dp),
         ) {
                 Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                        Text(text = "🎉", fontSize = 64.sp)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = "🎉", fontSize = 56.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                                 text = stringResource(Res.string.practice_completed),
-                                fontSize = 24.sp,
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = LyraColorScheme.onSurface
+                                color = LyraColorScheme.onSurface,
                         )
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                                 StatCard(
                                         label = stringResource(Res.string.correct),
                                         value = state.correctCount,
-                                        color = LyraColors.Success
+                                        color = LyraColors.Success,
                                 )
                                 StatCard(
                                         label = stringResource(Res.string.incorrect),
                                         value = state.incorrectCount,
-                                        color = LyraColors.Incorrect
+                                        color = LyraColors.Incorrect,
                                 )
                         }
 
@@ -92,41 +88,27 @@ internal fun ListeningPracticeCompletedScreen(
                                 text = stringResource(Res.string.accuracy, percentage),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = LyraColorScheme.primary
+                                color = LyraColorScheme.primary,
                         )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Column(
                         modifier = Modifier
                                 .weight(1f)
-                                .verticalScroll(scrollState)
+                                .verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                         Text(
                                 text = stringResource(Res.string.result),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = LyraColorScheme.onSurface,
-                                modifier = Modifier.padding(bottom = 12.dp)
                         )
-
                         state.lines.forEach { line ->
-                                when (line.checkResult) {
-                                        LineCheckResult.CORRECT, LineCheckResult.INCORRECT -> {
-                                                AnswerResultRow(
-                                                        isCorrect = line.checkResult == LineCheckResult.CORRECT,
-                                                        text = line.text,
-                                                        userInput = line.userInput,
-                                                        correctLabel = stringResource(Res.string.correct_ticked),
-                                                        incorrectLabel = stringResource(Res.string.incorrect_ticked),
-                                                        correctPrefix = stringResource(Res.string.correct_stat, line.text),
-                                                        userWrotePrefix = stringResource(Res.string.user_ans, line.userInput)
-                                                )
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                        }
-
-                                        else -> {}
+                                if (line.checkResult != LineCheckResult.PENDING) {
+                                        AnswerReviewCard(line = line)
                                 }
                         }
                 }
@@ -135,20 +117,19 @@ internal fun ListeningPracticeCompletedScreen(
 
                 Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                        OutlinedButton(onClick = onBack, modifier = Modifier.weight(1f)) {
-                                Text(stringResource(Res.string.back))
-                        }
+                        OutlinedButton(
+                                onClick = onBack,
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                shape = RoundedCornerShape(14.dp),
+                        ) { Text(stringResource(Res.string.back)) }
                         Button(
                                 onClick = onRestart,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                        containerColor = LyraColorScheme.primary
-                                )
-                        ) {
-                                Text(stringResource(Res.string.retry))
-                        }
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = LyraColorScheme.primary),
+                        ) { Text(stringResource(Res.string.retry), fontWeight = FontWeight.SemiBold) }
                 }
         }
 }
@@ -159,9 +140,9 @@ private fun StatCard(label: String, value: Int, color: Color) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                         .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                        .padding(horizontal = 22.dp, vertical = 12.dp),
         ) {
-                Text(text = value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = color)
+                Text(text = value.toString(), fontSize = 30.sp, fontWeight = FontWeight.Bold, color = color)
                 Text(text = label, fontSize = 13.sp, color = LyraColorScheme.onSurfaceVariant)
         }
 }

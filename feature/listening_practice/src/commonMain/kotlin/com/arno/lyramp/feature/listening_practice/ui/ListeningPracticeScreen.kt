@@ -1,7 +1,6 @@
 package com.arno.lyramp.feature.listening_practice.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.core.screen.Screen
@@ -18,7 +17,24 @@ import com.arno.lyramp.feature.listening_practice.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
+class ListeningPracticeScreen(
+        private val trackId: String,
+        private val albumId: String?,
+        private val trackName: String,
+        private val artists: List<String>,
+        private val albumName: String? = null,
+        private val imageUrl: String? = null,
+) : Screen {
+
+        private val track
+                get() = PracticeTrack(
+                        id = trackId,
+                        albumId = albumId,
+                        name = trackName,
+                        artists = artists,
+                        albumName = albumName,
+                        imageUrl = imageUrl,
+                )
 
         @Composable
         override fun Content() {
@@ -27,11 +43,6 @@ class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
 
                 val uiState by screenModel.uiState.collectAsState()
 
-                DisposableEffect(Unit) {
-                        onDispose {
-                                screenModel.onDispose()
-                        }
-                }
 
                 MainFeatureScaffold(
                         icon = "🎧",
@@ -49,7 +60,7 @@ class ListeningPracticeScreen(private val track: PracticeTrack) : Screen {
                                 }
 
                                 is ListeningPracticeUiState.Ready -> {
-                                        ReadyContent(
+                                        ListeningPracticeReadyContent(
                                                 state = state,
                                                 onPlayPause = screenModel::onPlayPauseClick,
                                                 onRewind = screenModel::onMoveBackClick,

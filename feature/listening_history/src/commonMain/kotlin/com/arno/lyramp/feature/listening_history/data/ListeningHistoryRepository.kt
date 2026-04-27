@@ -176,7 +176,7 @@ internal class ListeningHistoryRepository(
                         val iterator = buckets.iterator()
                         while (iterator.hasNext() && result.size < limit) {
                                 val bucket = iterator.next()
-                                result += bucket.removeFirst()
+                                result += bucket.removeAt(0)
                                 if (bucket.isEmpty()) iterator.remove()
                         }
                 }

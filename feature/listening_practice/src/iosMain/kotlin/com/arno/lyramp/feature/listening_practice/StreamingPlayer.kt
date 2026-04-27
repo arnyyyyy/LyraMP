@@ -32,7 +32,6 @@ import platform.AVFoundation.currentItem
 import platform.AVFoundation.currentTime
 import platform.AVFoundation.duration
 import platform.AVFoundation.pause
-import platform.AVFoundation.play
 import platform.AVFoundation.seekToTime
 import platform.AVFoundation.setRate
 import platform.AVFoundation.timeControlStatus
@@ -50,6 +49,7 @@ actual class StreamingPlayer {
         private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         private var observer: Any? = null
         private var statusObserverJob: Job? = null
+        private var playbackSpeed = 1.0f
 
         private val _currentPositionMs = MutableStateFlow(0L)
         actual val currentPositionMs: StateFlow<Long> = _currentPositionMs.asStateFlow()
@@ -154,7 +154,7 @@ actual class StreamingPlayer {
 
         actual fun play() {
                 scope.launch {
-                        avPlayer?.play()
+                        avPlayer?.setRate(playbackSpeed)
                         _isPlaying.value = true
                         startPositionUpdates()
                 }
@@ -185,10 +185,11 @@ actual class StreamingPlayer {
         }
 
         actual fun setPlaybackSpeed(speed: Float) {
+                playbackSpeed = speed
                 scope.launch {
                         avPlayer?.let { player ->
-                                player.setRate(speed)
-                                if (speed > 0f) {
+                                if (_isPlaying.value || player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+                                        player.setRate(speed)
                                         _isPlaying.value = true
                                         startPositionUpdates()
                                 }

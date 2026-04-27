@@ -2,15 +2,15 @@ package com.arno.lyramp.feature.listening_practice.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.arno.lyramp.feature.listening_practice.domain.ListeningPracticeUseCase
+import com.arno.lyramp.feature.listening_practice.domain.CheckAnswerUseCase
+import com.arno.lyramp.feature.listening_practice.domain.LoadPracticeDataUseCase
+import com.arno.lyramp.feature.listening_practice.domain.PracticeDataResult
 import com.arno.lyramp.feature.listening_practice.model.LineCheckResult
 import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
-import com.arno.lyramp.feature.listening_practice.StreamingPlayer
+import com.arno.lyramp.feature.listening_practice.playback.LinePlaybackController
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,9 +20,10 @@ import kotlinx.coroutines.launch
 
 internal class ListeningPracticeScreenModel(
         private val track: PracticeTrack,
-        private val repository: ListeningPracticeUseCase
+        private val loadPracticeData: LoadPracticeDataUseCase,
+        private val playback: LinePlaybackController,
+        private val checkAnswer: CheckAnswerUseCase,
 ) : ScreenModel {
-        private val player = StreamingPlayer()
 
         private val _uiState = MutableStateFlow<ListeningPracticeUiState>(ListeningPracticeUiState.Loading)
         val uiState: StateFlow<ListeningPracticeUiState> = _uiState.asStateFlow()
@@ -34,43 +35,38 @@ internal class ListeningPracticeScreenModel(
                 val correctCount: Int = 0,
                 val incorrectCount: Int = 0,
                 val practiceMode: PracticeMode = PracticeMode.FULL_SONG,
-                val currentLineIsPlaying: Boolean = false,
-                val isSlowMode: Boolean = false,
-                val lastAnsweredLine: LyricLine? = null
+                val lastAnsweredLine: LyricLine? = null,
         )
 
         private val practiceState = MutableStateFlow(PracticeState())
-        private var linePlaybackJob: Job? = null
 
         init {
                 loadPractice()
-                observePlayerState()
-                observePracticeState()
+                observeState()
         }
 
         private fun loadPractice() {
                 screenModelScope.launch {
                         _uiState.value = ListeningPracticeUiState.Loading
                         try {
-                                when (val result = repository.loadPracticeData(track)) {
-                                        is PracticeDataResult.NoLyrics -> _uiState.value = ListeningPracticeUiState.Error("Не удалось получить текст песни")
+                                when (val result = loadPracticeData(track)) {
+                                        is PracticeDataResult.NoLyrics ->
+                                                _uiState.value = ListeningPracticeUiState.Error("Не удалось получить текст песни")
+
                                         is PracticeDataResult.NoStreaming ->
                                                 _uiState.value = ListeningPracticeUiState.Error("Не удалось получить аудио трека")
 
                                         is PracticeDataResult.Success -> {
                                                 val lines = result.lyricLines
-                                                val downloadInfo = result.downloadInfo
-                                                player.prepare(downloadInfo.url)
+                                                playback.prepare(result.downloadInfo.url)
                                                 val hasTimecodes = lines.any { it.hasTimecode }
                                                 val initialMode = if (hasTimecodes) PracticeMode.RANDOM_LINE else PracticeMode.FULL_SONG
                                                 practiceState.value = PracticeState(
                                                         lines = lines,
-                                                        practiceMode = initialMode
+                                                        practiceMode = initialMode,
                                                 )
-                                                if (hasTimecodes && initialMode == PracticeMode.RANDOM_LINE) {
-                                                        pickRandomLine()
-                                                }
-                                                updateReadyState()
+                                                if (hasTimecodes && initialMode == PracticeMode.RANDOM_LINE) pickRandomLine()
+                                                publishReady()
                                         }
                                 }
                         } catch (ce: CancellationException) {
@@ -81,95 +77,80 @@ internal class ListeningPracticeScreenModel(
                 }
         }
 
-        private fun observePracticeState() {
-                screenModelScope.launch {
-                        practiceState.collect { state ->
-                                val currentState = _uiState.value
-                                if (currentState is ListeningPracticeUiState.Ready) {
-                                        _uiState.value = currentState.copy(
-                                                lines = state.lines,
-                                                currentLineIndex = state.currentLineIndex,
-                                                userInput = state.userInput,
-                                                correctCount = state.correctCount,
-                                                incorrectCount = state.incorrectCount,
-                                                practiceMode = state.practiceMode,
-                                                currentLineIsPlaying = state.currentLineIsPlaying,
-                                                isSlowMode = state.isSlowMode,
-                                                lastAnsweredLine = state.lastAnsweredLine
-                                        )
-                                }
-                        }
-                }
-        }
-
-        private fun observePlayerState() {
+        private fun observeState() {
                 screenModelScope.launch {
                         combine(
-                                player.isPlaying,
-                                player.currentPositionMs,
-                                player.durationMs,
-                                player.isReady
-                        ) { isPlaying, position, duration, isReady ->
-                                PlayerState(isPlaying, position, duration, isReady)
-                        }.collect { playerState ->
-                                val currentState = _uiState.value
-                                if (currentState is ListeningPracticeUiState.Ready && playerState.isReady) {
-                                        _uiState.value = currentState.copy(
-                                                isPlaying = playerState.isPlaying,
-                                                currentPositionMs = playerState.position,
-                                                durationMs = playerState.duration
+                                practiceState,
+                                playback.isPlaying,
+                                playback.currentPositionMs,
+                                playback.durationMs,
+                                playback.isReady,
+                                playback.currentLineIsPlaying,
+                                playback.isSlowMode,
+                        ) { values ->
+                                Snapshot(
+                                        practice = values[0] as PracticeState,
+                                        isPlaying = values[1] as Boolean,
+                                        positionMs = values[2] as Long,
+                                        durationMs = values[3] as Long,
+                                        isReady = values[4] as Boolean,
+                                        currentLineIsPlaying = values[5] as Boolean,
+                                        isSlowMode = values[6] as Boolean,
+                                )
+                        }.collect { snapshot ->
+                                val current = _uiState.value
+                                when {
+                                        current is ListeningPracticeUiState.Ready -> _uiState.value = current.copy(
+                                                lines = snapshot.practice.lines,
+                                                currentLineIndex = snapshot.practice.currentLineIndex,
+                                                isPlaying = snapshot.isPlaying,
+                                                currentPositionMs = snapshot.positionMs,
+                                                durationMs = snapshot.durationMs,
+                                                userInput = snapshot.practice.userInput,
+                                                correctCount = snapshot.practice.correctCount,
+                                                incorrectCount = snapshot.practice.incorrectCount,
+                                                practiceMode = snapshot.practice.practiceMode,
+                                                currentLineIsPlaying = snapshot.currentLineIsPlaying,
+                                                isSlowMode = snapshot.isSlowMode,
+                                                lastAnsweredLine = snapshot.practice.lastAnsweredLine,
                                         )
-                                } else if (currentState is ListeningPracticeUiState.Loading && playerState.isReady && practiceState.value.lines.isNotEmpty()) {
-                                        updateReadyState()
+
+                                        current is ListeningPracticeUiState.Loading &&
+                                            snapshot.isReady &&
+                                            snapshot.practice.lines.isNotEmpty() -> publishReady()
+
+                                        else -> Unit
                                 }
                         }
                 }
         }
 
-        private fun updateReadyState() {
+        private fun publishReady() {
                 val state = practiceState.value
-                val hasTimecodes = state.lines.any { it.hasTimecode }
                 _uiState.value = ListeningPracticeUiState.Ready(
                         track = track,
                         lines = state.lines,
                         currentLineIndex = state.currentLineIndex,
-                        isPlaying = player.isPlaying.value,
-                        currentPositionMs = player.currentPositionMs.value,
-                        durationMs = player.durationMs.value,
+                        isPlaying = playback.isPlaying.value,
+                        currentPositionMs = playback.currentPositionMs.value,
+                        durationMs = playback.durationMs.value,
                         userInput = state.userInput,
                         correctCount = state.correctCount,
                         incorrectCount = state.incorrectCount,
                         practiceMode = state.practiceMode,
-                        hasTimecodes = hasTimecodes,
-                        currentLineIsPlaying = state.currentLineIsPlaying,
-                        isSlowMode = state.isSlowMode,
-                        lastAnsweredLine = state.lastAnsweredLine
+                        hasTimecodes = state.lines.any { it.hasTimecode },
+                        currentLineIsPlaying = playback.currentLineIsPlaying.value,
+                        isSlowMode = playback.isSlowMode.value,
+                        lastAnsweredLine = state.lastAnsweredLine,
                 )
         }
 
         fun onSwitchMode(mode: PracticeMode) {
-                linePlaybackJob?.cancel()
-                player.pause()
-                player.setPlaybackSpeed(1.0f)
-                practiceState.update { it.copy(practiceMode = mode, currentLineIsPlaying = false, userInput = "", isSlowMode = false, lastAnsweredLine = null) }
-                if (mode == PracticeMode.RANDOM_LINE) {
-                        pickRandomLine()
-                }
-                updateReadyState()
-        }
-
-        private fun pickRandomLine() {
-                val lines = practiceState.value.lines
-                val linesWithTimecodes = lines.indices.filter { lines[it].hasTimecode }
-                if (linesWithTimecodes.isEmpty()) return
-                val randomIndex = linesWithTimecodes.random()
-                practiceState.update {
-                        it.copy(
-                                currentLineIndex = randomIndex,
-                                userInput = "",
-                                currentLineIsPlaying = false
-                        )
-                }
+                playback.stopSegment()
+                playback.setSlowMode(false)
+                practiceState.update { it.copy(practiceMode = mode, userInput = "", lastAnsweredLine = null) }
+                if (mode == PracticeMode.RANDOM_LINE) pickRandomLine()
+                publishReady()
         }
 
         fun onPlayCurrentLineClick() {
@@ -177,67 +158,84 @@ internal class ListeningPracticeScreenModel(
                 val line = state.lines.getOrNull(state.currentLineIndex) ?: return
                 val startMs = line.startMs ?: return
                 val endMs = line.endMs ?: return
-
-                linePlaybackJob?.cancel()
-                val playStartMs = (startMs - 50).coerceAtLeast(0)
-                val playEndMs = endMs + 50
-                val duration = playEndMs - playStartMs
-
-                player.seekTo(playStartMs)
-                player.play()
-                practiceState.update { it.copy(currentLineIsPlaying = true) }
-
-                linePlaybackJob = screenModelScope.launch {
-                        delay((duration * if (practiceState.value.isSlowMode) 1.4f else 1.0f).toLong())
-                        player.pause()
-                        practiceState.update { it.copy(currentLineIsPlaying = false) }
-                }
+                playback.toggleSegment(screenModelScope, startMs, endMs)
         }
 
-        fun onPlayPauseClick() {
-                if (player.isPlaying.value) {
-                        player.pause()
-                } else {
-                        player.play()
-                }
-        }
-
-        fun onToggleSlowMode() {
-                val newSlowMode = !practiceState.value.isSlowMode
-                practiceState.update { it.copy(isSlowMode = newSlowMode) }
-                player.setPlaybackSpeed(if (newSlowMode) 0.7f else 1.0f)
-        }
-
-        fun onMoveBackClick() = player.rewind(5000)
-
-        fun onMoveForwardClick() {
-                val newPosition = (player.currentPositionMs.value + 5000).coerceAtMost(player.durationMs.value)
-                player.seekTo(newPosition)
-        }
+        fun onPlayPauseClick() = playback.playPause()
+        fun onToggleSlowMode() = playback.toggleSlowMode()
+        fun onMoveBackClick() = playback.rewind(SEEK_STEP_MS)
+        fun onMoveForwardClick() = playback.forward(SEEK_STEP_MS)
 
         fun onUserInputChange(input: String) = practiceState.update { it.copy(userInput = input) }
+
+        fun onCheckLine() {
+                val state = practiceState.value
+                if (state.currentLineIndex >= state.lines.size) return
+                val currentLine = state.lines[state.currentLineIndex]
+                val isCorrect = checkAnswer(state.userInput, currentLine.text)
+                advanceLine(
+                        currentLine.copy(
+                                userInput = state.userInput,
+                                checkResult = if (isCorrect) LineCheckResult.CORRECT else LineCheckResult.INCORRECT,
+                        ),
+                        isCorrect,
+                )
+        }
+
+        fun onSkipLine() {
+                val state = practiceState.value
+                if (state.currentLineIndex >= state.lines.size) return
+                advanceLine(
+                        state.lines[state.currentLineIndex].copy(userInput = "", checkResult = LineCheckResult.INCORRECT),
+                        isCorrect = false,
+                )
+        }
+
+        fun onRestart() {
+                playback.stopSegment()
+                playback.setSlowMode(false)
+                practiceState.update {
+                        it.copy(
+                                lines = it.lines.map { line -> line.copy(userInput = "", checkResult = LineCheckResult.PENDING) },
+                                currentLineIndex = 0, userInput = "",
+                                correctCount = 0, incorrectCount = 0, lastAnsweredLine = null,
+                        )
+                }
+                if (practiceState.value.practiceMode == PracticeMode.RANDOM_LINE) pickRandomLine()
+                else playback.seekTo(0)
+                publishReady()
+        }
+
+        private fun pickRandomLine() {
+                val lines = practiceState.value.lines
+                val withTimecodes = lines.indices.filter { lines[it].hasTimecode }
+                if (withTimecodes.isEmpty()) return
+                practiceState.update {
+                        it.copy(currentLineIndex = withTimecodes.random(), userInput = "")
+                }
+        }
 
         private fun advanceLine(updatedLine: LyricLine, isCorrect: Boolean) {
                 val state = practiceState.value
                 val updatedLines = state.lines.toMutableList().apply {
                         set(state.currentLineIndex, updatedLine)
                 }
-                val newCorrect = if (isCorrect) state.correctCount + 1 else state.correctCount
-                val newIncorrect = if (!isCorrect) state.incorrectCount + 1 else state.incorrectCount
+                val newCorrect = state.correctCount + if (isCorrect) 1 else 0
+                val newIncorrect = state.incorrectCount + if (!isCorrect) 1 else 0
 
                 if (state.practiceMode == PracticeMode.RANDOM_LINE) {
+                        playback.stopSegment()
                         practiceState.update {
                                 it.copy(
                                         lines = updatedLines,
                                         userInput = "",
                                         correctCount = newCorrect,
                                         incorrectCount = newIncorrect,
-                                        currentLineIsPlaying = false,
-                                        lastAnsweredLine = updatedLine
+                                        lastAnsweredLine = updatedLine,
                                 )
                         }
                         pickRandomLine()
-                        updateReadyState()
+                        publishReady()
                         return
                 }
 
@@ -248,81 +246,33 @@ internal class ListeningPracticeScreenModel(
                                 currentLineIndex = nextIndex,
                                 userInput = "",
                                 correctCount = newCorrect,
-                                incorrectCount = newIncorrect
+                                incorrectCount = newIncorrect,
                         )
                 }
-
                 if (nextIndex >= updatedLines.size) {
-                        player.pause()
+                        playback.pause()
                         _uiState.value = ListeningPracticeUiState.Completed(
                                 track = track,
                                 lines = updatedLines,
                                 correctCount = newCorrect,
-                                incorrectCount = newIncorrect
+                                incorrectCount = newIncorrect,
                         )
-                } else {
-                        updateReadyState()
-                }
+                } else publishReady()
         }
 
-        fun onCheckLine() {
-                val state = practiceState.value
-                if (state.currentLineIndex >= state.lines.size) return
+        override fun onDispose() = playback.release()
 
-                val currentLine = state.lines[state.currentLineIndex]
-                val isCorrect = checkLineMatch(state.userInput, currentLine.text)
-
-                val updatedLine = currentLine.copy(
-                        userInput = state.userInput,
-                        checkResult = if (isCorrect) LineCheckResult.CORRECT else LineCheckResult.INCORRECT
-                )
-                advanceLine(updatedLine, isCorrect)
-        }
-
-        private fun checkLineMatch(userInput: String, expectedText: String): Boolean {
-                return userInput.trim().equals(expectedText.trim(), ignoreCase = true)
-        }
-
-        fun onSkipLine() {
-                val state = practiceState.value
-                if (state.currentLineIndex >= state.lines.size) return
-                val currentLine = state.lines[state.currentLineIndex]
-                val updatedLine = currentLine.copy(
-                        userInput = "",
-                        checkResult = LineCheckResult.INCORRECT
-                )
-                advanceLine(updatedLine, false)
-        }
-
-        fun onRestart() {
-                linePlaybackJob?.cancel()
-                player.pause()
-                practiceState.update {
-                        it.copy(
-                                lines = it.lines.map { line -> line.copy(userInput = "", checkResult = LineCheckResult.PENDING) },
-                                currentLineIndex = 0,
-                                userInput = "",
-                                correctCount = 0,
-                                incorrectCount = 0,
-                                currentLineIsPlaying = false,
-                                lastAnsweredLine = null
-                        )
-                }
-                if (practiceState.value.practiceMode == PracticeMode.RANDOM_LINE) pickRandomLine()
-                else player.seekTo(0)
-
-                updateReadyState()
-        }
-
-        override fun onDispose() {
-                linePlaybackJob?.cancel()
-                player.release()
-        }
-
-        private data class PlayerState(
+        private data class Snapshot(
+                val practice: PracticeState,
                 val isPlaying: Boolean,
-                val position: Long,
-                val duration: Long,
-                val isReady: Boolean
+                val positionMs: Long,
+                val durationMs: Long,
+                val isReady: Boolean,
+                val currentLineIsPlaying: Boolean,
+                val isSlowMode: Boolean,
         )
+
+        private companion object {
+                const val SEEK_STEP_MS = 5_000L
+        }
 }

@@ -37,3 +37,9 @@ internal data class TrackDownloadInfo(
         val encryptionKey: String? = null,
         val transport: String? = null
 )
+
+internal data class AuditionLine(
+        val track: PracticeTrack,
+        val line: LyricLine,
+        val downloadInfo: TrackDownloadInfo,
+)

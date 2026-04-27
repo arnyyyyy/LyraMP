@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.listening_practice.presentation
+package com.arno.lyramp.feature.listening_practice.domain
 
 import com.arno.lyramp.feature.listening_practice.model.LyricLine
 import com.arno.lyramp.feature.listening_practice.model.TrackDownloadInfo
