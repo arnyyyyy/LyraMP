@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import com.arno.lyramp.feature.extraction.presentation.ExtractionUiState
 import com.arno.lyramp.feature.extraction.resources.Res
 import com.arno.lyramp.feature.extraction.resources.extraction_add_words
+import com.arno.lyramp.feature.extraction.resources.extraction_continue
 import com.arno.lyramp.feature.extraction.resources.extraction_deselect_all
 import com.arno.lyramp.feature.extraction.resources.extraction_select_all
 import com.arno.lyramp.feature.extraction.resources.extraction_words_count
@@ -43,8 +44,12 @@ internal fun WordSelectionContent(
                 selectedWords = state.selectedWords,
                 onToggleWord = onToggleWord,
                 onSave = onSave,
-                saveButtonText = stringResource(Res.string.extraction_add_words, state.selectedWords.size),
-                saveEnabled = state.selectedWords.isNotEmpty(),
+                saveButtonText =
+                        if (state.selectedWords.isEmpty())
+                                stringResource(Res.string.extraction_continue)
+                        else
+                                stringResource(Res.string.extraction_add_words, state.selectedWords.size),
+                saveEnabled = true,
                 headerContent = {
                         Row(
                                 modifier = Modifier.fillMaxWidth(),

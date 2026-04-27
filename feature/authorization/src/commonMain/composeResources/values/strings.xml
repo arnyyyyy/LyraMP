@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="auth_select_service">Выберите сервис</string>
-    <string name="auth_login_with_yandex">Войти через Яндекс</string>
+    <string name="auth_login_with_yandex">Войти через Яндекс    </string>
     <string name="auth_continue_without_auth">Продолжить без авторизации</string>
     <string name="auth_playlist_link_label">Ссылка на плейлист</string>
     <string name="continue_next">Продолжить</string>

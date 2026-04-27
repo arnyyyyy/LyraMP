@@ -7,13 +7,16 @@ import com.arno.lyramp.util.Log
 import com.llamatik.library.platform.LlamaBridge
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class LlamatikStoryGenerator {
 
-        private var _isModelLoaded = false
+        private val nativeLock = Mutex()
+        private var loadedModelPath: String? = null
 
         private fun applyGenerationParams() {
 //                LlamaBridge.updateGenerateParams(
@@ -25,15 +28,23 @@ class LlamatikStoryGenerator {
 //                )
         }
 
-        suspend fun loadModelFromPath(modelPath: String): Boolean {
-                return withContext(Dispatchers.Default) {
+        suspend fun loadModelFromPath(modelPath: String): Boolean = nativeLock.withLock {
+                if (loadedModelPath == modelPath) return@withLock true
+                withContext(Dispatchers.Default) {
                         try {
-                                _isModelLoaded = LlamaBridge.initGenerateModel(modelPath)
-                                _isModelLoaded
+                                if (loadedModelPath != null) {
+                                        try {
+                                                LlamaBridge.shutdown()
+                                        } catch (_: Throwable) {
+                                        }
+                                        loadedModelPath = null
+                                }
+                                val ok = LlamaBridge.initGenerateModel(modelPath)
+                                if (ok) loadedModelPath = modelPath
+                                ok
                         } catch (ce: CancellationException) {
                                 throw ce
                         } catch (_: Exception) {
-                                _isModelLoaded = false
                                 false
                         }
                 }
@@ -49,11 +60,13 @@ class LlamatikStoryGenerator {
 
                 applyGenerationParams()
                 val raw = withContext(Dispatchers.Default) {
-                        LlamaBridge.generateWithContext(
-                                systemPrompt = systemPromptFor(genre),
-                                contextBlock = "",
-                                userPrompt = buildUserPrompt(words, language, genre)
-                        )
+                        nativeLock.withLock {
+                                LlamaBridge.generateWithContext(
+                                        systemPrompt = systemPromptFor(genre),
+                                        contextBlock = "",
+                                        userPrompt = buildUserPrompt(words, language, genre)
+                                )
+                        }
                 }
                 val text = cleanResponse(raw)
                 val title = deriveTitle(text, genre)
@@ -69,10 +82,10 @@ class LlamatikStoryGenerator {
                 )
         }
 
-        fun release() {
-                if (_isModelLoaded) {
+        suspend fun release() = nativeLock.withLock {
+                if (loadedModelPath != null) {
                         LlamaBridge.shutdown()
-                        _isModelLoaded = false
+                        loadedModelPath = null
                 }
         }
 

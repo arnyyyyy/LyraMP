@@ -12,7 +12,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 internal class WordSaver(
@@ -20,8 +19,9 @@ internal class WordSaver(
         private val saveWord: SaveWordUseCase,
 ) {
         @OptIn(ExperimentalCoroutinesApi::class)
-        suspend fun saveAll(words: List<ExtractedWord>): Int = withContext(Dispatchers.IO) {
-
+        suspend fun saveAll(words: List<ExtractedWord>, onProgress: ((saved: Int, total: Int) -> Unit)? = null): Int = withContext(Dispatchers.IO) {
+                val total = words.size
+                var saved = 0
                 coroutineScope {
                         words.asFlow().flatMapMerge(concurrency = MAX_PARALLEL) { w ->
                                 flow {
@@ -42,11 +42,15 @@ internal class WordSaver(
                                                 emit(0)
                                         }
                                 }
-                        }.toList().sum()
+                        }.collect { result ->
+                                saved += result
+                                onProgress?.invoke(saved, total)
+                        }
                 }
+                saved
         }
 
         private companion object {
-                const val MAX_PARALLEL = 5
+                const val MAX_PARALLEL = 20
         }
 }

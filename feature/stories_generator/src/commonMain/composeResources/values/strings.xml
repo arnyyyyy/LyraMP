@@ -16,4 +16,17 @@
     <string name="percent">%1$d%</string>
     <string name="retry">Попробовать снова</string>
     <string name="back">Назад</string>
+
+    <string name="catalog_title">Истории</string>
+    <string name="catalog_subtitle">Сгенерированные ИИ истории</string>
+    <string name="catalog_empty_title">Каталог пуст</string>
+    <string name="catalog_empty_subtitle">Истории появятся здесь автоматически</string>
+    <string name="catalog_not_enough_words_title">Мало слов</string>
+    <string name="catalog_not_enough_words_subtitle">Сейчас %1$d из %2$d. Добавьте больше слов для изучения</string>
+    <string name="catalog_create_own">Создать свою</string>
+    <string name="catalog_generating_in_background">Генерируем новую историю…</string>
+
+    <string name="story_detail_genre">Жанр: %1$s</string>
+    <string name="story_detail_words">Использованные слова</string>
+    <string name="story_not_found">История не найдена</string>
 </resources>

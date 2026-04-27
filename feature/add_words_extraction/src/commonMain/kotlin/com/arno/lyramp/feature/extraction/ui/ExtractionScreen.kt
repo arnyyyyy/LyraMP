@@ -34,15 +34,18 @@ import com.arno.lyramp.feature.extraction.presentation.ExtractionUiState
 import com.arno.lyramp.feature.extraction.resources.Res
 import com.arno.lyramp.feature.extraction.resources.extraction_title
 import com.arno.lyramp.feature.extraction.resources.extraction_subtitle
+import com.arno.lyramp.feature.extraction.resources.extraction_no_recommendations
 import com.arno.lyramp.feature.extraction.resources.extraction_start
 import com.arno.lyramp.feature.extraction.resources.extraction_running
 import com.arno.lyramp.feature.extraction.resources.extraction_saving
+import com.arno.lyramp.feature.extraction.resources.extraction_saving_progress
 import com.arno.lyramp.feature.extraction.resources.extraction_done_title
 import com.arno.lyramp.feature.extraction.resources.extraction_done_words
 import com.arno.lyramp.feature.extraction.resources.extraction_done
 import com.arno.lyramp.feature.extraction.resources.retry
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.BackButton
+import com.arno.lyramp.ui.EmptyStateCard
 import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.LoadingCard
@@ -117,7 +120,13 @@ object ExtractionVoyagerScreen : Screen {
                                                         )
                                                 }
 
-                                                is ExtractionUiState.Saving -> LoadingCard(message = stringResource(Res.string.extraction_saving))
+                                                is ExtractionUiState.Saving -> LoadingCard(
+                                                        message = if (state.total > 0)
+                                                                stringResource(Res.string.extraction_saving_progress, state.saved, state.total)
+                                                        else
+                                                                stringResource(Res.string.extraction_saving),
+                                                        progress = if (state.total > 0) state.saved.toFloat() / state.total else null,
+                                                )
 
                                                 is ExtractionUiState.Done -> {
                                                         DoneContent(
@@ -141,28 +150,13 @@ object ExtractionVoyagerScreen : Screen {
 
 @Composable
 private fun IdleContent(onStart: () -> Unit) {
-        Column(
-                modifier = Modifier.fillMaxWidth().widthIn(max = 500.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-                Text(text = "🎵", fontSize = 48.sp, textAlign = TextAlign.Center)
-                Text(
-                        text = stringResource(Res.string.extraction_subtitle),
-                        fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LyraFilledButton(
-                        text = stringResource(Res.string.extraction_start),
-                        onClick = onStart,
-                        modifier = Modifier.fillMaxWidth(),
-                        containerColor = LyraColorScheme.surface,
-                        contentColor = LyraColorScheme.onSurface,
-                        height = 56.dp
-                )
-        }
+        EmptyStateCard(
+                icon = "🎵",
+                title = stringResource(Res.string.extraction_no_recommendations),
+                subtitle = stringResource(Res.string.extraction_subtitle),
+                actionLabel = stringResource(Res.string.extraction_start),
+                onAction = onStart,
+        )
 }
 
 @Composable

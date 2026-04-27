@@ -96,10 +96,12 @@ internal class ExtractionScreenModel(
                         return
                 }
 
-                _uiState.value = ExtractionUiState.Saving
+                _uiState.value = ExtractionUiState.Saving(saved = 0, total = wordsToSave.size)
                 screenModelScope.launch {
                         try {
-                                val savedCount = wordSaver.saveAll(wordsToSave)
+                                val savedCount = wordSaver.saveAll(wordsToSave) { saved, total ->
+                                        _uiState.value = ExtractionUiState.Saving(saved = saved, total = total)
+                                }
                                 _uiState.value = ExtractionUiState.Done(savedCount)
                         } catch (e: CancellationException) {
                                 throw e

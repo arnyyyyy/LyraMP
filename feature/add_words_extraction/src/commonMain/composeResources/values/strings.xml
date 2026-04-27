@@ -8,11 +8,13 @@
     <string name="extraction_done_words">Сохранено слов: %1$d</string>
     <string name="extraction_failed">Не удалось извлечь слова</string>
     <string name="extraction_saving">Сохраняем слова...</string>
+    <string name="extraction_saving_progress">Сохраняем слова: %1$d / %2$d</string>
     <string name="extraction_words_count">Слов: %1$d</string>
     <string name="extraction_select_all">Выбрать всё</string>
     <string name="extraction_deselect_all">Снять всё</string>
     <string name="extraction_add_words">Добавить %1$d слов</string>
+    <string name="extraction_continue">Продолжить</string>
+    <string name="extraction_no_recommendations">Рекомендации пока не сформированы</string>
     <string name="extraction_done">Готово</string>
     <string name="retry">Попробовать снова</string>
 </resources>
-

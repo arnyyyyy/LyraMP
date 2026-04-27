@@ -15,9 +15,8 @@ internal sealed interface ExtractionUiState {
                 val selectedWords: Set<String> = emptySet()
         ) : ExtractionUiState
 
-        data object Saving : ExtractionUiState
+        data class Saving(val saved: Int = 0, val total: Int = 0) : ExtractionUiState
 
         data class Done(val savedCount: Int) : ExtractionUiState
         data class Error(val message: String) : ExtractionUiState
 }
-
