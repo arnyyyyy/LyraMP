@@ -21,7 +21,7 @@ val listeningPracticeModule = module {
         factory { (track: PracticeTrack) ->
                 ListeningPracticeScreenModel(
                         track = track,
-                        useCase = get(),
+                        loadPracticeData = get(),
                         playback = get(),
                         checkAnswer = get(),
                 )
