@@ -60,13 +60,12 @@ internal class ListeningPracticeScreenModel(
                                                 val lines = result.lyricLines
                                                 playback.prepare(result.downloadInfo.url)
                                                 val hasTimecodes = lines.any { it.hasTimecode }
-                                                val initialMode = if (hasTimecodes) PracticeMode.RANDOM_LINE else PracticeMode.FULL_SONG
                                                 practiceState.value = PracticeState(
                                                         lines = lines,
-                                                        practiceMode = initialMode,
+                                                        practiceMode = PracticeMode.FULL_SONG,
                                                 )
-                                                if (hasTimecodes && initialMode == PracticeMode.RANDOM_LINE) pickRandomLine()
                                                 publishReady()
+                                                if (hasTimecodes) autoPlayCurrentLineIfPossible()
                                         }
                                 }
                         } catch (ce: CancellationException) {
@@ -151,6 +150,7 @@ internal class ListeningPracticeScreenModel(
                 practiceState.update { it.copy(practiceMode = mode, userInput = "", lastAnsweredLine = null) }
                 if (mode == PracticeMode.RANDOM_LINE) pickRandomLine()
                 publishReady()
+                if (mode == PracticeMode.FULL_SONG) autoPlayCurrentLineIfPossible()
         }
 
         fun onPlayCurrentLineClick() {
@@ -161,10 +161,28 @@ internal class ListeningPracticeScreenModel(
                 playback.toggleSegment(screenModelScope, startMs, endMs)
         }
 
-        fun onPlayPauseClick() = playback.playPause()
+        fun onPlayPauseClick() {
+                val state = practiceState.value
+                val hasTimecodes = state.lines.any { it.hasTimecode }
+                if (state.practiceMode == PracticeMode.FULL_SONG && hasTimecodes) {
+                        if (playback.currentLineIsPlaying.value) playback.stopSegment()
+                        else autoPlayCurrentLineIfPossible()
+                        return
+                }
+                if (playback.currentLineIsPlaying.value) playback.stopSegment()
+                else playback.playPause()
+        }
+
         fun onToggleSlowMode() = playback.toggleSlowMode()
-        fun onMoveBackClick() = playback.rewind(SEEK_STEP_MS)
-        fun onMoveForwardClick() = playback.forward(SEEK_STEP_MS)
+        fun onMoveBackClick() {
+                if (playback.currentLineIsPlaying.value) playback.stopSegment()
+                playback.rewind(SEEK_STEP_MS)
+        }
+
+        fun onMoveForwardClick() {
+                if (playback.currentLineIsPlaying.value) playback.stopSegment()
+                playback.forward(SEEK_STEP_MS)
+        }
 
         fun onUserInputChange(input: String) = practiceState.update { it.copy(userInput = input) }
 
@@ -204,6 +222,7 @@ internal class ListeningPracticeScreenModel(
                 if (practiceState.value.practiceMode == PracticeMode.RANDOM_LINE) pickRandomLine()
                 else playback.seekTo(0)
                 publishReady()
+                autoPlayCurrentLineIfPossible()
         }
 
         private fun pickRandomLine() {
@@ -257,7 +276,19 @@ internal class ListeningPracticeScreenModel(
                                 correctCount = newCorrect,
                                 incorrectCount = newIncorrect,
                         )
-                } else publishReady()
+                } else {
+                        publishReady()
+                        autoPlayCurrentLineIfPossible()
+                }
+        }
+
+        private fun autoPlayCurrentLineIfPossible() {
+                val state = practiceState.value
+                if (state.practiceMode != PracticeMode.FULL_SONG) return
+                val line = state.lines.getOrNull(state.currentLineIndex) ?: return
+                val startMs = line.startMs ?: return
+                val endMs = line.endMs ?: return
+                playback.playSegment(screenModelScope, startMs, endMs)
         }
 
         override fun onDispose() = playback.release()

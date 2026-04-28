@@ -66,6 +66,10 @@ internal class LinePlaybackController {
                         stopSegment()
                         return
                 }
+                playSegment(scope, startMs, endMs)
+        }
+
+        fun playSegment(scope: CoroutineScope, startMs: Long, endMs: Long) {
                 linePlaybackJob?.cancel()
                 linePlaybackJob = scope.launch {
                         val playStartMs = (startMs - LINE_PLAYBACK_PADDING_MS).coerceAtLeast(0)
