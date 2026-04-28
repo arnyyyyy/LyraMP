@@ -22,4 +22,12 @@
     <string name="correct_count">✓ %1$d</string>
     <string name="incorrect_count">✗ %1$d</string>
     <string name="practice_line_counter">Строка %1$d из %2$d</string>
+    <string name="audition_title">Аудирование</string>
+    <string name="audition_subtitle">Случайные строки из ваших песен</string>
+    <string name="audition_loading">Подбираем песню...</string>
+    <string name="audition_empty">Нет песен с таймкодами</string>
+    <string name="audition_round_progress">%1$d / %2$d</string>
+    <string name="audition_completed">Раунд завершён!</string>
+    <string name="audition_play_again">Новый раунд</string>
+    <string name="audition_preparation">Подготовка...</string>
 </resources>
