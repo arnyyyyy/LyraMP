@@ -29,6 +29,9 @@ internal interface GeneratedStoryDao {
         @Query("UPDATE generated_stories SET isRead = 1 WHERE id = :id")
         suspend fun markAsRead(id: Long)
 
+        @Query("DELETE FROM generated_stories WHERE id = :id")
+        suspend fun deleteById(id: Long)
+
         @Query(
                 "DELETE FROM generated_stories WHERE id IN (" +
                     "SELECT id FROM generated_stories ORDER BY createdAt DESC LIMIT -1 OFFSET :keep" +

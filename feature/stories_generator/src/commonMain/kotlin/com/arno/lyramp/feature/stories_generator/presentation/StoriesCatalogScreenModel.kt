@@ -64,5 +64,10 @@ internal class StoriesCatalogScreenModel(
                         triggerBackfillIfNeeded()
                 }
         }
-}
 
+        fun deleteStory(storyId: Long) {
+                screenModelScope.launch {
+                        repository.deleteStory(storyId)
+                }
+        }
+}

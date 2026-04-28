@@ -37,6 +37,7 @@ internal class GeneratedStoryRepository(
         }
 
         suspend fun trimToSize(keep: Int) = dao.trimToSize(keep)
+        suspend fun deleteStory(id: Long) = dao.deleteById(id)
         suspend fun wouldBeDuplicate(
                 words: List<StoryWord>,
                 genre: StoryGenre,

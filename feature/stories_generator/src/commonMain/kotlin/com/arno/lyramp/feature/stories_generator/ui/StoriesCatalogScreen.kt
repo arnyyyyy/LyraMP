@@ -1,8 +1,14 @@
 package com.arno.lyramp.feature.stories_generator.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,10 +16,13 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,10 +31,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -49,7 +65,13 @@ import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.LyraFilledButton
 import com.arno.lyramp.ui.MainFeatureScaffold
 import com.arno.lyramp.ui.theme.LyraColorScheme
+import com.arno.lyramp.ui.theme.LyraColors
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
+
+private const val DELETE_BUTTON_WIDTH_DP = 72
+private const val SWIPE_THRESHOLD = 80f
 
 object StoriesCatalogScreen : Screen {
         @Composable
@@ -68,7 +90,8 @@ object StoriesCatalogScreen : Screen {
                                 Box(
                                         modifier = Modifier
                                                 .fillMaxWidth()
-                                                .weight(1f)
+                                                .weight(1f),
+                                        contentAlignment = Alignment.Center
                                 ) {
                                         when (val state = uiState) {
                                                 is CatalogUiState.Loading ->
@@ -102,7 +125,10 @@ object StoriesCatalogScreen : Screen {
                                                                 onStoryClick = { story ->
                                                                         screenModel.onStoryOpened(story.id)
                                                                         navigator.push(StoryDetailScreen(story.id))
-                                                                }
+                                                                },
+                                                                onDeleteStory = { story ->
+                                                                        screenModel.deleteStory(story.id)
+                                                                },
                                                         )
                                         }
                                 }
@@ -125,7 +151,8 @@ object StoriesCatalogScreen : Screen {
 private fun CatalogList(
         stories: List<GeneratedStory>,
         isGenerating: Boolean,
-        onStoryClick: (GeneratedStory) -> Unit
+        onStoryClick: (GeneratedStory) -> Unit,
+        onDeleteStory: (GeneratedStory) -> Unit,
 ) {
         LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -135,7 +162,85 @@ private fun CatalogList(
                         item { GeneratingBanner() }
                 }
                 items(stories, key = { it.id }) { story ->
-                        StoryCard(story = story, onClick = { onStoryClick(story) })
+                        SwipeableStoryCard(
+                                story = story,
+                                onClick = { onStoryClick(story) },
+                                onDelete = { onDeleteStory(story) },
+                        )
+                }
+        }
+}
+
+@Composable
+private fun SwipeableStoryCard(
+        story: GeneratedStory,
+        onClick: () -> Unit,
+        onDelete: () -> Unit,
+) {
+        val offsetX = remember { Animatable(0f) }
+        val coroutineScope = rememberCoroutineScope()
+        var isVisible by remember { mutableStateOf(true) }
+
+        AnimatedVisibility(
+                visible = isVisible,
+                exit = shrinkVertically(animationSpec = tween(300)) + fadeOut(animationSpec = tween(200)),
+        ) {
+                Box(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                ) {
+                        Box(
+                                modifier = Modifier
+                                        .matchParentSize(),
+                                contentAlignment = Alignment.CenterEnd,
+                        ) {
+                                Box(
+                                        modifier = Modifier
+                                                .fillMaxHeight()
+                                                .width(DELETE_BUTTON_WIDTH_DP.dp)
+                                                .background(LyraColors.Incorrect.copy(alpha = 0.9f))
+                                                .clickable {
+                                                        coroutineScope.launch { offsetX.animateTo(0f, tween(150)) }
+                                                        isVisible = false
+                                                        onDelete()
+                                                },
+                                        contentAlignment = Alignment.Center,
+                                ) {
+                                        Text(text = "🗑️", fontSize = 24.sp)
+                                }
+                        }
+
+                        Box(
+                                modifier = Modifier
+                                        .fillMaxWidth()
+                                        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                                        .pointerInput(Unit) {
+                                                detectHorizontalDragGestures(
+                                                        onDragEnd = {
+                                                                coroutineScope.launch {
+                                                                        if (offsetX.value < -SWIPE_THRESHOLD) {
+                                                                                offsetX.animateTo(
+                                                                                        -DELETE_BUTTON_WIDTH_DP.dp.toPx(),
+                                                                                        tween(200),
+                                                                                )
+                                                                        } else {
+                                                                                offsetX.animateTo(0f, tween(200))
+                                                                        }
+                                                                }
+                                                        },
+                                                ) { change, dragAmount ->
+                                                        change.consume()
+                                                        coroutineScope.launch {
+                                                                val newValue = (offsetX.value + dragAmount)
+                                                                        .coerceIn(-DELETE_BUTTON_WIDTH_DP.dp.toPx(), 0f)
+                                                                offsetX.snapTo(newValue)
+                                                        }
+                                                }
+                                        },
+                        ) {
+                                StoryCard(story = story, onClick = onClick)
+                        }
                 }
         }
 }
