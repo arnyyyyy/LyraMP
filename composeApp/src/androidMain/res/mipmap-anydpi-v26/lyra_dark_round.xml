@@ -3,4 +3,3 @@
     <background android:drawable="@color/lyra_dark_background"/>
     <foreground android:drawable="@mipmap/lyra_dark_foreground"/>
 </adaptive-icon>
-

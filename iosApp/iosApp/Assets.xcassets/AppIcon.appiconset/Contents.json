@@ -11,6 +11,18 @@
       "platform": "ios",
       "size": "1024x1024",
       "filename": "ic_launcher-playstore.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "size": "1024x1024",
+      "filename": "lyra_dark.png",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ]
     }
   ],
   "info": {
