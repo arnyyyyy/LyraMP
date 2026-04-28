@@ -10,4 +10,5 @@ data class ListeningHistoryMusicTrack(
         val hasText: Boolean = false,
         val language: String? = null,
         val sourceId: String? = null,
+        val hasSyncedLyrics: Boolean = false,
 )

@@ -18,5 +18,7 @@ internal data class ListeningHistoryTrackEntity(
         @ColumnInfo(defaultValue = "0")
         val yandexResolveAttempted: Boolean = false,
         @ColumnInfo(defaultValue = "1")
-        val isShowing: Boolean = true
+        val isShowing: Boolean = true,
+        @ColumnInfo(defaultValue = "0")
+        val lyricsPrefetchStatus: Int = 0,
 )

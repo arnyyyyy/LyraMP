@@ -7,6 +7,7 @@ import com.arno.lyramp.feature.lyrics.api.YandexLyricsApi
 import com.arno.lyramp.feature.lyrics.data.CustomLyricsDatabase
 import com.arno.lyramp.feature.lyrics.data.CustomLyricsRepository
 import com.arno.lyramp.feature.lyrics.data.getCustomLyricsDatabase
+import com.arno.lyramp.feature.lyrics.domain.CheckSyncedLyricsUseCase
 import com.arno.lyramp.feature.lyrics.domain.GeniusHtmlParser
 import com.arno.lyramp.feature.lyrics.domain.GeniusLyricsService
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
@@ -37,6 +38,7 @@ val lyricsModule = module {
 
         single { GetLyricsUseCase(get()) }
         single { GetTimestampedLyricsUseCase(get()) }
+        single { CheckSyncedLyricsUseCase(get()) }
         single { LyricsTextParser() }
 
         factory { (track: MusicTrack) ->

@@ -11,6 +11,7 @@ internal fun ListeningHistoryTrackEntity.toDomain() = ListeningHistoryMusicTrack
         imageUrl = imageUrl,
         language = language,
         sourceId = sourceId,
+        hasSyncedLyrics = lyricsPrefetchStatus == 2,
 )
 
 internal fun ListeningHistoryMusicTrack.toEntity() = ListeningHistoryTrackEntity(

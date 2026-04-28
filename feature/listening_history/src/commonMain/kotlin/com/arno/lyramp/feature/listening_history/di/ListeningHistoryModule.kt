@@ -1,10 +1,12 @@
 package com.arno.lyramp.feature.listening_history.di
 
+import com.arno.lyramp.core.background.BackgroundTaskRegistry
 import com.arno.lyramp.core.data.PlaylistSourcesRepository
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
+import com.arno.lyramp.feature.listening_history.background.LyricsPrefetchBackgroundTask
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryDatabase
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 import com.arno.lyramp.feature.listening_history.data.getListeningHistoryDatabase
@@ -19,6 +21,7 @@ import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourc
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.buildMusicService
+import com.arno.lyramp.feature.listening_history.domain.usecase.PrefetchLyricsForRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemainingsByYandexUseCase
@@ -67,6 +70,7 @@ val listeningHistoryModule = module {
         single { GetRecentTracksUseCase(repository = get()) }
         single { SaveTrackLanguagesUseCase(repository = get()) }
         single { PrefillListeningHistoryUseCase(repository = get()) }
+        single { PrefetchLyricsForRecentTracksUseCase(dao = get(), checkSyncedLyrics = get()) }
 
         single { GetListeningHistoryUseCase(repository = get()) }
         single { GetLocalListeningHistoryUseCase(repository = get()) }
@@ -106,6 +110,13 @@ val listeningHistoryModule = module {
                         getLastAuthorizedService = get<GetLastAuthorizedServiceUseCase>(),
                         completeYandexLogin = get(),
                         resolveRemainingsByYandex = get(),
+                        prefetchLyrics = get(),
+                )
+        }
+
+        BackgroundTaskRegistry.register(LyricsPrefetchBackgroundTask.TASK_ID) { koin ->
+                LyricsPrefetchBackgroundTask(
+                        prefetchLyrics = koin.get<PrefetchLyricsForRecentTracksUseCase>(),
                 )
         }
 }

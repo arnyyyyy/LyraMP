@@ -50,6 +50,20 @@ internal interface ListeningHistoryDao {
         @Query("UPDATE listening_history_tracks SET yandexResolveAttempted = 1 WHERE localId = :localId")
         suspend fun markYandexResolveAttempted(localId: Long)
 
+        @Query(
+                """SELECT * FROM listening_history_tracks
+                WHERE isShowing = 1
+                AND lyricsPrefetchStatus = 0
+                AND trackId IS NOT NULL
+                AND trackId != ''
+                ORDER BY localId DESC
+                LIMIT :limit"""
+        )
+        suspend fun getTracksForLyricsPrefetch(limit: Int): List<ListeningHistoryTrackEntity>
+
+        @Query("UPDATE listening_history_tracks SET lyricsPrefetchStatus = :status WHERE localId = :localId")
+        suspend fun setLyricsPrefetchStatus(localId: Long, status: Int)
+
         @Query("SELECT COUNT(*) FROM listening_history_tracks")
         suspend fun count(): Int
 
