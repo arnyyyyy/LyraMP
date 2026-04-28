@@ -2,6 +2,8 @@ package com.arno.lyramp.feature.learn_words.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
+import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.learn_words.data.LearnWordsRepository
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
@@ -17,10 +19,15 @@ internal class ChooseModeScreenModel(
         observeSelectedLanguage: ObserveSelectedLanguageUseCase,
         private val saveSelectedLanguage: SaveSelectedLanguageUseCase,
         private val getLearningLanguages: GetLearningLanguagesUseCase,
+        getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
 ) : ScreenModel {
         private val _allWords = MutableStateFlow<List<LearnWordEntity>>(emptyList())
         private val _uiState = MutableStateFlow<ChooseModeUiState>(ChooseModeUiState.Loading)
         val uiState: StateFlow<ChooseModeUiState> = _uiState.asStateFlow()
+
+        val isYandexAuthorized: StateFlow<Boolean> = MutableStateFlow(
+                getLastAuthorizedService() == MusicServiceType.YANDEX.name
+        ).asStateFlow()
 
         val selectedLanguage: StateFlow<String?> = observeSelectedLanguage()
 

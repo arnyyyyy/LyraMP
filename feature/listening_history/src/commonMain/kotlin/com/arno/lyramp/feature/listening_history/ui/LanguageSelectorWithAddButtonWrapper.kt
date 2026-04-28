@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -35,9 +36,11 @@ internal fun LanguageSelectorWithAddButtonWrapper(
         onLanguageSelected: (String) -> Unit,
         onSettingsClick: () -> Unit,
         onAddContentClick: () -> Unit,
+        onFolderFilterClick: () -> Unit,
+        isFolderFilterActive: Boolean,
         modifier: Modifier = Modifier,
 ) {
-        var addRevealed by remember { mutableStateOf(false) }
+        var revealed by remember { mutableStateOf(false) }
 
         Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -46,34 +49,36 @@ internal fun LanguageSelectorWithAddButtonWrapper(
                         detectHorizontalDragGestures(
                                 onDragStart = { totalDrag = 0f },
                                 onDragEnd = {
-                                        if (totalDrag < -20) addRevealed = true
-                                        else if (totalDrag > 20) addRevealed = false
+                                        if (totalDrag < -20) revealed = true
+                                        else if (totalDrag > 20) revealed = false
                                 },
                                 onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount }
                         )
                 },
         ) {
                 AnimatedVisibility(
-                        visible = addRevealed,
+                        visible = revealed,
                         enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
                         exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(),
                 ) {
-                        Box(
-                                modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(48.dp)
-                                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                                        .clickable {
-                                                addRevealed = false
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                TopBarRevealIcon(
+                                        emoji = "📁",
+                                        isActive = isFolderFilterActive,
+                                        onClick = {
+                                                revealed = false
+                                                onFolderFilterClick()
+                                        },
+                                )
+
+
+                                TopBarRevealIcon(
+                                        emoji = "+",
+                                        isActive = false,
+                                        onClick = {
+                                                revealed = false
                                                 onAddContentClick()
                                         },
-                                contentAlignment = Alignment.Center
-                        ) {
-                                Text(
-                                        text = "+",
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
                                 )
                         }
                 }
@@ -86,3 +91,31 @@ internal fun LanguageSelectorWithAddButtonWrapper(
                 )
         }
 }
+
+@Composable
+private fun TopBarRevealIcon(
+        emoji: String,
+        isActive: Boolean,
+        onClick: () -> Unit,
+) {
+        val baseModifier = Modifier
+                .padding(end = 8.dp)
+                .size(48.dp)
+                .background(Color.White.copy(alpha = 0.2f), CircleShape)
+        val activeModifier = if (isActive) {
+                baseModifier.border(2.dp, Color.White, CircleShape)
+        } else baseModifier
+
+        Box(
+                modifier = activeModifier.clickable(onClick = onClick),
+                contentAlignment = Alignment.Center,
+        ) {
+                Text(
+                        text = emoji,
+                        fontSize = if (emoji == "+") 24.sp else 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                )
+        }
+}
+

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.learn_words.presentation.LearningMode
 import com.arno.lyramp.feature.learn_words.resources.Res
+import com.arno.lyramp.feature.learn_words.resources.audition_card_title
 import com.arno.lyramp.feature.learn_words.resources.books_icon
 import com.arno.lyramp.feature.learn_words.resources.chevron
 import com.arno.lyramp.feature.learn_words.resources.extraction_card_title
@@ -50,6 +51,8 @@ internal fun ModeSelectionContent(
         onNavigateToExtraction: () -> Unit = {},
         onNavigateToSuggestions: () -> Unit = {},
         onNavigateToStats: () -> Unit = {},
+        onNavigateToAudition: () -> Unit = {},
+        showAudition: Boolean = false,
         wordCount: Int = 0,
 ) {
         Column(
@@ -125,6 +128,14 @@ internal fun ModeSelectionContent(
                         title = stringResource(Res.string.suggestions_card_title),
                         onClick = onNavigateToSuggestions
                 )
+
+                if (showAudition) {
+                        MusicFeatureCard(
+                                icon = "🎙️",
+                                title = stringResource(Res.string.audition_card_title),
+                                onClick = onNavigateToAudition
+                        )
+                }
 
                 MusicFeatureCard(
                         icon = "📊",

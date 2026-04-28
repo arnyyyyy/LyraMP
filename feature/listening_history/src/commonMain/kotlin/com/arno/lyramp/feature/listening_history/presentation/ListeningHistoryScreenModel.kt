@@ -6,11 +6,13 @@ import com.arno.lyramp.feature.authorization.domain.CompleteYandexLoginUseCase
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
+import com.arno.lyramp.feature.listening_history.domain.service.SOURCE_YANDEX_LIKES
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetLocalListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetPlaylistSourcesUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.HideTrackUseCase
+import com.arno.lyramp.feature.listening_history.domain.usecase.PrefetchLyricsForRecentTracksUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.RemovePlaylistSourceUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemainingsByYandexUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
@@ -27,6 +29,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
+data class FolderItem(
+        val id: String?,
+        val emoji: String,
+        val title: String,
+        val count: Int,
+)
+
 internal class ListeningHistoryScreenModel(
         private val getListeningHistory: GetListeningHistoryUseCase,
         private val getLocalListeningHistory: GetLocalListeningHistoryUseCase,
@@ -42,6 +51,7 @@ internal class ListeningHistoryScreenModel(
         private val getLastAuthorizedService: GetLastAuthorizedServiceUseCase,
         private val completeYandexLogin: CompleteYandexLoginUseCase,
         private val resolveRemainingsByYandex: ResolveRemainingsByYandexUseCase,
+        private val prefetchLyrics: PrefetchLyricsForRecentTracksUseCase,
 ) : ScreenModel {
 
         private val _isYandexAuthorized = MutableStateFlow(getLastAuthorizedService() == MusicServiceType.YANDEX.name)
@@ -65,6 +75,15 @@ internal class ListeningHistoryScreenModel(
 
         private val _playlistSources = MutableStateFlow<List<PlaylistSource>>(emptyList())
         val playlistSources: StateFlow<List<PlaylistSource>> = _playlistSources.asStateFlow()
+
+        private val _searchQuery = MutableStateFlow("")
+        val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+        private val _selectedSourceId = MutableStateFlow<String?>(null)
+        val selectedSourceId: StateFlow<String?> = _selectedSourceId.asStateFlow()
+
+        private val _folderItems = MutableStateFlow<List<FolderItem>>(emptyList())
+        val folderItems: StateFlow<List<FolderItem>> = _folderItems.asStateFlow()
 
         init {
                 refreshPlaylistSources()
@@ -113,9 +132,35 @@ internal class ListeningHistoryScreenModel(
         }
 
         private fun getFilteredTracks(): List<ListeningHistoryMusicTrack> {
-                val allTracks = _allTracks.value
-                val lang = selectedLanguage.value ?: return allTracks
-                return allTracks.filter { it.language == lang }
+                var list = _allTracks.value
+                selectedLanguage.value?.let { lang -> list = list.filter { it.language == lang } }
+
+                _selectedSourceId.value?.let { src ->
+                        list = if (src == SOURCE_FILTER_MANUAL) {
+                                list.filter { it.sourceId.isNullOrEmpty() }
+                        } else {
+                                list.filter { it.sourceId == src }
+                        }
+                }
+
+                val needle = _searchQuery.value.trim().lowercase()
+                if (needle.isNotEmpty()) {
+                        list = list.filter { track ->
+                                track.name.lowercase().contains(needle) ||
+                                    track.artists.any { it.lowercase().contains(needle) }
+                        }
+                }
+                return list
+        }
+
+        fun setSearchQuery(query: String) {
+                _searchQuery.value = query
+                updateFilteredTracks()
+        }
+
+        fun setSourceFilter(sourceId: String?) {
+                _selectedSourceId.value = sourceId
+                updateFilteredTracks()
         }
 
         fun refresh() {
@@ -123,6 +168,8 @@ internal class ListeningHistoryScreenModel(
                         _isRefreshing.value = true
                         try {
                                 loadHistoryInternal(resolveAfterLoad = true)
+                                runCatching { prefetchLyrics(maxTracks = 5) }
+                                collectLocalListeningHistory()
                         } finally {
                                 _isRefreshing.value = false
                         }
@@ -211,9 +258,64 @@ internal class ListeningHistoryScreenModel(
 
         private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>) {
                 _allTracks.value = tracks
+                rebuildFolderItems()
                 refreshLanguagesInternal()
+        }
+
+        private fun rebuildFolderItems() {
+                val tracks = _allTracks.value
+                val items = mutableListOf<FolderItem>()
+
+                items += FolderItem(
+                        id = null,
+                        emoji = "🎵",
+                        title = "Все треки",
+                        count = tracks.size,
+                )
+
+                val yandexCount = tracks.count { it.sourceId == SOURCE_YANDEX_LIKES }
+                if (yandexCount > 0) {
+                        items += FolderItem(
+                                id = SOURCE_YANDEX_LIKES,
+                                emoji = "❤️",
+                                title = "Яндекс Избранное", // TODO если ресурс не в композабле
+                                count = yandexCount,
+                        )
+                }
+                _playlistSources.value.forEach { src ->
+                        val cnt = tracks.count { it.sourceId == src.id }
+                        if (cnt > 0) {
+                                val emoji = when {
+                                        "apple.com" in src.url -> "🍎"
+                                        "yandex" in src.url -> "🎵"
+                                        else -> "📁"
+                                }
+                                items += FolderItem(
+                                        id = src.id,
+                                        emoji = emoji,
+                                        title = src.title,
+                                        count = cnt,
+                                )
+                        }
+                }
+
+                val manualCount = tracks.count { it.sourceId.isNullOrEmpty() }
+                if (manualCount > 0) {
+                        items += FolderItem(
+                                id = SOURCE_FILTER_MANUAL,
+                                emoji = "✍️",
+                                title = "Добавленные", // AAA строки ресурсы TODO
+                                count = manualCount,
+                        )
+                }
+
+                _folderItems.value = items
         }
 
         private fun ListeningHistoryMusicTrack.stableKey(): String =
                 id?.takeIf { it.isNotBlank() } ?: "$name||${artists.joinToString(",")}"
+
+        companion object {
+                const val SOURCE_FILTER_MANUAL = "__manual__"
+        }
 }

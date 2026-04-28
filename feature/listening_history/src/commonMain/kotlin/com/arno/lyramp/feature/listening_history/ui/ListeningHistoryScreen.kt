@@ -86,6 +86,10 @@ object ShowListeningHistoryScreen : Screen {
                 val settingsState by userSettingsScreenModel.state.collectAsState()
                 var showSettingsSheet by remember { mutableStateOf(false) }
                 var showAddContentSheet by remember { mutableStateOf(false) }
+                var showFolderSheet by remember { mutableStateOf(false) }
+                val searchQuery by screenModel.searchQuery.collectAsState()
+                val selectedSourceId by screenModel.selectedSourceId.collectAsState()
+                val folderItems by screenModel.folderItems.collectAsState()
 
                 if (showSettingsSheet) {
                         UserSettingsSheet(
@@ -123,6 +127,15 @@ object ShowListeningHistoryScreen : Screen {
                         )
                 }
 
+                if (showFolderSheet) {
+                        FolderFilterSheet(
+                                folderItems = folderItems,
+                                selectedSourceId = selectedSourceId,
+                                onSelect = screenModel::setSourceFilter,
+                                onDismiss = { showFolderSheet = false },
+                        )
+                }
+
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
 
@@ -150,6 +163,8 @@ object ShowListeningHistoryScreen : Screen {
                                                 onLanguageSelected = { screenModel.selectLanguage(it) },
                                                 onSettingsClick = { showSettingsSheet = true },
                                                 onAddContentClick = { showAddContentSheet = true },
+                                                onFolderFilterClick = { showFolderSheet = true },
+                                                isFolderFilterActive = selectedSourceId != null,
                                         )
                                 }
 
@@ -197,6 +212,8 @@ object ShowListeningHistoryScreen : Screen {
                                                         is ListeningHistoryUiState.Success -> {
                                                                 TrackList(
                                                                         tracks = state.tracks,
+                                                                        searchQuery = searchQuery,
+                                                                        onSearchQueryChange = screenModel::setSearchQuery,
                                                                         availableLanguages = AVAILABLE_LANGUAGES,
                                                                         scrollToTopToken = scrollToTopToken.value,
                                                                         onTrackClick = { track ->

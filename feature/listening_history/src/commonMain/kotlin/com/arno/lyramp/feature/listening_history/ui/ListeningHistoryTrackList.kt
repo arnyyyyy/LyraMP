@@ -29,9 +29,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,8 +51,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -54,6 +65,7 @@ import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrac
 import com.arno.lyramp.feature.listeningHistory.resources.Res
 import com.arno.lyramp.feature.listeningHistory.resources.lyrics
 import com.arno.lyramp.feature.listeningHistory.resources.practice
+import com.arno.lyramp.feature.listeningHistory.resources.search_song
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.ui.theme.LyraNonTransparentSurface
@@ -68,6 +80,8 @@ private const val SWIPE_THRESHOLD = 100f
 @Composable
 internal fun TrackList(
         tracks: List<ListeningHistoryMusicTrack>,
+        searchQuery: String,
+        onSearchQueryChange: (String) -> Unit,
         availableLanguages: List<String> = emptyList(),
         onTrackClick: (ListeningHistoryMusicTrack) -> Unit,
         onPracticeClick: ((ListeningHistoryMusicTrack) -> Unit)? = null,
@@ -79,7 +93,17 @@ internal fun TrackList(
         var trackToEditLanguage by remember { mutableStateOf<ListeningHistoryMusicTrack?>(null) }
 
         LaunchedEffect(scrollToTopToken) {
-                if (scrollToTopToken > 0) listState.animateScrollToItem(0)
+                if (scrollToTopToken > 0 && searchQuery.isBlank()) {
+                        listState.animateScrollToItem(1)
+                }
+        }
+        LaunchedEffect(Unit) {
+                if (searchQuery.isBlank()) listState.scrollToItem(1)
+        }
+        LaunchedEffect(searchQuery) {
+                if (searchQuery.isBlank() && listState.firstVisibleItemIndex == 0) {
+                        listState.animateScrollToItem(1)
+                }
         }
 
         trackToEditLanguage?.let { track ->
@@ -103,6 +127,13 @@ internal fun TrackList(
                         .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+                item(key = "search_bar") {
+                        LibrarySearchBar(
+                                query = searchQuery,
+                                onQueryChange = onSearchQueryChange,
+                        )
+                }
+
                 itemsIndexed(tracks, key = { index, track -> "${track.id ?: track.name}#$index" }) { _, track ->
                         SwipeableTrackItem(
                                 track = track,
@@ -123,6 +154,58 @@ internal fun TrackList(
                         Spacer(modifier = Modifier.height(12.dp))
                 }
         }
+}
+
+@Composable
+private fun LibrarySearchBar(
+        query: String,
+        onQueryChange: (String) -> Unit,
+) {
+        TextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                        .background(LyraNonTransparentSurface, RoundedCornerShape(14.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(14.dp)),
+                placeholder = {
+                        Text(
+                                text = stringResource(Res.string.search_song),
+                                color = LyraColors.TextPlaceholder,
+                                fontSize = 15.sp,
+                        )
+                },
+                leadingIcon = {
+                        Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = null,
+                                tint = LyraColors.TextSubtle,
+                        )
+                },
+                trailingIcon = {
+                        if (query.isNotEmpty()) {
+                                IconButton(onClick = { onQueryChange("") }) {
+                                        Icon(
+                                                imageVector = Icons.Filled.Clear,
+                                                contentDescription = "clear",
+                                                tint = LyraColors.TextSubtle,
+                                        )
+                                }
+                        }
+                },
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 15.sp, color = LyraColorScheme.onSurface),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                ),
+                shape = RoundedCornerShape(14.dp),
+        )
 }
 
 @Composable
@@ -315,7 +398,7 @@ private fun TrackItem(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = LyraColorScheme.onSurface,
-                                maxLines = 1,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(2.dp))
@@ -330,14 +413,24 @@ private fun TrackItem(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (onPracticeClick != null) {
+                                val practiceModifier = Modifier
+                                        .background(
+                                                LyraColorScheme.primary.copy(alpha = 0.1f),
+                                                RoundedCornerShape(8.dp)
+                                        )
+                                        .let {
+                                                if (track.hasSyncedLyrics) {
+                                                        it.border(
+                                                                width = 1.5.dp,
+                                                                color = LyraColors.PracticeBorderSynced,
+                                                                shape = RoundedCornerShape(8.dp),
+                                                        )
+                                                } else it
+                                        }
+                                        .clickable(onClick = onPracticeClick)
+                                        .padding(8.dp)
                                 Column(
-                                        modifier = Modifier
-                                                .background(
-                                                        LyraColorScheme.primary.copy(alpha = 0.1f),
-                                                        RoundedCornerShape(8.dp)
-                                                )
-                                                .clickable(onClick = onPracticeClick)
-                                                .padding(8.dp),
+                                        modifier = practiceModifier,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                         Text(text = "🎧", fontSize = 20.sp) // TODO: подумать мб не наушники

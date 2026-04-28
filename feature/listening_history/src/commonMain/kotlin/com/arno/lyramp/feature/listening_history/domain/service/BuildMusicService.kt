@@ -44,7 +44,11 @@ internal fun buildMusicService(
                 null
         } else {
                 when (MusicServiceType.valueOf(lastService)) {
-                        MusicServiceType.YANDEX -> YandexMusicService(authToken = authToken, api = yandexApi)
+                        MusicServiceType.YANDEX -> SourceTaggedMusicService(
+                                sourceId = SOURCE_YANDEX_LIKES,
+                                delegate = YandexMusicService(authToken = authToken, api = yandexApi),
+                        )
+
                         MusicServiceType.NONE -> null
                 }
         }
@@ -52,3 +56,5 @@ internal fun buildMusicService(
         val services = listOfNotNull(authService) + playlistServices
         return if (services.isEmpty()) EmptyMusicService() else CompositeMusicService(services)
 }
+
+const val SOURCE_YANDEX_LIKES = "yandex_likes"
