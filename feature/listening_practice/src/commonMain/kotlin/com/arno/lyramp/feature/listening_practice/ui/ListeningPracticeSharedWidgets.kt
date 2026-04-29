@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -40,6 +39,7 @@ import com.arno.lyramp.feature.listening_practice.resources.check
 import com.arno.lyramp.feature.listening_practice.resources.correct_stat
 import com.arno.lyramp.feature.listening_practice.resources.correct_ticked
 import com.arno.lyramp.feature.listening_practice.resources.incorrect_ticked
+import com.arno.lyramp.feature.listening_practice.resources.next
 import com.arno.lyramp.feature.listening_practice.resources.practice_input
 import com.arno.lyramp.feature.listening_practice.resources.practice_input_placeholder
 import com.arno.lyramp.feature.listening_practice.resources.practice_skip
@@ -87,6 +87,43 @@ internal fun PracticeScoreHeader(
 }
 
 @Composable
+internal fun CompactPracticeProgress(
+        correctCount: Int,
+        incorrectCount: Int,
+        title: String? = null,
+        modifier: Modifier = Modifier,
+) {
+        Row(
+                modifier = modifier
+                        .background(LyraColorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+        ) {
+                ScoreBadge(
+                        value = correctCount,
+                        color = LyraColors.Correct,
+                        label = "✓",
+                        numberColor = LyraColorScheme.onSurface,
+                )
+                if (title != null) {
+                        Text(
+                                text = title,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = LyraColorScheme.onSurfaceVariant,
+                        )
+                }
+                ScoreBadge(
+                        value = incorrectCount,
+                        color = LyraColors.Incorrect,
+                        label = "✗",
+                        numberColor = LyraColorScheme.onSurface,
+                )
+        }
+}
+
+@Composable
 private fun ScoreBadge(value: Int, color: Color, label: String, numberColor: Color) {
         Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -105,11 +142,24 @@ internal fun PracticeInputBlock(
         onSkip: () -> Unit,
         modifier: Modifier = Modifier,
         onTransparentSurface: Boolean = false,
+        isAnswered: Boolean = false,
+        onNext: () -> Unit = {},
 ) {
+        val actionText = when {
+                isAnswered -> stringResource(Res.string.next)
+                userInput.isBlank() -> stringResource(Res.string.practice_skip)
+                else -> stringResource(Res.string.check)
+        }
+        val action = when {
+                isAnswered -> onNext
+                userInput.isBlank() -> onSkip
+                else -> onCheck
+        }
+
         Column(modifier = modifier.fillMaxWidth()) {
                 OutlinedTextField(
                         value = userInput,
-                        onValueChange = onUserInputChange,
+                        onValueChange = { if (!isAnswered) onUserInputChange(it) },
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(stringResource(Res.string.practice_input)) },
                         placeholder = {
@@ -139,45 +189,26 @@ internal fun PracticeInputBlock(
                                 )
                         },
                         shape = RoundedCornerShape(14.dp),
-                        keyboardOptions = KeyboardOptions(
-                                imeAction = if (userInput.isNotBlank()) ImeAction.Done else ImeAction.Default,
-                        ),
-                        keyboardActions = KeyboardActions(
-                                onDone = { if (userInput.isNotBlank()) onCheck() else onSkip() },
-                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { action() }),
                         singleLine = true,
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                        OutlinedButton(
-                                onClick = onSkip,
-                                modifier = Modifier.weight(1f).height(50.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = if (onTransparentSurface)
-                                        ButtonDefaults.outlinedButtonColors(contentColor = Color.White.copy(alpha = 0.85f))
-                                else ButtonDefaults.outlinedButtonColors(contentColor = LyraColorScheme.onSurfaceVariant),
-                        ) { Text(stringResource(Res.string.practice_skip), fontWeight = FontWeight.Medium) }
-
-                        Button(
-                                onClick = onCheck,
-                                modifier = Modifier.weight(1f).height(50.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = if (onTransparentSurface)
-                                        ButtonDefaults.buttonColors(
-                                                containerColor = Color.White,
-                                                contentColor = LyraColorScheme.primary,
-                                                disabledContainerColor = Color.White.copy(alpha = 0.4f),
-                                                disabledContentColor = LyraColors.TextPlaceholder,
-                                        )
-                                else ButtonDefaults.buttonColors(containerColor = LyraColorScheme.primary),
-                                enabled = userInput.isNotBlank(),
-                        ) { Text(stringResource(Res.string.check), fontWeight = FontWeight.SemiBold) }
-                }
+                Button(
+                        onClick = action,
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = if (onTransparentSurface)
+                                ButtonDefaults.buttonColors(
+                                        containerColor = Color.White,
+                                        contentColor = LyraColorScheme.primary,
+                                )
+                        else ButtonDefaults.buttonColors(containerColor = LyraColorScheme.primary),
+                ) { Text(actionText, fontWeight = FontWeight.SemiBold) }
         }
 }
 
@@ -196,7 +227,7 @@ internal fun AnswerReviewCard(
                         .fillMaxWidth()
                         .background(bg, RoundedCornerShape(12.dp))
                         .border(1.dp, border.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
         ) {
                 Text(
                         text = if (isCorrect) stringResource(Res.string.correct_ticked)

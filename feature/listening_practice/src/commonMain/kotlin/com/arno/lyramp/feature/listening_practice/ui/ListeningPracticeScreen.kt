@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeScreenModel
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
@@ -42,13 +43,31 @@ class ListeningPracticeScreen(
                 val screenModel = getScreenModel<ListeningPracticeScreenModel> { parametersOf(track) }
 
                 val uiState by screenModel.uiState.collectAsState()
+                val readyState = uiState as? ListeningPracticeUiState.Ready
 
 
                 MainFeatureScaffold(
                         icon = "🎧",
                         title = track.name,
                         subtitle = track.artists.joinToString(", "),
-                        onBack = { navigator.pop() }
+                        onBack = { navigator.pop() },
+                        actions = {
+                                readyState?.let { state ->
+                                        val progressTitle = if (state.practiceMode == PracticeMode.RANDOM_LINE || !state.hasTimecodes) {
+                                                stringResource(
+                                                        Res.string.practice_line_counter,
+                                                        state.currentLineIndex + 1,
+                                                        state.lines.size,
+                                                )
+                                        } else null
+
+                                        CompactPracticeProgress(
+                                                correctCount = state.correctCount,
+                                                incorrectCount = state.incorrectCount,
+                                                title = progressTitle,
+                                        )
+                                }
+                        },
                 ) {
                         when (val state = uiState) {
                                 is ListeningPracticeUiState.Loading -> {
@@ -68,6 +87,7 @@ class ListeningPracticeScreen(
                                                 onUserInputChange = screenModel::onUserInputChange,
                                                 onCheck = screenModel::onCheckLine,
                                                 onSkip = screenModel::onSkipLine,
+                                                onNext = screenModel::onNextLine,
                                                 onSwitchMode = screenModel::onSwitchMode,
                                                 onPlayCurrentLine = screenModel::onPlayCurrentLineClick,
                                                 onToggleSlowMode = screenModel::onToggleSlowMode

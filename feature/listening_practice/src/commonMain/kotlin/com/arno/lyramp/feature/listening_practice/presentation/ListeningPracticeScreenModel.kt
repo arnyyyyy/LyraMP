@@ -188,6 +188,7 @@ internal class ListeningPracticeScreenModel(
 
         fun onCheckLine() {
                 val state = practiceState.value
+                if (state.lastAnsweredLine != null) return
                 if (state.currentLineIndex >= state.lines.size) return
                 val currentLine = state.lines[state.currentLineIndex]
                 val isCorrect = checkAnswer(state.userInput, currentLine.text)
@@ -202,11 +203,19 @@ internal class ListeningPracticeScreenModel(
 
         fun onSkipLine() {
                 val state = practiceState.value
+                if (state.lastAnsweredLine != null) return
                 if (state.currentLineIndex >= state.lines.size) return
                 advanceLine(
                         state.lines[state.currentLineIndex].copy(userInput = "", checkResult = LineCheckResult.INCORRECT),
                         isCorrect = false,
                 )
+        }
+
+        fun onNextLine() {
+                val state = practiceState.value
+                if (state.practiceMode != PracticeMode.RANDOM_LINE || state.lastAnsweredLine == null) return
+                pickRandomLine(clearFeedback = true)
+                publishReady()
         }
 
         fun onRestart() {
@@ -225,12 +234,16 @@ internal class ListeningPracticeScreenModel(
                 autoPlayCurrentLineIfPossible()
         }
 
-        private fun pickRandomLine() {
+        private fun pickRandomLine(clearFeedback: Boolean = false) {
                 val lines = practiceState.value.lines
                 val withTimecodes = lines.indices.filter { lines[it].hasTimecode }
                 if (withTimecodes.isEmpty()) return
                 practiceState.update {
-                        it.copy(currentLineIndex = withTimecodes.random(), userInput = "")
+                        it.copy(
+                                currentLineIndex = withTimecodes.random(),
+                                userInput = "",
+                                lastAnsweredLine = if (clearFeedback) null else it.lastAnsweredLine,
+                        )
                 }
         }
 
@@ -253,7 +266,6 @@ internal class ListeningPracticeScreenModel(
                                         lastAnsweredLine = updatedLine,
                                 )
                         }
-                        pickRandomLine()
                         publishReady()
                         return
                 }

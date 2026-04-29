@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +36,6 @@ import com.arno.lyramp.feature.listening_practice.model.PracticeMode
 import com.arno.lyramp.feature.listening_practice.presentation.ListeningPracticeUiState
 import com.arno.lyramp.feature.listening_practice.resources.Res
 import com.arno.lyramp.feature.listening_practice.resources.full_song
-import com.arno.lyramp.feature.listening_practice.resources.practice_line_counter
 import com.arno.lyramp.feature.listening_practice.resources.random_song
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import org.jetbrains.compose.resources.stringResource
@@ -51,6 +49,7 @@ internal fun ListeningPracticeReadyContent(
         onUserInputChange: (String) -> Unit,
         onCheck: () -> Unit,
         onSkip: () -> Unit,
+        onNext: () -> Unit,
         onSwitchMode: (PracticeMode) -> Unit,
         onPlayCurrentLine: () -> Unit,
         onToggleSlowMode: () -> Unit,
@@ -58,37 +57,9 @@ internal fun ListeningPracticeReadyContent(
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .imePadding()
                         .padding(horizontal = 4.dp),
         ) {
-                Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                ) {
-                        PracticeScoreHeader(
-                                correctCount = state.correctCount,
-                                incorrectCount = state.incorrectCount,
-                                modifier = Modifier.weight(1f),
-                                trailing = {
-                                        if (!state.hasTimecodes) {
-                                                Text(
-                                                        text = stringResource(
-                                                                Res.string.practice_line_counter,
-                                                                state.currentLineIndex + 1,
-                                                                state.lines.size,
-                                                        ),
-                                                        fontSize = 12.sp,
-                                                        color = LyraColorScheme.onSurfaceVariant,
-                                                        fontWeight = FontWeight.Medium,
-                                                )
-                                        }
-                                },
-                        )
-                }
-
                 if (state.hasTimecodes) {
-                        Spacer(modifier = Modifier.height(12.dp))
                         ModeSwitcher(
                                 currentMode = state.practiceMode,
                                 onSwitchMode = onSwitchMode,
@@ -96,7 +67,7 @@ internal fun ListeningPracticeReadyContent(
                         )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 if (state.practiceMode == PracticeMode.RANDOM_LINE && state.hasTimecodes) {
                         RandomLineContent(
@@ -105,6 +76,7 @@ internal fun ListeningPracticeReadyContent(
                                 onUserInputChange = onUserInputChange,
                                 onCheck = onCheck,
                                 onSkip = onSkip,
+                                onNext = onNext,
                                 onToggleSlowMode = onToggleSlowMode,
                         )
                 } else {
@@ -169,25 +141,21 @@ private fun RandomLineContent(
         onUserInputChange: (String) -> Unit,
         onCheck: () -> Unit,
         onSkip: () -> Unit,
+        onNext: () -> Unit,
         onToggleSlowMode: () -> Unit,
 ) {
         Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                        contentAlignment = Alignment.Center,
-                ) {
-                        LinePlayCard(
-                                track = state.track,
-                                isPlaying = state.currentLineIsPlaying,
-                                isPlayerReady = true,
-                                isSlowMode = state.isSlowMode,
-                                onPlayCurrentLine = onPlayCurrentLine,
-                                onToggleSlowMode = onToggleSlowMode,
-                                modifier = Modifier.fillMaxSize(),
-                        )
-                }
+                LinePlayCard(
+                        track = state.track,
+                        isPlaying = state.currentLineIsPlaying,
+                        isPlayerReady = true,
+                        isSlowMode = state.isSlowMode,
+                        onPlayCurrentLine = onPlayCurrentLine,
+                        onToggleSlowMode = onToggleSlowMode,
+                        modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 AnimatedVisibility(
                         visible = state.lastAnsweredLine != null,
@@ -196,19 +164,21 @@ private fun RandomLineContent(
                 ) {
                         state.lastAnsweredLine?.let {
                                 Column {
-                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Spacer(modifier = Modifier.height(8.dp))
                                         AnswerReviewCard(line = it)
                                 }
                         }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 PracticeInputBlock(
                         userInput = state.userInput,
                         onUserInputChange = onUserInputChange,
                         onCheck = onCheck,
                         onSkip = onSkip,
+                        isAnswered = state.lastAnsweredLine != null,
+                        onNext = onNext,
                 )
         }
 }
@@ -222,7 +192,7 @@ private fun ModeSwitcher(
         Row(
                 modifier = modifier
                         .background(LyraColorScheme.surfaceVariant, RoundedCornerShape(20.dp))
-                        .padding(4.dp),
+                        .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
                 ModeTab(
@@ -254,7 +224,7 @@ private fun ModeTab(
                         containerColor = if (isSelected) LyraColorScheme.primary else Color.Transparent,
                         contentColor = if (isSelected) LyraColorScheme.onPrimary else LyraColorScheme.onSurfaceVariant,
                 ),
-                modifier = modifier.height(36.dp),
+                modifier = modifier.height(32.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                 elevation = ButtonDefaults.buttonElevation(0.dp),
         ) {

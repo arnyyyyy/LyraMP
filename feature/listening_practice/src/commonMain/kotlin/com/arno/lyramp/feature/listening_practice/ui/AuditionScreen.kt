@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -73,6 +72,7 @@ data class AuditionScreen(val language: String?) : Screen {
                 val navigator = LocalNavigator.currentOrThrow
                 val screenModel = getScreenModel<AuditionScreenModel> { parametersOf(language) }
                 val uiState by screenModel.uiState.collectAsState()
+                val readyState = uiState as? AuditionUiState.Ready
 
 
                 MainFeatureScaffold(
@@ -80,6 +80,15 @@ data class AuditionScreen(val language: String?) : Screen {
                         title = stringResource(Res.string.audition_title),
                         subtitle = stringResource(Res.string.audition_subtitle),
                         onBack = { navigator.pop() },
+                        actions = {
+                                readyState?.let { state ->
+                                        CompactPracticeProgress(
+                                                correctCount = state.correctCount,
+                                                incorrectCount = state.incorrectCount,
+                                                title = "${state.roundIndex + 1}/${state.roundSize}",
+                                        )
+                                }
+                        },
                 ) {
                         when (val state = uiState) {
                                 is AuditionUiState.Loading -> LoadingCard(
@@ -99,6 +108,7 @@ data class AuditionScreen(val language: String?) : Screen {
                                         onUserInputChange = screenModel::onUserInputChange,
                                         onCheck = screenModel::onCheckLine,
                                         onSkip = screenModel::onSkipLine,
+                                        onNext = screenModel::onNextLine,
                                         onToggleSlowMode = screenModel::onToggleSlowMode,
                                 )
 
@@ -119,58 +129,37 @@ private fun AuditionReadyContent(
         onUserInputChange: (String) -> Unit,
         onCheck: () -> Unit,
         onSkip: () -> Unit,
+        onNext: () -> Unit,
         onToggleSlowMode: () -> Unit,
 ) {
         Column(
                 modifier = Modifier
                         .fillMaxSize()
-                        .imePadding()
                         .widthIn(max = 600.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-                PracticeScoreHeader(
-                        correctCount = state.correctCount,
-                        incorrectCount = state.incorrectCount,
-                        title = stringResource(
-                                Res.string.audition_round_progress,
-                                state.roundIndex + 1,
-                                state.roundSize,
-                        ),
-                )
-
-                RoundProgressBar(
-                        current = state.roundIndex,
-                        total = state.roundSize,
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                ) {
-                        AnimatedContent(
-                                targetState = state.currentLine to state.track,
-                                transitionSpec = {
-                                        (fadeIn(tween(300))
-                                            + slideInVertically(tween(350)) { it / 8 }) togetherWith
-                                            (fadeOut(tween(200))
-                                                + slideOutVertically(tween(250)) { -it / 8 })
-                                },
-                                label = "audition_card",
-                        ) { (_, track) ->
-                                LinePlayCard(
-                                        track = track,
-                                        isPlaying = state.currentLineIsPlaying,
-                                        isPlayerReady = state.isPlayerReady,
-                                        isSlowMode = state.isSlowMode,
-                                        onPlayCurrentLine = onPlayCurrentLine,
-                                        onToggleSlowMode = onToggleSlowMode,
-                                        modifier = Modifier.fillMaxSize(),
-                                )
-                        }
+                AnimatedContent(
+                        targetState = state.currentLine to state.track,
+                        transitionSpec = {
+                                (fadeIn(tween(300))
+                                    + slideInVertically(tween(350)) { it / 8 }) togetherWith
+                                    (fadeOut(tween(200))
+                                        + slideOutVertically(tween(250)) { -it / 8 })
+                        },
+                        label = "audition_card",
+                ) { (_, track) ->
+                        LinePlayCard(
+                                track = track,
+                                isPlaying = state.currentLineIsPlaying,
+                                isPlayerReady = state.isPlayerReady,
+                                isSlowMode = state.isSlowMode,
+                                onPlayCurrentLine = onPlayCurrentLine,
+                                onToggleSlowMode = onToggleSlowMode,
+                                modifier = Modifier.fillMaxWidth(),
+                        )
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 AnimatedVisibility(
                         visible = state.lastAnsweredLine != null,
@@ -181,7 +170,7 @@ private fun AuditionReadyContent(
                         state.lastAnsweredLine?.let { AnswerReviewCard(line = it) }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 PracticeInputBlock(
                         userInput = state.userInput,
@@ -189,26 +178,11 @@ private fun AuditionReadyContent(
                         onCheck = onCheck,
                         onSkip = onSkip,
                         onTransparentSurface = true,
+                        isAnswered = state.lastAnsweredLine != null,
+                        onNext = onNext,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-        }
-}
-
-@Composable
-private fun RoundProgressBar(current: Int, total: Int, modifier: Modifier = Modifier) {
-        val progress = if (total > 0) current.toFloat() / total else 0f
-        Box(
-                modifier = modifier
-                        .height(4.dp)
-                        .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(2.dp)),
-        ) {
-                Box(
-                        modifier = Modifier
-                                .fillMaxWidth(progress)
-                                .height(4.dp)
-                                .background(Color.White.copy(alpha = 0.85f), RoundedCornerShape(2.dp)),
-                )
         }
 }
 

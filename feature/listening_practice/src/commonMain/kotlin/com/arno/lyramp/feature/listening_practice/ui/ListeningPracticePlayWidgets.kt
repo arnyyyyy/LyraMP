@@ -28,14 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.listening_practice.formatTime
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
-import com.arno.lyramp.feature.listening_practice.resources.Res
-import com.arno.lyramp.feature.listening_practice.resources.audition_preparation
-import com.arno.lyramp.feature.listening_practice.resources.practice_listen_line
-import com.arno.lyramp.feature.listening_practice.resources.practice_playing
 import com.arno.lyramp.ui.SlowModeButton
 import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PlayerControls(
@@ -146,16 +141,25 @@ internal fun LinePlayCard(
                         .background(Color.White, RoundedCornerShape(24.dp)),
                 contentAlignment = Alignment.Center,
         ) {
+                SlowModeButton(
+                        isSlowMode = isSlowMode,
+                        onClick = onToggleSlowMode,
+                        modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(10.dp),
+                        size = 36.dp,
+                )
+
                 Column(
-                        modifier = Modifier.padding(28.dp),
+                        modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                        Text(text = "🎵", fontSize = 22.sp)
+                        Text(text = "🎵", fontSize = 18.sp)
                         if (track != null) {
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                         text = track.name,
-                                        fontSize = 16.sp,
+                                        fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = LyraColors.TextPrimary,
                                         textAlign = TextAlign.Center,
@@ -163,30 +167,15 @@ internal fun LinePlayCard(
                                 )
                                 Text(
                                         text = track.artists.joinToString(", "),
-                                        fontSize = 13.sp,
+                                        fontSize = 12.sp,
                                         color = LyraColors.TextSubtle,
                                         textAlign = TextAlign.Center,
                                         maxLines = 1,
                                 )
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         BigPlayButton(isPlaying = isPlaying, isReady = isPlayerReady, onClick = onPlayCurrentLine)
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Text(
-                                text = when {
-                                        isPlaying -> stringResource(Res.string.practice_playing)
-                                        !isPlayerReady -> stringResource(Res.string.audition_preparation)
-                                        else -> stringResource(Res.string.practice_listen_line)
-                                },
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = LyraColors.TextSubtle,
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        SlowModeButton(isSlowMode = isSlowMode, onClick = onToggleSlowMode)
                 }
         }
 }
@@ -200,14 +189,14 @@ private fun BigPlayButton(isPlaying: Boolean, isReady: Boolean, onClick: () -> U
         }
         Box(
                 modifier = Modifier
-                        .size(96.dp)
+                        .size(68.dp)
                         .background(bg, CircleShape)
                         .clickable(enabled = isReady, onClick = onClick),
                 contentAlignment = Alignment.Center,
         ) {
                 Text(
                         text = if (isPlaying) "❚❚" else "▶",
-                        fontSize = 28.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isReady) Color.White else LyraColors.TextPlaceholder,
                 )

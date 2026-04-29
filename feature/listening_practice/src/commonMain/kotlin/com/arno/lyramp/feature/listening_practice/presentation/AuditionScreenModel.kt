@@ -149,11 +149,23 @@ internal class AuditionScreenModel(
 
         fun onCheckLine() {
                 val state = _uiState.value as? AuditionUiState.Ready ?: return
+                if (state.lastAnsweredLine != null) return
                 val isCorrect = checkAnswer(state.userInput, state.currentLine.text)
                 advance(state.userInput, isCorrect)
         }
 
-        fun onSkipLine() = advance(userInput = "", isCorrect = false)
+        fun onSkipLine() {
+                val state = _uiState.value as? AuditionUiState.Ready ?: return
+                if (state.lastAnsweredLine != null) return
+                advance(userInput = "", isCorrect = false)
+        }
+
+        fun onNextLine() {
+                val state = _uiState.value as? AuditionUiState.Ready ?: return
+                if (state.lastAnsweredLine == null) return
+                lastAnswered = null
+                screenModelScope.launch { advanceToNext() }
+        }
 
         private fun advance(userInput: String, isCorrect: Boolean) {
                 val state = _uiState.value as? AuditionUiState.Ready ?: return
@@ -165,7 +177,13 @@ internal class AuditionScreenModel(
                 answeredLines.add(answered)
                 if (isCorrect) correctCount++ else incorrectCount++
                 roundIndex++
-                screenModelScope.launch { advanceToNext() }
+                _uiState.value = state.copy(
+                        userInput = userInput,
+                        correctCount = correctCount,
+                        incorrectCount = incorrectCount,
+                        roundIndex = roundIndex,
+                        lastAnsweredLine = answered,
+                )
         }
 
         override fun onDispose() {
