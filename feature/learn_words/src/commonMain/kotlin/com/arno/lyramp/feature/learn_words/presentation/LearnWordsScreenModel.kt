@@ -16,10 +16,20 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+internal data class LearnWordsLaunchArgs(
+        val mode: LearningMode,
+        val language: String?,
+        val cefrGroup: CefrDifficultyGroup?,
+        val useMixedPractice: Boolean,
+        val albumId: String? = null,
+        val trackIndex: Int? = null,
+)
+
 internal class LearnWordsScreenModel(
         private val mode: LearningMode,
         private val language: String?,
         private val cefrGroup: CefrDifficultyGroup?,
+        private val useMixedPractice: Boolean,
         private val albumId: String? = null,
         private val trackIndex: Int? = null,
         private val repository: LearnWordsRepository,
@@ -32,8 +42,7 @@ internal class LearnWordsScreenModel(
         val uiState: StateFlow<LearnWordsUiState> = _uiState.asStateFlow()
 
         private lateinit var cardsDelegate: CardsModeDelegate
-        private lateinit var cramDelegate: CramModeDelegate
-        private lateinit var testDelegate: TestModeDelegate
+        private lateinit var practiceDelegate: PracticeModeDelegate
 
         init {
                 screenModelScope.launch {
@@ -73,8 +82,15 @@ internal class LearnWordsScreenModel(
                                 }
 
                                 LearningMode.CRAM -> {
-                                        cramDelegate = CramModeDelegate(
+                                        practiceDelegate = PracticeModeDelegate(
+                                                mode = mode,
+                                                sessionPlan = if (useMixedPractice) {
+                                                        PracticeSessionPlan.MIXED_CRAM_TEST
+                                                } else {
+                                                        PracticeSessionPlan.CRAM_ONLY
+                                                },
                                                 shuffledWords = shuffled,
+                                                allFilteredWords = filtered,
                                                 repository = repository,
                                                 uiState = _uiState,
                                                 coroutineScope = screenModelScope,
@@ -82,7 +98,9 @@ internal class LearnWordsScreenModel(
                                 }
 
                                 LearningMode.TEST -> {
-                                        testDelegate = TestModeDelegate(
+                                        practiceDelegate = PracticeModeDelegate(
+                                                mode = mode,
+                                                sessionPlan = PracticeSessionPlan.TEST_ONLY,
                                                 shuffledWords = shuffled,
                                                 allFilteredWords = filtered,
                                                 repository = repository,
@@ -99,12 +117,14 @@ internal class LearnWordsScreenModel(
         fun onToggleImportance(wordId: Long, isImportant: Boolean) = cardsDelegate.onToggleImportance(wordId, isImportant)
         fun playAudio(word: WordInfo) = cardsDelegate.playAudio(word)
 
-        fun onLearnInputChange(input: String) = cramDelegate.onInputChange(input)
-        fun onLearnCheck() = cramDelegate.onCheck()
-        fun onLearnNext() = cramDelegate.onNext()
+        fun onLearnInputChange(input: String) = practiceDelegate.onInputChange(input)
+        fun onLearnHintShown() = practiceDelegate.onHintShown()
+        fun onLearnCheck() = practiceDelegate.onCheck()
+        fun onLearnSkip() = practiceDelegate.onSkip()
+        fun onLearnNext() = practiceDelegate.onNext()
 
-        fun onTestSelectOption(index: Int) = testDelegate.onSelectOption(index)
-        fun onTestNext() = testDelegate.onNext()
+        fun onTestSelectOption(index: Int) = practiceDelegate.onSelectOption(index)
+        fun onTestNext() = practiceDelegate.onNext()
 
         override fun onDispose() = speechController.stop()
 }

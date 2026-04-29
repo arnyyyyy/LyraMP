@@ -91,12 +91,21 @@ internal fun ModeSelectionContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                        StudyModeCard(
-                                icon = stringResource(Res.string.test_icon),
-                                title = stringResource(Res.string.words_mode_test),
-                                modifier = Modifier.weight(1f),
-                                onClick = { onSelectMode(LearningMode.TEST) }
-                        )
+                        if (showAudition) {
+                                StudyModeCard(
+                                        icon = "🎙️",
+                                        title = stringResource(Res.string.audition_card_title),
+                                        modifier = Modifier.weight(1f),
+                                        onClick = onNavigateToAudition
+                                )
+                        } else {
+                                StudyModeCard(
+                                        icon = stringResource(Res.string.test_icon),
+                                        title = stringResource(Res.string.words_mode_test),
+                                        modifier = Modifier.weight(1f),
+                                        onClick = { onSelectMode(LearningMode.TEST) }
+                                )
+                        }
                         StudyModeCard(
                                 icon = stringResource(Res.string.star_icon),
                                 title = stringResource(Res.string.words_mode_stories),
@@ -128,14 +137,6 @@ internal fun ModeSelectionContent(
                         title = stringResource(Res.string.suggestions_card_title),
                         onClick = onNavigateToSuggestions
                 )
-
-                if (showAudition) {
-                        MusicFeatureCard(
-                                icon = "🎙️",
-                                title = stringResource(Res.string.audition_card_title),
-                                onClick = onNavigateToAudition
-                        )
-                }
 
                 MusicFeatureCard(
                         icon = "📊",

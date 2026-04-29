@@ -52,21 +52,14 @@ internal fun TestModeContent(
                         .widthIn(max = 600.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
-                ProgressHeader(
-                        currentIndex = state.currentIndex,
-                        totalCount = state.totalCount,
-                        correctCount = state.correctCount,
-                        incorrectCount = state.incorrectCount
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(TOP_PADDING))
 
                 QuestionCard(text = questionText)
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp).align(Alignment.Start),
+                        modifier = Modifier.padding(top = 14.dp, bottom = 4.dp).align(Alignment.Start),
                         text = stringResource(
                                 when (state.variant) {
                                         TestVariant.FOREIGN_TO_TRANSLATION -> Res.string.choose_translation
@@ -104,11 +97,11 @@ internal fun TestModeContent(
                                 onClick = { onNext() },
                                 modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 35.dp),
+                                        .padding(top = 16.dp),
                                 containerColor = LyraColorScheme.surface, contentColor = LyraColorScheme.onSurface, height = 65.dp,
                         )
                 } else {
-                        Spacer(modifier = Modifier.height(66.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                 }
         }
 }
@@ -143,7 +136,7 @@ private fun TestOptionItem(
                         .fillMaxWidth()
                         .clickable(enabled = !isAnswered, onClick = onClick)
                         .background(backgroundColor, RoundedCornerShape(12.dp))
-                        .padding(18.dp),
+                        .padding(14.dp),
                 contentAlignment = Alignment.CenterStart
         ) {
                 Row(
@@ -151,7 +144,7 @@ private fun TestOptionItem(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                        Text(text = option, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = textColor, modifier = Modifier.weight(1f))
+                        Text(text = option, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = textColor, modifier = Modifier.weight(1f))
                         if (isAnswered) {
                                 when {
                                         isSelected && state.isCorrect ->

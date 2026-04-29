@@ -21,7 +21,8 @@ internal sealed interface LearnWordsUiState {
                 val currentIndex: Int,
                 val totalCount: Int,
                 val correctCount: Int,
-                val incorrectCount: Int
+                val incorrectCount: Int,
+                val lastCheckedWord: String? = null,
         ) : LearnWordsUiState
 
         data class Test(
@@ -33,7 +34,8 @@ internal sealed interface LearnWordsUiState {
                 val currentIndex: Int,
                 val totalCount: Int,
                 val correctCount: Int,
-                val incorrectCount: Int
+                val incorrectCount: Int,
+                val keepKeyboardVisible: Boolean = false,
         ) : LearnWordsUiState {
                 val isAnswered: Boolean get() = selectedIndex != null
                 val isCorrect: Boolean get() = selectedIndex?.let { options[it] == correctAnswer } ?: false

@@ -87,3 +87,4 @@ internal fun QuestionCard(text: String) {
         }
 }
 
+internal val TOP_PADDING = 20.dp

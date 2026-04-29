@@ -1,6 +1,5 @@
 package com.arno.lyramp.feature.learn_words.di
 
-import com.arno.lyramp.core.model.CefrDifficultyGroup
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.ClassifyWordsByCefrUseCase
 import com.arno.lyramp.feature.extraction.domain.usecase.SaveWordUseCase
@@ -16,7 +15,7 @@ import com.arno.lyramp.feature.learn_words.domain.usecase.ObserveLearnWordsByAlb
 import com.arno.lyramp.feature.learn_words.domain.usecase.SaveLearnWordUseCase
 import com.arno.lyramp.feature.learn_words.presentation.AllWordsListScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
-import com.arno.lyramp.feature.learn_words.presentation.LearningMode
+import com.arno.lyramp.feature.learn_words.presentation.LearnWordsLaunchArgs
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsScreenModel
 import com.arno.lyramp.feature.translation.domain.GetSpeechFilePathUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
@@ -64,13 +63,14 @@ val learnWordsModule = module {
                 )
         }
 
-        factory { (mode: LearningMode, language: String?, cefrGroup: CefrDifficultyGroup?, albumId: String?, trackIndex: Int?) ->
+        factory { (args: LearnWordsLaunchArgs) ->
                 LearnWordsScreenModel(
-                        mode = mode,
-                        language = language,
-                        cefrGroup = cefrGroup,
-                        albumId = albumId,
-                        trackIndex = trackIndex,
+                        mode = args.mode,
+                        language = args.language,
+                        cefrGroup = args.cefrGroup,
+                        useMixedPractice = args.useMixedPractice,
+                        albumId = args.albumId,
+                        trackIndex = args.trackIndex,
                         repository = get(),
                         getSpeechFilePath = get<GetSpeechFilePathUseCase>(),
                         classifyWordsByCefr = get<ClassifyWordsByCefrUseCase>(),
