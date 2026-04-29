@@ -81,16 +81,7 @@ internal fun PlayerControls(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                 ) {
-                        Button(
-                                onClick = onRewind,
-                                modifier = Modifier.size(50.dp),
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(0.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                        containerColor = LyraColorScheme.surface,
-                                        contentColor = LyraColorScheme.onSurface,
-                                ),
-                        ) { Text(text = "⏪", fontSize = 20.sp) }
+                        CircleIconButton(label = "⏪", onClick = onRewind)
 
                         Spacer(modifier = Modifier.width(20.dp))
 
@@ -107,16 +98,7 @@ internal fun PlayerControls(
 
                         Spacer(modifier = Modifier.width(20.dp))
 
-                        Button(
-                                onClick = onFastForward,
-                                modifier = Modifier.size(50.dp),
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(0.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                        containerColor = LyraColorScheme.surface,
-                                        contentColor = LyraColorScheme.onSurface,
-                                ),
-                        ) { Text(text = "⏩", fontSize = 20.sp) }
+                        CircleIconButton(label = "⏩", onClick = onFastForward)
 
                         Spacer(modifier = Modifier.width(12.dp))
 
@@ -133,6 +115,8 @@ internal fun LinePlayCard(
         isSlowMode: Boolean,
         onPlayCurrentLine: () -> Unit,
         onToggleSlowMode: () -> Unit,
+        onExpandStart: () -> Unit,
+        onExpandEnd: () -> Unit,
         modifier: Modifier = Modifier,
 ) {
         Box(
@@ -175,7 +159,14 @@ internal fun LinePlayCard(
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        BigPlayButton(isPlaying = isPlaying, isReady = isPlayerReady, onClick = onPlayCurrentLine)
+                        Row(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                                SegmentExpandButton(label = "⏪", onClick = onExpandStart)
+                                BigPlayButton(isPlaying = isPlaying, isReady = isPlayerReady, onClick = onPlayCurrentLine)
+                                SegmentExpandButton(label = "⏩", onClick = onExpandEnd)
+                        }
                 }
         }
 }

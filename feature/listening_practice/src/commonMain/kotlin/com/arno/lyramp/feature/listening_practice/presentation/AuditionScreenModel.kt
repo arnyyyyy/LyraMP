@@ -29,6 +29,9 @@ internal class AuditionScreenModel(
         private var current: AuditionLine? = null
         private var preparePlayerJob: Job? = null
 
+        private var startExpansionMs: Long = 0
+        private var endExpansionMs: Long = 0
+
         private var roundIndex = 0
         private var correctCount = 0
         private var incorrectCount = 0
@@ -74,6 +77,8 @@ internal class AuditionScreenModel(
         }
 
         private suspend fun advanceToNext() {
+                startExpansionMs = 0
+                endExpansionMs = 0
                 playback.stopSegment()
                 if (roundIndex >= roundSize) {
                         _uiState.value = AuditionUiState.Completed(
@@ -142,7 +147,37 @@ internal class AuditionScreenModel(
                 if (!state.isPlayerReady) return
                 val startMs = state.currentLine.startMs ?: return
                 val endMs = state.currentLine.endMs ?: return
-                playback.toggleSegment(screenModelScope, startMs, endMs)
+                playback.toggleSegment(
+                        screenModelScope,
+                        (startMs - startExpansionMs).coerceAtLeast(0),
+                        endMs + endExpansionMs,
+                )
+        }
+
+        fun onExpandStart() {
+                val state = _uiState.value as? AuditionUiState.Ready ?: return
+                if (!state.isPlayerReady) return
+                val startMs = state.currentLine.startMs ?: return
+                val endMs = state.currentLine.endMs ?: return
+                startExpansionMs += EXPAND_STEP_MS
+                playback.playSegment(
+                        screenModelScope,
+                        (startMs - startExpansionMs).coerceAtLeast(0),
+                        endMs + endExpansionMs,
+                )
+        }
+
+        fun onExpandEnd() {
+                val state = _uiState.value as? AuditionUiState.Ready ?: return
+                if (!state.isPlayerReady) return
+                val startMs = state.currentLine.startMs ?: return
+                val endMs = state.currentLine.endMs ?: return
+                endExpansionMs += EXPAND_STEP_MS
+                playback.playSegment(
+                        screenModelScope,
+                        (startMs - startExpansionMs).coerceAtLeast(0),
+                        endMs + endExpansionMs,
+                )
         }
 
         fun onToggleSlowMode() = playback.toggleSlowMode()
@@ -194,5 +229,6 @@ internal class AuditionScreenModel(
 
         private companion object {
                 const val DEFAULT_ROUND_SIZE = 10
+                const val EXPAND_STEP_MS = 1_000L
         }
 }

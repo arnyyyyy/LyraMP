@@ -40,6 +40,9 @@ internal class ListeningPracticeScreenModel(
 
         private val practiceState = MutableStateFlow(PracticeState())
 
+        private var lineStartExpansionMs: Long = 0
+        private var lineEndExpansionMs: Long = 0
+
         init {
                 loadPractice()
                 observeState()
@@ -158,7 +161,37 @@ internal class ListeningPracticeScreenModel(
                 val line = state.lines.getOrNull(state.currentLineIndex) ?: return
                 val startMs = line.startMs ?: return
                 val endMs = line.endMs ?: return
-                playback.toggleSegment(screenModelScope, startMs, endMs)
+                playback.toggleSegment(
+                        screenModelScope,
+                        (startMs - lineStartExpansionMs).coerceAtLeast(0),
+                        endMs + lineEndExpansionMs,
+                )
+        }
+
+        fun onExpandLineStart() {
+                val state = practiceState.value
+                val line = state.lines.getOrNull(state.currentLineIndex) ?: return
+                val startMs = line.startMs ?: return
+                val endMs = line.endMs ?: return
+                lineStartExpansionMs += EXPAND_STEP_MS
+                playback.playSegment(
+                        screenModelScope,
+                        (startMs - lineStartExpansionMs).coerceAtLeast(0),
+                        endMs + lineEndExpansionMs,
+                )
+        }
+
+        fun onExpandLineEnd() {
+                val state = practiceState.value
+                val line = state.lines.getOrNull(state.currentLineIndex) ?: return
+                val startMs = line.startMs ?: return
+                val endMs = line.endMs ?: return
+                lineEndExpansionMs += EXPAND_STEP_MS
+                playback.playSegment(
+                        screenModelScope,
+                        (startMs - lineStartExpansionMs).coerceAtLeast(0),
+                        endMs + lineEndExpansionMs,
+                )
         }
 
         fun onPlayPauseClick() {
@@ -235,6 +268,8 @@ internal class ListeningPracticeScreenModel(
         }
 
         private fun pickRandomLine(clearFeedback: Boolean = false) {
+                lineStartExpansionMs = 0
+                lineEndExpansionMs = 0
                 val lines = practiceState.value.lines
                 val withTimecodes = lines.indices.filter { lines[it].hasTimecode }
                 if (withTimecodes.isEmpty()) return
@@ -317,5 +352,6 @@ internal class ListeningPracticeScreenModel(
 
         private companion object {
                 const val SEEK_STEP_MS = 5_000L
+                const val EXPAND_STEP_MS = 1_000L
         }
 }

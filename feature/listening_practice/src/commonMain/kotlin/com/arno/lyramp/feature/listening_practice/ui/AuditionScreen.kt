@@ -110,6 +110,8 @@ data class AuditionScreen(val language: String?) : Screen {
                                         onSkip = screenModel::onSkipLine,
                                         onNext = screenModel::onNextLine,
                                         onToggleSlowMode = screenModel::onToggleSlowMode,
+                                        onExpandStart = screenModel::onExpandStart,
+                                        onExpandEnd = screenModel::onExpandEnd,
                                 )
 
                                 is AuditionUiState.Completed -> AuditionCompletedContent(
@@ -131,6 +133,8 @@ private fun AuditionReadyContent(
         onSkip: () -> Unit,
         onNext: () -> Unit,
         onToggleSlowMode: () -> Unit,
+        onExpandStart: () -> Unit,
+        onExpandEnd: () -> Unit,
 ) {
         Column(
                 modifier = Modifier
@@ -155,6 +159,8 @@ private fun AuditionReadyContent(
                                 isSlowMode = state.isSlowMode,
                                 onPlayCurrentLine = onPlayCurrentLine,
                                 onToggleSlowMode = onToggleSlowMode,
+                                onExpandStart = onExpandStart,
+                                onExpandEnd = onExpandEnd,
                                 modifier = Modifier.fillMaxWidth(),
                         )
                 }

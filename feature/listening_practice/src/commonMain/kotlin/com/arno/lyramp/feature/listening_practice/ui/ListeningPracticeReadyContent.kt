@@ -24,7 +24,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +40,7 @@ import com.arno.lyramp.ui.theme.LyraColorScheme
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun ListeningPracticeReadyContent(
+internal fun ListeningPracticePlayContent(
         state: ListeningPracticeUiState.Ready,
         onPlayPause: () -> Unit,
         onRewind: () -> Unit,
@@ -53,6 +52,8 @@ internal fun ListeningPracticeReadyContent(
         onSwitchMode: (PracticeMode) -> Unit,
         onPlayCurrentLine: () -> Unit,
         onToggleSlowMode: () -> Unit,
+        onExpandLineStart: () -> Unit,
+        onExpandLineEnd: () -> Unit,
 ) {
         Column(
                 modifier = Modifier
@@ -78,6 +79,8 @@ internal fun ListeningPracticeReadyContent(
                                 onSkip = onSkip,
                                 onNext = onNext,
                                 onToggleSlowMode = onToggleSlowMode,
+                                onExpandLineStart = onExpandLineStart,
+                                onExpandLineEnd = onExpandLineEnd,
                         )
                 } else {
                         FullSongContent(
@@ -143,6 +146,8 @@ private fun RandomLineContent(
         onSkip: () -> Unit,
         onNext: () -> Unit,
         onToggleSlowMode: () -> Unit,
+        onExpandLineStart: () -> Unit,
+        onExpandLineEnd: () -> Unit,
 ) {
         Column(modifier = Modifier.fillMaxSize()) {
                 LinePlayCard(
@@ -152,6 +157,8 @@ private fun RandomLineContent(
                         isSlowMode = state.isSlowMode,
                         onPlayCurrentLine = onPlayCurrentLine,
                         onToggleSlowMode = onToggleSlowMode,
+                        onExpandStart = onExpandLineStart,
+                        onExpandEnd = onExpandLineEnd,
                         modifier = Modifier.fillMaxWidth(),
                 )
 

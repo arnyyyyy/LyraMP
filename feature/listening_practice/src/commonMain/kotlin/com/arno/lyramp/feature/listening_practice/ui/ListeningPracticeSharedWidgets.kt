@@ -2,7 +2,9 @@ package com.arno.lyramp.feature.listening_practice.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.listening_practice.domain.AnswerMatcher
@@ -258,6 +262,29 @@ internal fun AnswerReviewCard(
                                 fontSize = 12.sp,
                         )
                 }
+        }
+}
+
+@Composable
+internal fun SegmentExpandButton(
+        label: String,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        size: Dp = 40.dp,
+) {
+        Box(
+                modifier = modifier
+                        .size(size)
+                        .background(LyraColorScheme.surfaceVariant.copy(alpha = 0.85f), CircleShape)
+                        .clickable(onClick = onClick),
+                contentAlignment = Alignment.Center,
+        ) {
+                Text(
+                        text = label,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = LyraColorScheme.onSurfaceVariant,
+                )
         }
 }
 

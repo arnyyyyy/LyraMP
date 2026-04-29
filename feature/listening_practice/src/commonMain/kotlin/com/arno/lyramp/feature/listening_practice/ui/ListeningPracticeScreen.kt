@@ -79,7 +79,7 @@ class ListeningPracticeScreen(
                                 }
 
                                 is ListeningPracticeUiState.Ready -> {
-                                        ListeningPracticeReadyContent(
+                                        ListeningPracticePlayContent(
                                                 state = state,
                                                 onPlayPause = screenModel::onPlayPauseClick,
                                                 onRewind = screenModel::onMoveBackClick,
@@ -90,7 +90,9 @@ class ListeningPracticeScreen(
                                                 onNext = screenModel::onNextLine,
                                                 onSwitchMode = screenModel::onSwitchMode,
                                                 onPlayCurrentLine = screenModel::onPlayCurrentLineClick,
-                                                onToggleSlowMode = screenModel::onToggleSlowMode
+                                                onToggleSlowMode = screenModel::onToggleSlowMode,
+                                                onExpandLineStart = screenModel::onExpandLineStart,
+                                                onExpandLineEnd = screenModel::onExpandLineEnd,
                                         )
                                 }
 
