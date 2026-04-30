@@ -2,24 +2,24 @@ package com.arno.lyramp.feature.authorization.presentation
 
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 
-internal class AuthUpdateHandler {
-        fun handle(state: AuthState, update: AuthUpdate): AuthCommand {
+internal class AuthReducer {
+        fun reduce(state: AuthState, update: AuthUpdate): AuthUpdateResult {
                 return when (update) {
-                        AuthUpdate.Loading -> AuthCommand(state = state.copy(isLoading = true, error = null))
-                        AuthUpdate.Finish -> AuthCommand(state = state.copy(isLoading = false))
+                        AuthUpdate.Loading -> AuthUpdateResult(state = state.copy(isLoading = true, error = null))
+                        AuthUpdate.Finish -> AuthUpdateResult(state = state.copy(isLoading = false))
 
-                        is AuthUpdate.Error -> AuthCommand(state = state.copy(isLoading = false, error = update.message))
+                        is AuthUpdate.Error -> AuthUpdateResult(state = state.copy(isLoading = false, error = update.message))
 
                         is AuthUpdate.SuccessNavigate -> {
                                 when (update.musicService) {
                                         MusicServiceType.YANDEX ->
-                                                AuthCommand(
+                                                AuthUpdateResult(
                                                         state = state.copy(isLoading = false),
                                                         news = AuthNews.NavigateToOnboarding
                                                 )
 
                                         MusicServiceType.NONE ->
-                                                AuthCommand(
+                                                AuthUpdateResult(
                                                         state = state.copy(isLoading = false),
                                                         news = AuthNews.NavigateToOptionalPlaylistInput
                                                 )

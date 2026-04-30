@@ -9,7 +9,7 @@ internal sealed interface AuthUpdate {
         data class SuccessNavigate(val musicService: MusicServiceType) : AuthUpdate
 }
 
-internal data class AuthCommand(
+internal data class AuthUpdateResult(
         val state: AuthState,
         val news: AuthNews? = null
 )

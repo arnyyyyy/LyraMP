@@ -3,7 +3,7 @@ package com.arno.lyramp.feature.authorization.presentation
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.core.model.YANDEX_AUTH_URL
-import com.arno.lyramp.feature.authorization.data.YandexAuthRepository
+import com.arno.lyramp.feature.authorization.domain.CompleteYandexLoginUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 internal class AuthorizationScreenModel(
-        private val yandexRepo: YandexAuthRepository,
-        private val updateHandler: AuthUpdateHandler = AuthUpdateHandler()
+        private val completeYandexLogin: CompleteYandexLoginUseCase,
+        private val reducer: AuthReducer = AuthReducer()
 ) : ScreenModel {
         private val _state = MutableStateFlow(AuthState())
         val state: StateFlow<AuthState> = _state.asStateFlow()
@@ -43,18 +43,18 @@ internal class AuthorizationScreenModel(
                                 }
                         }
 
-                        is AuthEvent.OnAuthCodeReceived -> {
+                        is AuthEvent.OnYandexAuthCompleted -> {
                                 processUpdate(AuthUpdate.Loading)
                                 screenModelScope.launch {
                                         try {
-                                                yandexRepo.handleAuthCallback(event.code)
+                                                completeYandexLogin(event.token, event.expiresIn)
                                                 Result.success(Unit)
                                         } catch (e: CancellationException) {
                                                 throw e
                                         } catch (e: Throwable) {
                                                 Result.failure(e)
                                         }.onSuccess {
-                                                processUpdate(AuthUpdate.SuccessNavigate(event.service))
+                                                processUpdate(AuthUpdate.SuccessNavigate(MusicServiceType.YANDEX))
                                                 processUpdate(AuthUpdate.Finish)
                                         }.onFailure {
                                                 processUpdate(AuthUpdate.Error(it.message ?: "Unknown error"))
@@ -65,7 +65,7 @@ internal class AuthorizationScreenModel(
         }
 
         private fun processUpdate(update: AuthUpdate) {
-                val result = updateHandler.handle(_state.value, update)
+                val result = reducer.reduce(_state.value, update)
                 _state.value = result.state
                 result.news?.let { _news.trySend(it) }
         }

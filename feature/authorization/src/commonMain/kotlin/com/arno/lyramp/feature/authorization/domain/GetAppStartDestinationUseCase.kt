@@ -15,7 +15,7 @@ class GetAppStartDestinationUseCase internal constructor(
                         null -> AppStartDestination.Authorization
 
                         MusicServiceType.YANDEX ->
-                                if (!yandexRepo.getAccessToken().isNullOrEmpty()) AppStartDestination.ShowListeningHistory
+                                if (yandexRepo.provideValidAccessToken() != null) AppStartDestination.ShowListeningHistory
                                 else AppStartDestination.Authorization
 
                         MusicServiceType.NONE -> AppStartDestination.ShowListeningHistory

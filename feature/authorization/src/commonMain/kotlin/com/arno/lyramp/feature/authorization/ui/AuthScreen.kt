@@ -70,9 +70,9 @@ object AuthScreen : Screen {
                 LaunchedEffect(Unit) {
                         yandexAuthBus.flow.collect { result ->
                                 screenModel.onEvent(
-                                        AuthEvent.OnAuthCodeReceived(
-                                                service = MusicServiceType.YANDEX,
-                                                code = "${result.token}_token_expiresIn_${result.expiresIn}"
+                                        AuthEvent.OnYandexAuthCompleted(
+                                                token = result.token,
+                                                expiresIn = result.expiresIn
                                         )
                                 )
                                 yandexAuthBus.consume()
