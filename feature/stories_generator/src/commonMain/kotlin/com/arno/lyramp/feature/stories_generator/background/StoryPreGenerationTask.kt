@@ -29,6 +29,6 @@ internal class StoryCatalogBackgroundTask(
         }
 
         companion object {
-                const val TASK_ID = "lyra_story_catalog"
+                const val TASK_ID = "lyra_story_pregeneration"
         }
 }

@@ -2,9 +2,11 @@ package com.arno.lyramp.feature.extraction.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.feature.extraction.data.PendingExtractionRepository
 import com.arno.lyramp.feature.extraction.background.ExtractionBackgroundTask
 import com.arno.lyramp.feature.extraction.domain.Extractor
 import com.arno.lyramp.feature.extraction.domain.WordSaver
+import com.arno.lyramp.feature.extraction.domain.model.ExtractionResult
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLanguageSettingsUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 internal class ExtractionScreenModel(
         private val extractor: Extractor,
         private val wordSaver: WordSaver,
+        private val pendingExtraction: PendingExtractionRepository,
         private val getLanguageSettings: GetLanguageSettingsUseCase,
 ) : ScreenModel {
 
@@ -23,12 +26,25 @@ internal class ExtractionScreenModel(
 
         init {
                 val cached = ExtractionBackgroundTask.consumeCachedResult()
-                if (cached != null && cached.words.isNotEmpty()) {
-                        _uiState.value = ExtractionUiState.WordSelection(
-                                result = cached,
-                                selectedWords = emptySet()
-                        )
+                if (cached != null) {
+                        showPendingResult(cached)
+                } else {
+                        screenModelScope.launch {
+                                pendingExtraction.consume()?.let { showPendingResult(it) }
+                        }
                 }
+        }
+
+        private fun showPendingResult(result: ExtractionResult) {
+                if (result.words.isEmpty()) return
+                screenModelScope.launch {
+                        pendingExtraction.clear()
+                        extractor.markAsShown(result.words)
+                }
+                _uiState.value = ExtractionUiState.WordSelection(
+                        result = result,
+                        selectedWords = emptySet()
+                )
         }
 
         fun startExtraction() {

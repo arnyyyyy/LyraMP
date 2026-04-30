@@ -3,6 +3,7 @@ package com.arno.lyramp.feature.stats.domain.usecase
 import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.core.model.WordDifficultyProvider
+import com.arno.lyramp.core.util.wordTokenSequence
 import com.arno.lyramp.feature.extraction.domain.WordExtractionUtils
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetRecentTracksUseCase
 import com.arno.lyramp.feature.lyrics.domain.GetLyricsUseCase
@@ -114,7 +115,7 @@ internal class ProcessTracksCefrUseCase(
         private fun countTotalWords(lyrics: String, language: String) = if (language in LyraLang.CJK) {
                 lyrics.count { !it.isWhitespace() && !it.isDigit() }
         } else {
-                Regex("[\\p{L}'-]+").findAll(lyrics.lowercase()).count()
+                lyrics.lowercase().wordTokenSequence().count()
         }
 
         private companion object {

@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.listening_history.domain.usecase
 
 import com.arno.lyramp.core.model.LyraLang.foldLatinDiacritics
+import com.arno.lyramp.core.util.replaceNonLetterDigitWithSpace
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
@@ -74,7 +75,7 @@ internal class ResolveRemainingsByYandexUseCase(
         private fun String.normalized(): String =
                 lowercase()
                         .foldLatinDiacritics()
-                        .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+                        .replaceNonLetterDigitWithSpace()
                         .replace(Regex("\\s+"), " ")
                         .trim()
 

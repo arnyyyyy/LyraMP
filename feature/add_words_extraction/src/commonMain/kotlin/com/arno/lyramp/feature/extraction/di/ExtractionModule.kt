@@ -5,6 +5,7 @@ import com.arno.lyramp.core.model.WordDifficultyProvider
 import com.arno.lyramp.feature.extraction.background.ExtractionBackgroundTask
 import com.arno.lyramp.feature.extraction.data.CefrRepository
 import com.arno.lyramp.feature.extraction.data.ExtractionShownDatabase
+import com.arno.lyramp.feature.extraction.data.PendingExtractionRepository
 import com.arno.lyramp.feature.extraction.data.ShownWordsRepository
 import com.arno.lyramp.feature.extraction.data.TrackStatusRepository
 import com.arno.lyramp.feature.extraction.data.getExtractionDatabase
@@ -30,8 +31,10 @@ val extractionModule = module {
         single<ExtractionShownDatabase> { getExtractionDatabase(get(named("extraction"))) }
         single { get<ExtractionShownDatabase>().extractionShownWordsDao() }
         single { get<ExtractionShownDatabase>().extractionTrackStatusDao() }
+        single { get<ExtractionShownDatabase>().extractionPendingWordsDao() }
         single { ShownWordsRepository(dao = get()) }
         single { TrackStatusRepository(dao = get()) }
+        single { PendingExtractionRepository(dao = get()) }
         single { CefrRepository() }
         single<WordDifficultyProvider> { get<CefrRepository>() }
 
@@ -66,6 +69,7 @@ val extractionModule = module {
                 ExtractionScreenModel(
                         extractor = get(),
                         wordSaver = get(),
+                        pendingExtraction = get(),
                         getLanguageSettings = get<GetLanguageSettingsUseCase>(),
                 )
         }
@@ -74,6 +78,7 @@ val extractionModule = module {
                 ExtractionBackgroundTask(
                         extractor = koin.get<Extractor>(),
                         getLanguageSettings = koin.get<GetLanguageSettingsUseCase>(),
+                        pendingExtraction = koin.get<PendingExtractionRepository>(),
                 )
         }
 }

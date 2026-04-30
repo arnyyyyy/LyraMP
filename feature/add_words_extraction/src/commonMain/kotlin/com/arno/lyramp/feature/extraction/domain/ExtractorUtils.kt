@@ -2,10 +2,10 @@ package com.arno.lyramp.feature.extraction.domain
 
 import com.arno.lyramp.core.model.CefrLevel
 import com.arno.lyramp.core.model.LyraLang
+import com.arno.lyramp.core.util.wordTokenSequence
 import kotlin.collections.iterator
 
 object WordExtractionUtils {
-        private val latinRegexp = Regex("[\\p{L}'-]+")
 
         fun extractUniqueWords(
                 lyrics: String,
@@ -30,8 +30,7 @@ object WordExtractionUtils {
                 val minLength = if (language in setOf("he", "ar")) 2 else 3
 
                 for (line in lines) {
-                        for (match in latinRegexp.findAll(line.lowercase())) {
-                                val word = match.value
+                        for (word in line.lowercase().wordTokenSequence()) {
                                 if (word.length < minLength || word in result) continue
                                 cefrVocab[word]?.let { level -> result[word] = line.trim() to level }
                         }

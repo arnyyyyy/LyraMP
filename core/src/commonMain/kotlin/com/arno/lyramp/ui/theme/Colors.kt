@@ -49,6 +49,7 @@ object LyraColors {
         val NavBarBorder = Color(0xFFE0E0E0)
         val TrackLyricsChip = Color(0xFFFFCC00)
         val TrackLyricsText = Color(0xFFE6B800)
+        val PracticeBorderSynced = Color(0xFF1F5BAD)
 
         val OnGlassCard = Color(0xFF1C1C1E)
         val OnGlassCardSecondary = Color(0xFF8E8E93)

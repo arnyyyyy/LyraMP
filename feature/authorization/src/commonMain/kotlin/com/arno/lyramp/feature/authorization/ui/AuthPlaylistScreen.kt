@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.arno.lyramp.core.navigation.ScreenFactory
-import com.arno.lyramp.feature.authorization.domain.CompleteNoAuthOnboardingUseCase
+import com.arno.lyramp.feature.authorization.domain.CompleteNonYandexLoginUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.ui.OnboardingBackground
 import com.arno.lyramp.ui.StoryProgressBar
@@ -50,7 +50,7 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
         override fun Content() {
                 val navigator = LocalNavigator.current
                 val screenFactory: ScreenFactory = koinInject()
-                val completeNoAuth: CompleteNoAuthOnboardingUseCase = koinInject()
+                val completeNoAuth: CompleteNonYandexLoginUseCase = koinInject()
 
                 when (service) {
                         MusicServiceType.NONE -> {

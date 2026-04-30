@@ -2,9 +2,10 @@ package com.arno.lyramp.feature.authorization.domain
 
 import com.arno.lyramp.feature.authorization.data.AuthSelectionStorage
 import com.arno.lyramp.feature.authorization.data.YandexAuthRepository
+import com.arno.lyramp.feature.authorization.domain.model.AppStartDestination
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 
-class AppStartUseCase internal constructor(
+class GetAppStartDestinationUseCase internal constructor(
         private val yandexRepo: YandexAuthRepository,
 ) {
         operator fun invoke(): AppStartDestination {
@@ -12,6 +13,7 @@ class AppStartUseCase internal constructor(
 
                 return when (service) {
                         null -> AppStartDestination.Authorization
+
                         MusicServiceType.YANDEX ->
                                 if (!yandexRepo.getAccessToken().isNullOrEmpty()) AppStartDestination.ShowListeningHistory
                                 else AppStartDestination.Authorization

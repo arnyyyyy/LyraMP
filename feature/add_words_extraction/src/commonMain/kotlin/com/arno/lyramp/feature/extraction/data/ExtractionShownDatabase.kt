@@ -12,12 +12,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
 @Database(
-        entities = [ExtractionShownWordsEntity::class, ExtractionTrackStatusEntity::class], version = 3
+        entities = [
+                ExtractionShownWordsEntity::class,
+                ExtractionTrackStatusEntity::class,
+                ExtractionPendingWordEntity::class,
+        ],
+        version = 4
 )
 @ConstructedBy(ExtractionDatabaseConstructor::class)
 internal abstract class ExtractionShownDatabase : RoomDatabase() {
         abstract fun extractionShownWordsDao(): ExtractionShownWordsDao
         abstract fun extractionTrackStatusDao(): ExtractionTrackStatusDao
+        abstract fun extractionPendingWordsDao(): ExtractionPendingWordsDao
 }
 
 @Suppress("KotlinNoActualForExpect")
@@ -49,16 +55,32 @@ internal val MIGRATION_2_3 = object : Migration(2, 3) {
                 )
                 connection.execSQL(
                         "INSERT OR IGNORE INTO extraction_shown_words_new (word, language) " +
-                                "SELECT word, '$legacy' FROM extraction_shown_words"
+                            "SELECT word, '$legacy' FROM extraction_shown_words"
                 )
                 connection.execSQL("DROP TABLE extraction_shown_words")
                 connection.execSQL("ALTER TABLE extraction_shown_words_new RENAME TO extraction_shown_words")
         }
 }
 
+internal val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                        """CREATE TABLE IF NOT EXISTS extraction_pending_words (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                word TEXT NOT NULL,
+                                cefrLevel TEXT NOT NULL,
+                                lyricLine TEXT NOT NULL,
+                                trackName TEXT NOT NULL,
+                                artists TEXT NOT NULL,
+                                language TEXT NOT NULL
+                        )"""
+                )
+        }
+}
+
 internal fun getExtractionDatabase(builder: RoomDatabase.Builder<ExtractionShownDatabase>): ExtractionShownDatabase {
         return builder
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .setDriver(BundledSQLiteDriver())
                 .setQueryCoroutineContext(Dispatchers.IO)
                 .build()

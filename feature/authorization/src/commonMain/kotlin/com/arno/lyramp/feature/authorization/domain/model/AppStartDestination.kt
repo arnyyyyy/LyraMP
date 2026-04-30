@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.authorization.domain
+package com.arno.lyramp.feature.authorization.domain.model
 
 sealed class AppStartDestination {
         object Authorization : AppStartDestination()

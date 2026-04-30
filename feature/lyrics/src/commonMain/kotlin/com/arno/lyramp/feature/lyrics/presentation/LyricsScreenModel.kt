@@ -18,7 +18,9 @@ import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -48,6 +50,9 @@ internal class LyricsScreenModel(
 
         private val _highlightEnabled = MutableStateFlow(false)
         val highlightEnabled: StateFlow<Boolean> = _highlightEnabled.asStateFlow()
+
+        private val _wordSaved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        val wordSaved: SharedFlow<Unit> = _wordSaved
 
         private val _wordLevels = MutableStateFlow<Map<String, CefrLevel>>(emptyMap())
         val wordLevels: StateFlow<Map<String, CefrLevel>> = _wordLevels.asStateFlow()
@@ -222,6 +227,7 @@ internal class LyricsScreenModel(
                                 artists = track.artists,
                                 lyricLine = current.lyricLine,
                         )
+                        _wordSaved.emit(Unit)
                 }
                 dismissPopup()
         }

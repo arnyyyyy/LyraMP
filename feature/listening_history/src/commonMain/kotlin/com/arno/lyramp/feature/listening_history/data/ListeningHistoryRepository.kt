@@ -1,6 +1,7 @@
 package com.arno.lyramp.feature.listening_history.data
 
 import com.arno.lyramp.core.model.LyraLang.foldLatinDiacritics
+import com.arno.lyramp.core.util.replaceNonLetterDigitWithSpace
 import com.arno.lyramp.core.model.TrackInfo
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
@@ -214,7 +215,7 @@ internal class ListeningHistoryRepository(
         private fun String.normalizedKey(): String =
                 lowercase()
                         .foldLatinDiacritics()
-                        .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+                        .replaceNonLetterDigitWithSpace()
                         .replace(Regex("\\s+"), " ")
                         .trim()
 

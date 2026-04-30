@@ -67,7 +67,7 @@ internal class Extractor(
                                 val shownWordsForTrack = getShownWords.forExtraction(trackLang)
                                 val result = processTrack(
                                         track, vocabByLang, shownWordsForTrack, seenWords,
-                                        allExtractedWords.size, cefrFilter
+                                        allExtractedWords.size, cefrFilter, levelsKey
                                 )
                                 if (result != null) {
                                         allExtractedWords.addAll(result.words)
@@ -94,7 +94,6 @@ internal class Extractor(
                 val sorted = allExtractedWords.sortedWith(
                         compareBy<ExtractedWord> { it.cefrLevel.ordinal }.thenBy { it.word }
                 )
-                markAsShown(sorted)
 
                 ExtractionResult(processedTracks, totalWordsInLyrics, sorted.size, sorted)
         }
@@ -106,6 +105,7 @@ internal class Extractor(
                 seenWords: MutableSet<String>,
                 currentWordCount: Int,
                 cefrFilter: Set<CefrLevel>?,
+                levelsKey: String?,
         ): TrackProcessingResult? {
                 val trackLang = track.language ?: return null
                 val cefrVocab = vocabByLang[trackLang] ?: return null
@@ -113,7 +113,13 @@ internal class Extractor(
                 val lyricsResult = getLyrics(track.artists, track.name, track.id)
                 val lyrics = when (lyricsResult) {
                         is LyricsResult.Found -> lyricsResult.lyrics
-                        else -> return null
+                        else -> {
+                                val trackId = track.id
+                                if (levelsKey != null && trackId != null) {
+                                        markTrackExhausted(trackId, track.name, levelsKey)
+                                }
+                                return null
+                        }
                 }
 
                 val wordToInfo = WordExtractionUtils.extractUniqueWords(lyrics, cefrVocab, trackLang)
