@@ -4,6 +4,7 @@ import com.arno.lyramp.core.model.MusicTrack
 
 internal sealed interface OnboardingState {
         data class Loading(val step: OnboardingStep) : OnboardingState
+        data object Empty : OnboardingState
         data class Success(
                 val step: OnboardingStep,
                 val tracks: List<MusicTrack>,

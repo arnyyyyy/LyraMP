@@ -47,6 +47,7 @@ kotlin {
                         implementation(project(":feature:authorization"))
                         implementation(project(":feature:translation"))
                         implementation(project(":feature:user_settings"))
+                        implementation(project(":feature:lyrics"))
 
                         implementation(libs.runtime)
                         implementation(libs.foundation)

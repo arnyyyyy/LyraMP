@@ -11,7 +11,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,7 +48,6 @@ import com.arno.lyramp.feature.listening_practice.resources.audition_completed
 import com.arno.lyramp.feature.listening_practice.resources.audition_empty
 import com.arno.lyramp.feature.listening_practice.resources.audition_loading
 import com.arno.lyramp.feature.listening_practice.resources.audition_play_again
-import com.arno.lyramp.feature.listening_practice.resources.audition_round_progress
 import com.arno.lyramp.feature.listening_practice.resources.audition_subtitle
 import com.arno.lyramp.feature.listening_practice.resources.audition_title
 import com.arno.lyramp.feature.listening_practice.resources.back

@@ -26,7 +26,6 @@ import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 data class FolderItem(
@@ -89,7 +88,12 @@ internal class ListeningHistoryScreenModel(
                 refreshPlaylistSources()
                 loadHistory()
                 screenModelScope.launch {
-                        selectedLanguage.collect { updateFilteredTracks() }
+                        selectedLanguage.collect {
+                                updateFilteredTracks(
+                                        showEmptyState = _uiState.value !is ListeningHistoryUiState.Loading &&
+                                            _uiState.value !is Error
+                                )
+                        }
                 }
         }
 
@@ -103,7 +107,7 @@ internal class ListeningHistoryScreenModel(
                 refreshLanguagesInternal()
         }
 
-        private fun refreshLanguagesInternal() {
+        private fun refreshLanguagesInternal(showEmptyState: Boolean = true) {
                 val trackCountByLanguage = _allTracks.value.groupBy { it.language }.mapValues { it.value.size }
                 val learningLanguages = getLearningLanguages()
                 val languages = if (learningLanguages.isNotEmpty()) {
@@ -119,13 +123,17 @@ internal class ListeningHistoryScreenModel(
                         saveSelectedLanguage(languages.firstOrNull())
                 }
 
-                updateFilteredTracks()
+                updateFilteredTracks(showEmptyState)
         }
 
-        private fun updateFilteredTracks() {
+        private fun updateFilteredTracks(showEmptyState: Boolean = true) {
                 val filtered = getFilteredTracks()
                 _uiState.value = if (filtered.isEmpty()) {
-                        ListeningHistoryUiState.Empty
+                        if (showEmptyState) {
+                                ListeningHistoryUiState.Empty
+                        } else {
+                                _uiState.value
+                        }
                 } else {
                         Success(filtered)
                 }
@@ -169,7 +177,9 @@ internal class ListeningHistoryScreenModel(
                         try {
                                 loadHistoryInternal(resolveAfterLoad = true)
                                 runCatching { prefetchLyrics(maxTracks = 5) }
-                                collectLocalListeningHistory()
+                                if (_uiState.value !is Error) {
+                                        collectLocalListeningHistory()
+                                }
                         } finally {
                                 _isRefreshing.value = false
                         }
@@ -235,7 +245,10 @@ internal class ListeningHistoryScreenModel(
         }
 
         private suspend fun loadHistoryInternal(resolveAfterLoad: Boolean) {
-                if (_allTracks.value.isEmpty()) collectLocalListeningHistory()
+                if (_allTracks.value.isEmpty()) {
+                        collectLocalListeningHistory(showEmptyState = false)
+                        if (_allTracks.value.isEmpty()) _uiState.value = ListeningHistoryUiState.Loading
+                }
 
                 val networkTracks = fetchListeningHistory() ?: return
                 if (resolveAfterLoad && _isYandexAuthorized.value) {
@@ -248,18 +261,28 @@ internal class ListeningHistoryScreenModel(
 
         private suspend fun fetchListeningHistory(): List<ListeningHistoryMusicTrack>? {
                 var latest: List<ListeningHistoryMusicTrack>? = null
-                getListeningHistory()
-                        .catch { e -> _uiState.value = Error(e.message ?: "Unknown error") }
-                        .collect { tracks -> latest = tracks }
-                return latest
+                return runCatching {
+                        getListeningHistory()
+                                .collect { tracks -> latest = tracks }
+                        latest.orEmpty()
+                }.getOrElse { e ->
+                        if (_allTracks.value.isEmpty()) {
+                                _uiState.value = Error(e.message ?: "Unknown error")
+                        }
+                        null
+                }
         }
 
-        private suspend fun collectLocalListeningHistory() = applyTracks(getLocalListeningHistory())
+        private suspend fun collectLocalListeningHistory(showEmptyState: Boolean = true): List<ListeningHistoryMusicTrack> {
+                val tracks = getLocalListeningHistory()
+                applyTracks(tracks, showEmptyState)
+                return tracks
+        }
 
-        private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>) {
+        private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>, showEmptyState: Boolean = true) {
                 _allTracks.value = tracks
                 rebuildFolderItems()
-                refreshLanguagesInternal()
+                refreshLanguagesInternal(showEmptyState)
         }
 
         private fun rebuildFolderItems() {

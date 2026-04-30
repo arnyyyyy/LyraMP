@@ -2,10 +2,9 @@ package com.arno.lyramp.feature.listening_practice.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.listening_practice.domain.AnswerMatcher
@@ -266,26 +266,32 @@ internal fun AnswerReviewCard(
 }
 
 @Composable
+internal fun CircleIconButton(
+        label: String,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        size: Dp = 50.dp,
+        fontSize: TextUnit = 20.sp,
+) {
+        Button(
+                onClick = onClick,
+                modifier = modifier.size(size),
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                        containerColor = LyraColorScheme.surface,
+                        contentColor = LyraColorScheme.onSurface,
+                ),
+        ) { Text(text = label, fontSize = fontSize) }
+}
+
+@Composable
 internal fun SegmentExpandButton(
         label: String,
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
-        size: Dp = 40.dp,
 ) {
-        Box(
-                modifier = modifier
-                        .size(size)
-                        .background(LyraColorScheme.surfaceVariant.copy(alpha = 0.85f), CircleShape)
-                        .clickable(onClick = onClick),
-                contentAlignment = Alignment.Center,
-        ) {
-                Text(
-                        text = label,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = LyraColorScheme.onSurfaceVariant,
-                )
-        }
+        CircleIconButton(label = label, onClick = onClick, modifier = modifier, size = 40.dp, fontSize = 18.sp)
 }
 
 internal fun buildTypoAnnotatedString(

@@ -21,4 +21,6 @@
     <string name="add_content_sources_empty">Пока нет подключённых плейлистов</string>
     <string name="add_content_sources_delete">Удалить источник</string>
     <string name="search_song">Поиск треков и исполнителей</string>
+    <string name="yandex_likes">Избранное</string>
+    <string name="folders">Папки</string>
 </resources>

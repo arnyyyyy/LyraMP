@@ -6,6 +6,7 @@ import com.arno.lyramp.core.model.MusicTrack
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.domain.usecase.PrefillListeningHistoryUseCase
 import com.arno.lyramp.feature.onboarding.domain.AnalyzeLanguagesUseCase
+import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Empty
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Error
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Loading
 import com.arno.lyramp.feature.onboarding.presentation.OnboardingState.Success
@@ -40,7 +41,7 @@ internal class OnboardingScreenModel(
                                 val rawTracks = musicService.getListeningHistory()
 
                                 if (rawTracks.isEmpty()) {
-                                        _state.value = Error("Не удалось загрузить треки")
+                                        _state.value = Empty
                                         return@launch
                                 }
 

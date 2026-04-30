@@ -42,6 +42,8 @@ import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.feature.onboarding.resources.Res
 import com.arno.lyramp.feature.onboarding.resources.continue_next
 import com.arno.lyramp.feature.onboarding.resources.done
+import com.arno.lyramp.feature.onboarding.resources.empty_playlist_subtitle
+import com.arno.lyramp.feature.onboarding.resources.empty_playlist_title
 import com.arno.lyramp.feature.onboarding.resources.error
 import com.arno.lyramp.feature.onboarding.resources.found_languages
 import com.arno.lyramp.feature.onboarding.resources.loading_history
@@ -81,6 +83,7 @@ object OnboardingScreen : Screen {
                                                         }
 
                                                         is OnboardingState.Success -> 3
+                                                        is OnboardingState.Empty -> 3
                                                         is OnboardingState.Error -> 1
                                                 },
                                                 totalSteps = 4
@@ -98,6 +101,10 @@ object OnboardingScreen : Screen {
                                                                 onContinue = { navigator?.replaceAll(screenFactory.mainScreen()) }
                                                         )
 
+                                                        is OnboardingState.Empty -> EmptyPlaylistContent(
+                                                                onContinue = { navigator?.replaceAll(screenFactory.mainScreen()) }
+                                                        )
+
                                                         is OnboardingState.Error -> ErrorContent(
                                                                 message = currentState.message,
                                                                 onRetry = { screenModel.retry() }
@@ -105,6 +112,59 @@ object OnboardingScreen : Screen {
                                                 }
                                         }
                                 }
+                        }
+                }
+        }
+}
+
+@Composable
+private fun EmptyPlaylistContent(onContinue: () -> Unit) {
+        Box(
+                modifier = Modifier
+                        .widthIn(max = 500.dp)
+                        .fillMaxWidth(fraction = 0.9f)
+                        .background(LyraColors.GlassCardSurface, RoundedCornerShape(20.dp))
+                        .border(1.dp, LyraColors.GlassCardBorder, RoundedCornerShape(20.dp))
+                        .padding(28.dp)
+        ) {
+                Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(18.dp)
+                ) {
+                        Text(
+                                text = "🎧",
+                                fontSize = 44.sp,
+                        )
+
+                        Text(
+                                text = stringResource(Res.string.empty_playlist_title),
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = LyraColors.OnGlassCard
+                        )
+
+                        Text(
+                                text = stringResource(Res.string.empty_playlist_subtitle),
+                                fontSize = 16.sp,
+                                color = LyraColors.OnGlassCardSecondary
+                        )
+
+                        Button(
+                                onClick = onContinue,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                        containerColor = LyraColors.Accent,
+                                        contentColor = LyraColors.AccentOnAccent
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                        ) {
+                                Text(
+                                        stringResource(Res.string.continue_next),
+                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                )
                         }
                 }
         }

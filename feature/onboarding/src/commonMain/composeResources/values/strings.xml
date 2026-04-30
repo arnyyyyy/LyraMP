@@ -5,6 +5,8 @@
     <string name="done">Готово!</string>
     <string name="analyzed_res">Проанализировано %1$d  последних треков</string>
     <string name="found_languages">Найденные языки:</string>
+    <string name="empty_playlist_title">Плейлист пустой</string>
+    <string name="empty_playlist_subtitle">Пока нет треков для анализа. Можно продолжить и добавить музыку позже.</string>
     <string name="continue_next">Продолжить</string>
     <string name="error">Ошибка</string>
     <string name="retry">Попробовать снова</string>
