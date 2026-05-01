@@ -14,8 +14,13 @@ actual fun renameFile(from: String, to: String) {
         File(from).renameTo(File(to))
 }
 
-actual fun openFileForWriting(path: String): FileWriteStream {
-        val fos = FileOutputStream(path)
+actual fun fileSize(path: String): Long {
+        val f = File(path)
+        return if (f.exists()) f.length() else 0L
+}
+
+actual fun openFileForWriting(path: String, append: Boolean): FileWriteStream {
+        val fos = FileOutputStream(path, append)
         return object : FileWriteStream {
                 override fun write(buffer: ByteArray, count: Int) {
                         fos.write(buffer, 0, count)

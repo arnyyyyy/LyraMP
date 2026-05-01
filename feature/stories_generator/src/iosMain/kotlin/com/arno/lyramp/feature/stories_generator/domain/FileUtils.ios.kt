@@ -27,10 +27,17 @@ actual fun renameFile(from: String, to: String) {
         NSFileManager.defaultManager.moveItemAtPath(from, toPath = to, error = null)
 }
 
+@OptIn(ExperimentalForeignApi::class)
+actual fun fileSize(path: String): Long {
+        val attrs = NSFileManager.defaultManager.attributesOfItemAtPath(path, null) ?: return 0L
+        val size = attrs["NSFileSize"] as? platform.Foundation.NSNumber ?: return 0L
+        return size.longLongValue
+}
+
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-actual fun openFileForWriting(path: String): FileWriteStream {
+actual fun openFileForWriting(path: String, append: Boolean): FileWriteStream {
         val url = NSURL.fileURLWithPath(path)
-        val stream = NSOutputStream(uRL = url, append = false)
+        val stream = NSOutputStream(uRL = url, append = append)
         stream.open()
 
         return object : FileWriteStream {

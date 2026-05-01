@@ -27,7 +27,7 @@ internal class AppleMusicParser {
 
         private fun parseFromJsonLd(html: String, image: String?): List<ListeningHistoryMusicTrack> {
                 val doc = runCatching { Ksoup.parse(html) }.getOrElse {
-                        Log.logger.w(it) { "AAAA$TAG: KSoup failed to parse HTML" }
+                        Log.logger.w(it) { "$TAG: KSoup failed to parse HTML" }
                         return emptyList()
                 }
 

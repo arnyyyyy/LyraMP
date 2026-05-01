@@ -4,6 +4,7 @@ import com.arno.lyramp.feature.stories_generator.model.GeneratedStory
 
 internal sealed interface CatalogUiState {
         data object Loading : CatalogUiState
+        data object NoModel : CatalogUiState
         data class Empty(val isGenerating: Boolean) : CatalogUiState
         data class NotEnoughWords(val current: Int, val needed: Int) : CatalogUiState
         data class Items(

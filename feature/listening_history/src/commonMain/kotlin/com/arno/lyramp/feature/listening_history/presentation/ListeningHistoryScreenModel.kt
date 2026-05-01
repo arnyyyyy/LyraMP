@@ -6,7 +6,6 @@ import com.arno.lyramp.feature.authorization.domain.CompleteYandexLoginUseCase
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.domain.model.PlaylistSource
-import com.arno.lyramp.feature.listening_history.domain.service.SOURCE_YANDEX_LIKES
 import com.arno.lyramp.feature.listening_history.domain.usecase.AddManualTrackUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetLocalListeningHistoryUseCase
@@ -18,8 +17,8 @@ import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemaining
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.UpdateTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.feature.listening_history.model.stableKey
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Error
-import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Success
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
@@ -27,13 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-data class FolderItem(
-        val id: String?,
-        val emoji: String,
-        val title: String,
-        val count: Int,
-)
 
 internal class ListeningHistoryScreenModel(
         private val getListeningHistory: GetListeningHistoryUseCase,
@@ -51,6 +43,7 @@ internal class ListeningHistoryScreenModel(
         private val completeYandexLogin: CompleteYandexLoginUseCase,
         private val resolveRemainingsByYandex: ResolveRemainingsByYandexUseCase,
         private val prefetchLyrics: PrefetchLyricsForRecentTracksUseCase,
+        private val uiStateBuilder: ListeningHistoryUiStateBuilder = ListeningHistoryUiStateBuilder(),
 ) : ScreenModel {
 
         private val _isYandexAuthorized = MutableStateFlow(getLastAuthorizedService() == MusicServiceType.YANDEX.name)
@@ -108,14 +101,10 @@ internal class ListeningHistoryScreenModel(
         }
 
         private fun refreshLanguagesInternal(showEmptyState: Boolean = true) {
-                val trackCountByLanguage = _allTracks.value.groupBy { it.language }.mapValues { it.value.size }
-                val learningLanguages = getLearningLanguages()
-                val languages = if (learningLanguages.isNotEmpty()) {
-                        learningLanguages.filter { (trackCountByLanguage[it] ?: 0) > 3 }.sorted().toList()
-                } else {
-                        _allTracks.value.mapNotNull { it.language }.distinct()
-                                .filter { (trackCountByLanguage[it] ?: 0) > 3 }.sorted()
-                }
+                val languages = uiStateBuilder.availableLanguages(
+                        tracks = _allTracks.value,
+                        learningLanguages = getLearningLanguages(),
+                )
                 _availableLanguages.value = languages
 
                 val current = selectedLanguage.value
@@ -128,38 +117,19 @@ internal class ListeningHistoryScreenModel(
 
         private fun updateFilteredTracks(showEmptyState: Boolean = true) {
                 val filtered = getFilteredTracks()
-                _uiState.value = if (filtered.isEmpty()) {
-                        if (showEmptyState) {
-                                ListeningHistoryUiState.Empty
-                        } else {
-                                _uiState.value
-                        }
-                } else {
-                        Success(filtered)
-                }
+                _uiState.value = uiStateBuilder.stateFor(
+                        filteredTracks = filtered,
+                        currentState = _uiState.value,
+                        showEmptyState = showEmptyState,
+                )
         }
 
-        private fun getFilteredTracks(): List<ListeningHistoryMusicTrack> {
-                var list = _allTracks.value
-                selectedLanguage.value?.let { lang -> list = list.filter { it.language == lang } }
-
-                _selectedSourceId.value?.let { src ->
-                        list = if (src == SOURCE_FILTER_MANUAL) {
-                                list.filter { it.sourceId.isNullOrEmpty() }
-                        } else {
-                                list.filter { it.sourceId == src }
-                        }
-                }
-
-                val needle = _searchQuery.value.trim().lowercase()
-                if (needle.isNotEmpty()) {
-                        list = list.filter { track ->
-                                track.name.lowercase().contains(needle) ||
-                                    track.artists.any { it.lowercase().contains(needle) }
-                        }
-                }
-                return list
-        }
+        private fun getFilteredTracks(): List<ListeningHistoryMusicTrack> = uiStateBuilder.filteredTracks(
+                tracks = _allTracks.value,
+                selectedLanguage = selectedLanguage.value,
+                selectedSourceId = _selectedSourceId.value,
+                searchQuery = _searchQuery.value,
+        )
 
         fun setSearchQuery(query: String) {
                 _searchQuery.value = query
@@ -286,59 +256,9 @@ internal class ListeningHistoryScreenModel(
         }
 
         private fun rebuildFolderItems() {
-                val tracks = _allTracks.value
-                val items = mutableListOf<FolderItem>()
-
-                items += FolderItem(
-                        id = null,
-                        emoji = "🎵",
-                        title = "Все треки",
-                        count = tracks.size,
+                _folderItems.value = uiStateBuilder.folderItems(
+                        tracks = _allTracks.value,
+                        playlistSources = _playlistSources.value,
                 )
-
-                val yandexCount = tracks.count { it.sourceId == SOURCE_YANDEX_LIKES }
-                if (yandexCount > 0) {
-                        items += FolderItem(
-                                id = SOURCE_YANDEX_LIKES,
-                                emoji = "❤️",
-                                title = "Яндекс Избранное", // TODO если ресурс не в композабле
-                                count = yandexCount,
-                        )
-                }
-                _playlistSources.value.forEach { src ->
-                        val cnt = tracks.count { it.sourceId == src.id }
-                        if (cnt > 0) {
-                                val emoji = when {
-                                        "apple.com" in src.url -> "🍎"
-                                        "yandex" in src.url -> "🎵"
-                                        else -> "📁"
-                                }
-                                items += FolderItem(
-                                        id = src.id,
-                                        emoji = emoji,
-                                        title = src.title,
-                                        count = cnt,
-                                )
-                        }
-                }
-
-                val manualCount = tracks.count { it.sourceId.isNullOrEmpty() }
-                if (manualCount > 0) {
-                        items += FolderItem(
-                                id = SOURCE_FILTER_MANUAL,
-                                emoji = "✍️",
-                                title = "Добавленные", // AAA строки ресурсы TODO
-                                count = manualCount,
-                        )
-                }
-
-                _folderItems.value = items
-        }
-
-        private fun ListeningHistoryMusicTrack.stableKey(): String =
-                id?.takeIf { it.isNotBlank() } ?: "$name||${artists.joinToString(",")}"
-
-        companion object {
-                const val SOURCE_FILTER_MANUAL = "__manual__"
         }
 }

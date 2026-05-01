@@ -11,5 +11,6 @@ interface FileWriteStream {
         fun close()
 }
 
-expect fun openFileForWriting(path: String): FileWriteStream
+expect fun openFileForWriting(path: String, append: Boolean = false): FileWriteStream
 expect fun readFileHead(path: String, count: Int): ByteArray
+expect fun fileSize(path: String): Long

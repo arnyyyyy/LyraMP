@@ -433,7 +433,7 @@ private fun TrackItem(
                                         modifier = practiceModifier,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                        Text(text = "🎧", fontSize = 20.sp) // TODO: подумать мб не наушники
+                                        Text(text = "🎧", fontSize = 20.sp)
                                         Text(
                                                 text = stringResource(Res.string.practice),
                                                 fontSize = 10.sp,

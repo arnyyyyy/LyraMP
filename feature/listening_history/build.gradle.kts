@@ -27,7 +27,7 @@ kotlin {
                 iosSimulatorArm64()
         ).forEach { iosTarget ->
                 iosTarget.binaries.framework {
-                        baseName = "LyricsFeature"
+                        baseName = "ListeningHistoryFeature"
                         isStatic = true
                 }
         }
@@ -68,7 +68,6 @@ kotlin {
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
                         implementation(libs.androidx.room.runtime)
-                        implementation(libs.androidx.sqlite.bundled)
                         implementation(libs.ksoup)
                 }
 
@@ -93,11 +92,9 @@ android {
 }
 
 dependencies {
-        implementation(project(":feature:authorization"))
         add("kspAndroid", libs.androidx.room.compiler)
         add("kspIosSimulatorArm64", libs.androidx.room.compiler)
         add("kspIosArm64", libs.androidx.room.compiler)
-
 }
 
 room {

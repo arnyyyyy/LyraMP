@@ -21,7 +21,7 @@ internal class YandexPlaylistParser {
                         return emptyList()
                 }
                 val tracks = playlist.mapNotNull { parseTrackItem(it) }
-                Log.logger.i { "AAAAYandexPlaylistParser: parsed ${tracks.size} tracks out of ${playlist.size} items" }
+                Log.logger.i { "YandexPlaylistParser: parsed ${tracks.size} tracks out of ${playlist.size} items" }
                 return tracks
         }
 

@@ -14,8 +14,9 @@ import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Loading
 import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Success
 import com.arno.lyramp.feature.lyrics.presentation.LyricsUiState.Error
 import com.arno.lyramp.feature.translation.api.TranslationResult
-import com.arno.lyramp.feature.translation.domain.TranslateWordWithStateUseCase
+import com.arno.lyramp.feature.translation.domain.TranslateWordUseCase
 import com.arno.lyramp.feature.translation.domain.TranslationState
+import com.arno.lyramp.feature.translation.domain.displayText
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,7 +30,7 @@ internal class LyricsScreenModel(
         private val track: MusicTrack,
         private val getLyrics: GetLyricsUseCase,
         private val customLyricsRepository: CustomLyricsRepository,
-        private val translateWord: TranslateWordWithStateUseCase,
+        private val translateWord: TranslateWordUseCase,
         private val audioManager: PopupAudioManager,
         private val saveWordToLearn: SaveWordToLearnUseCase,
         private val lyricsTextParser: LyricsTextParser,
@@ -196,12 +197,12 @@ internal class LyricsScreenModel(
                                         )
 
                                         is TranslationState.Error -> visible.copy(
-                                                translationResult = TranslationResult("Ошибка: ${result.message}", null),
+                                                translationResult = TranslationResult(result.displayText(), null),
                                                 isTranslating = false,
                                         )
 
                                         else -> visible.copy(
-                                                translationResult = TranslationResult("Не найдено", null),
+                                                translationResult = TranslationResult(result.displayText(), null),
                                                 isTranslating = false,
                                         )
                                 }

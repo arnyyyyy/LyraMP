@@ -13,9 +13,15 @@ class TranslationSpeechController {
 
         fun play(filePath: String, onCompletion: () -> Unit = {}) {
                 stop()
-                AudioPlayer().also {
-                        it.play(filePath, onCompletion)
-                        currentPlayer = it
+                val player = AudioPlayer()
+                currentPlayer = player
+
+                player.play(filePath) {
+                        if (currentPlayer !== player) return@play
+
+                        currentPlayer = null
+                        player.release()
+                        onCompletion()
                 }
         }
 

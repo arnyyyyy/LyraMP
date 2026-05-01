@@ -4,6 +4,7 @@ import com.arno.lyramp.feature.translation.api.GoogleTranslationApi
 import com.arno.lyramp.feature.translation.api.GoogleTranslationParser
 import com.arno.lyramp.util.AudioFileManager
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -14,7 +15,6 @@ internal class TranslationRepository(httpClient: HttpClient) {
 
         private val audioFileManager = AudioFileManager()
 
-        // NB: без контекста, так как Ktor сам переключает контекст
         suspend fun translateWord(word: String): TranslationState {
                 if (word.isBlank()) return TranslationState.EmptyWord
                 return try {
@@ -25,8 +25,10 @@ internal class TranslationRepository(httpClient: HttpClient) {
                                 result.translation.isNullOrBlank() -> TranslationState.Error("Перевод не найден")
                                 else -> TranslationState.Success(result)
                         }
-                } catch (e: Exception) {
-                        TranslationState.Error(e.message ?: "Не удалось найти перевод")
+                } catch (e: CancellationException) {
+                        throw e
+                } catch (_: Exception) {
+                        TranslationState.Error()
                 }
         }
 
@@ -44,6 +46,8 @@ internal class TranslationRepository(httpClient: HttpClient) {
                                 val audioBytes = api.getSpeech(wordInfo.word, sourceLang)
 
                                 return@withContext audioFileManager.saveAudioFile(wordInfo.word, sourceLang, audioBytes)
+                        } catch (e: CancellationException) {
+                                throw e
                         } catch (_: Exception) {
                                 return@withContext null
                         }

@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import com.arno.lyramp.feature.extraction.domain.model.ExtractedWord
 import com.arno.lyramp.feature.extraction.domain.usecase.SaveWordUseCase
 import com.arno.lyramp.feature.translation.domain.TranslateWordUseCase
+import com.arno.lyramp.feature.translation.domain.displayText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +29,7 @@ internal class WordSaver(
                                         try {
                                                 saveWord(
                                                         w.word,
-                                                        translateWord(w.word),
+                                                        translateWord(w.word).displayText(),
                                                         w.language,
                                                         w.trackName,
                                                         w.artists,

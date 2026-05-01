@@ -50,7 +50,6 @@ internal class YandexMusicApi(private val client: HttpClient) {
                 }.body()
         }
 
-        // TODO: мейби все-таки не в listening_history_api
         suspend fun getAlbumWithTracks(token: String, albumId: String): YandexAlbumWithTracksResponse {
                 return client.get("$BASE_URL/albums/$albumId/with-tracks") {
                         header(HttpHeaders.Authorization, "OAuth $token")

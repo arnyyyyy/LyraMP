@@ -70,7 +70,7 @@ val listeningHistoryModule = module {
         single { GetRecentTracksUseCase(repository = get()) }
         single { SaveTrackLanguagesUseCase(repository = get()) }
         single { PrefillListeningHistoryUseCase(repository = get()) }
-        single { PrefetchLyricsForRecentTracksUseCase(dao = get(), checkSyncedLyrics = get()) }
+        single { PrefetchLyricsForRecentTracksUseCase(repository = get(), checkSyncedLyrics = get()) }
 
         single { GetListeningHistoryUseCase(repository = get()) }
         single { GetLocalListeningHistoryUseCase(repository = get()) }
