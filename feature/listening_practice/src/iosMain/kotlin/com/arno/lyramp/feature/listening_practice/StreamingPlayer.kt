@@ -16,9 +16,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
@@ -40,6 +42,7 @@ import platform.CoreMedia.CMTimeGetSeconds
 import platform.Foundation.NSLog
 import platform.Foundation.NSError
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
@@ -106,7 +109,7 @@ actual class StreamingPlayer {
 
                                                 val item = avPlayer?.currentItem
                                                 if (item == null) {
-                                                        NSLog("$TAG AAAAAA️ Player item null")
+                                                        NSLog("$TAG Player item is null")
                                                         continue
                                                 }
 
@@ -114,24 +117,27 @@ actual class StreamingPlayer {
                                                         AVPlayerItemStatusReadyToPlay -> {
                                                                 val durationSeconds = CMTimeGetSeconds(item.duration)
 
-                                                                if (!durationSeconds.isNaN() && durationSeconds > 0) {
+                                                                if (!durationSeconds.isNaN() &&
+                                                                        !durationSeconds.isInfinite() &&
+                                                                        durationSeconds > 0
+                                                                ) {
                                                                         _durationMs.value = (durationSeconds * 1000).toLong()
                                                                         _isReady.value = true
                                                                 }
                                                         }
 
                                                         AVPlayerItemStatusFailed -> {
-                                                                NSLog("$TAG AAAAAAA Failed to load: ${item.error?.localizedDescription}")
+                                                                NSLog("$TAG Failed to load: ${item.error?.localizedDescription}")
                                                                 _isReady.value = false
                                                                 break
                                                         }
 
-                                                        else -> NSLog("$TAG  Unknown status: ${item.status}")
+                                                        else -> Unit
                                                 }
                                         }
 
                                         if (attempts >= maxAttempts && !_isReady.value) {
-                                                NSLog("$TAG AAAA Timeout waiting for player to be ready")
+                                                NSLog("$TAG Timeout waiting for player to be ready")
                                                 _isReady.value = false
                                         }
                                 }
@@ -139,14 +145,15 @@ actual class StreamingPlayer {
                                 observer = NSNotificationCenter.defaultCenter.addObserverForName(
                                         name = AVPlayerItemDidPlayToEndTimeNotification,
                                         `object` = playerItem,
-                                        queue = null
+                                        queue = NSOperationQueue.mainQueue
                                 ) { _ ->
                                         _isPlaying.value = false
                                         stopPositionUpdates()
                                 }
+                                check(waitUntilReady()) { "Player is not ready" }
 
                         } catch (e: Exception) {
-                                NSLog("$TAG AAAA Error preparing player: ${e.message}")
+                                NSLog("$TAG Error preparing player: ${e.message}")
                                 _isReady.value = false
                         }
                 }
@@ -154,9 +161,12 @@ actual class StreamingPlayer {
 
         actual fun play() {
                 scope.launch {
-                        avPlayer?.setRate(playbackSpeed)
-                        _isPlaying.value = true
-                        startPositionUpdates()
+                        avPlayer?.let { player ->
+                                if (!_isReady.value) return@launch
+                                player.setRate(playbackSpeed)
+                                _isPlaying.value = true
+                                startPositionUpdates()
+                        }
                 }
         }
 
@@ -171,7 +181,9 @@ actual class StreamingPlayer {
         actual fun seekTo(positionMs: Long) {
                 scope.launch {
                         avPlayer?.let { player ->
-                                val safePosition = positionMs.coerceIn(0, _durationMs.value)
+                                val durationMs = _durationMs.value
+                                val safePosition = if (durationMs > 0) positionMs.coerceIn(0, durationMs)
+                                else positionMs.coerceAtLeast(0)
                                 val time = CMTimeMake(value = safePosition, timescale = 1000)
                                 player.seekToTime(time)
                                 _currentPositionMs.value = safePosition
@@ -198,17 +210,15 @@ actual class StreamingPlayer {
         }
 
         actual fun release() {
-                stopPositionUpdates()
-                statusObserverJob?.cancel()
-                statusObserverJob = null
-                scope.cancel()
                 cleanupPlayer()
+                scope.cancel()
         }
 
         private fun cleanupPlayer() {
-                observer?.let {
-                        NSNotificationCenter.defaultCenter.removeObserver(it)
-                }
+                statusObserverJob?.cancel()
+                statusObserverJob = null
+
+                observer?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
                 observer = null
 
                 avPlayer?.pause()
@@ -218,6 +228,13 @@ actual class StreamingPlayer {
                 _isReady.value = false
                 _currentPositionMs.value = 0
                 _durationMs.value = 0
+        }
+
+        private suspend fun waitUntilReady(): Boolean {
+                return withTimeoutOrNull(READY_TIMEOUT_MS) {
+                        isReady.first { it }
+                        true
+                } == true
         }
 
         private fun startPositionUpdates() {
@@ -245,5 +262,6 @@ actual class StreamingPlayer {
 
         private companion object {
                 const val TAG = "StreamingPlayer.iOS"
+                const val READY_TIMEOUT_MS = 10_000L
         }
 }

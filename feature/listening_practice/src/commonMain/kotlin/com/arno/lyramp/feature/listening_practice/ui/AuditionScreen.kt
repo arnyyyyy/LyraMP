@@ -29,6 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +50,7 @@ import com.arno.lyramp.feature.listening_practice.resources.audition_completed
 import com.arno.lyramp.feature.listening_practice.resources.audition_empty
 import com.arno.lyramp.feature.listening_practice.resources.audition_loading
 import com.arno.lyramp.feature.listening_practice.resources.audition_play_again
+import com.arno.lyramp.feature.listening_practice.resources.audition_round_progress
 import com.arno.lyramp.feature.listening_practice.resources.audition_subtitle
 import com.arno.lyramp.feature.listening_practice.resources.audition_title
 import com.arno.lyramp.feature.listening_practice.resources.back
@@ -72,6 +75,10 @@ data class AuditionScreen(val language: String?) : Screen {
                 val uiState by screenModel.uiState.collectAsState()
                 val readyState = uiState as? AuditionUiState.Ready
 
+                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                        screenModel.onAppBackground()
+                }
+
 
                 MainFeatureScaffold(
                         icon = "🎙️",
@@ -83,7 +90,11 @@ data class AuditionScreen(val language: String?) : Screen {
                                         CompactPracticeProgress(
                                                 correctCount = state.correctCount,
                                                 incorrectCount = state.incorrectCount,
-                                                title = "${state.roundIndex + 1}/${state.roundSize}",
+                                                title = stringResource(
+                                                        Res.string.audition_round_progress,
+                                                        (state.roundIndex + 1).coerceAtMost(state.roundSize),
+                                                        state.roundSize,
+                                                ),
                                         )
                                 }
                         },

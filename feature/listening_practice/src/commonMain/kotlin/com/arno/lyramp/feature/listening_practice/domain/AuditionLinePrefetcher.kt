@@ -5,7 +5,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ChannelResult
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -36,7 +35,7 @@ internal class AuditionLinePrefetcher(
                 }
         }
 
-        suspend fun next(): ChannelResult<AuditionLine> = channel.receiveCatching()
+        suspend fun next() = channel.receiveCatching()
 
         fun close() {
                 producerJob?.cancel()

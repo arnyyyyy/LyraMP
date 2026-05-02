@@ -48,9 +48,9 @@ kotlin {
                         implementation(project(":feature:translation"))
                         implementation(project(":feature:user_settings"))
 
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
+                        implementation(libs.runtime)
+                        implementation(libs.foundation)
+                        implementation(libs.material3)
                         implementation(compose.components.resources)
                         implementation(libs.androidx.sqlite.bundled)
                         implementation(libs.voyager.koin)

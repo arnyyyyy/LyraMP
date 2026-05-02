@@ -15,11 +15,10 @@ val auditionBridgeModule = module {
                         override suspend fun getTracks(language: String?): List<PracticeTrack> {
                                 val local = getLocalHistory()
                                 val source = local.ifEmpty { musicService.getListeningHistory(limit = null) }
-                                return source
-                                        .filter { language == null || it.language == language }
+                                return source.filter { language == null || it.language == language }
                                         .mapNotNull { track ->
-                                                 if (!track.hasResolvedYandexTrackId()) return@mapNotNull null
-                                                 val id = requireNotNull(track.id)
+                                                if (!track.hasResolvedYandexTrackId()) return@mapNotNull null
+                                                val id = requireNotNull(track.id)
                                                 PracticeTrack(
                                                         id = id,
                                                         albumId = track.albumId,

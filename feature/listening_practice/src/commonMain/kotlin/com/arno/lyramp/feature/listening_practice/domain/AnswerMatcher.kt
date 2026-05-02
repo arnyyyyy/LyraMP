@@ -4,25 +4,43 @@ import kotlin.math.abs
 
 // TODO БУДЕТ В КАРТОЧКАХ
 internal object AnswerMatcher {
-        fun normalize(text: String): String {
+        fun normalize(text: String): String = normalizeWithOriginalIndices(text).text
+
+        private data class NormalizedText(
+                val text: String,
+                val originalIndices: List<Int>,
+        )
+
+        private fun normalizeWithOriginalIndices(text: String): NormalizedText {
                 val sb = StringBuilder(text.length)
+                val indices = mutableListOf<Int>()
                 var prevSpace = false
-                for (ch in text.lowercase()) {
+                for ((origIdx, ch) in text.withIndex()) {
                         when {
                                 ch == '\'' || ch == '\u2019' || ch == '\u02BC' -> {}
 
                                 ch.isLetterOrDigit() -> {
-                                        sb.append(ch)
+                                        sb.append(ch.lowercaseChar())
+                                        indices.add(origIdx)
                                         prevSpace = false
                                 }
 
                                 ch.isWhitespace() -> if (!prevSpace) {
                                         sb.append(' ')
+                                        indices.add(origIdx)
                                         prevSpace = true
                                 }
                         }
                 }
-                return sb.toString().trim()
+
+                val first = sb.indexOfFirst { it != ' ' }
+                if (first == -1) return NormalizedText(text = "", originalIndices = emptyList())
+
+                val last = sb.indexOfLast { it != ' ' }
+                return NormalizedText(
+                        text = sb.substring(first, last + 1),
+                        originalIndices = indices.subList(first, last + 1),
+                )
         }
 
         fun isAcceptable(expected: String, actual: String): Boolean {
@@ -57,19 +75,12 @@ internal object AnswerMatcher {
 
         fun typoIndicesInActual(expected: String, actual: String): Set<Int> {
                 val normExpected = normalize(expected)
-                val normActual = normalize(actual)
-                val typosInNorm = alignmentTypoIndices(normExpected, normActual, max = MAX_TYPOS)
+                val normActual = normalizeWithOriginalIndices(actual)
+                val typosInNorm = alignmentTypoIndices(normExpected, normActual.text, max = MAX_TYPOS)
 
-                val result = mutableSetOf<Int>()
-                var normIdx = 0
-                for (origIdx in actual.indices) {
-                        val ch = actual[origIdx]
-                        if (ch.isLetterOrDigit() || ch.isWhitespace()) {
-                                if (normIdx in typosInNorm) result.add(origIdx)
-                                normIdx++
-                        }
+                return typosInNorm.mapNotNullTo(mutableSetOf()) { normIdx ->
+                        normActual.originalIndices.getOrNull(normIdx)
                 }
-                return result
         }
 
         private fun alignmentTypoIndices(expected: String, actual: String, max: Int): Set<Int> {

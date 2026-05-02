@@ -3,6 +3,8 @@ package com.arno.lyramp.feature.listening_practice.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -45,6 +47,9 @@ class ListeningPracticeScreen(
                 val uiState by screenModel.uiState.collectAsState()
                 val readyState = uiState as? ListeningPracticeUiState.Ready
 
+                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                        screenModel.onAppBackground()
+                }
 
                 MainFeatureScaffold(
                         icon = "🎧",

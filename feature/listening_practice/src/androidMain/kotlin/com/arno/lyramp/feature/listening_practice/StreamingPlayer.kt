@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -56,7 +57,7 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
                                                 override fun onPlaybackStateChanged(playbackState: Int) {
                                                         when (playbackState) {
                                                                 Player.STATE_READY -> {
-                                                                        _durationMs.value = duration
+                                                                        _durationMs.value = duration.takeIf { it > 0 } ?: 0L
                                                                         _isReady.value = true
                                                                 }
 
@@ -65,13 +66,8 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
                                                                         stopPositionUpdates()
                                                                 }
 
-                                                                Player.STATE_BUFFERING -> {
-                                                                        Log.d(TAG, "  buffering")
-                                                                }
-
-                                                                Player.STATE_IDLE -> {
-                                                                        Log.d(TAG, "idle")
-                                                                }
+                                                                Player.STATE_BUFFERING -> Log.d(TAG, "  buffering")
+                                                                Player.STATE_IDLE -> Log.d(TAG, "idle")
                                                         }
                                                 }
 
@@ -97,6 +93,7 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
                                         setMediaSource(mediaSource)
                                         prepare()
                                 }
+                                check(waitUntilReady()) { "Player is not ready" }
 
                         } catch (e: Exception) {
                                 Log.e(TAG, "ExoPlayer: ${e.message}", e)
@@ -128,7 +125,9 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
         actual fun seekTo(positionMs: Long) {
                 try {
                         exoPlayer?.let { player ->
-                                val safePosition = positionMs.coerceIn(0, _durationMs.value)
+                                val durationMs = _durationMs.value
+                                val safePosition = if (durationMs > 0) positionMs.coerceIn(0, durationMs)
+                                else positionMs.coerceAtLeast(0)
                                 player.seekTo(safePosition)
                                 _currentPositionMs.value = safePosition
                         }
@@ -172,6 +171,15 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
                 }
         }
 
+        private suspend fun waitUntilReady(): Boolean {
+                return withTimeoutOrNull(READY_TIMEOUT_MS) {
+                        while (!_isReady.value) {
+                                delay(READY_POLL_INTERVAL_MS)
+                        }
+                        true
+                } == true
+        }
+
         private fun startPositionUpdates() {
                 stopPositionUpdates()
                 positionUpdateJob = scope.launch {
@@ -195,5 +203,7 @@ actual class StreamingPlayer actual constructor() : KoinComponent {
 
         companion object {
                 private const val TAG = "StreamingPlayer.ExoPlayer"
+                private const val READY_TIMEOUT_MS = 10_000L
+                private const val READY_POLL_INTERVAL_MS = 50L
         }
 }

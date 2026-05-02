@@ -28,7 +28,15 @@ internal class ListeningPracticeScreenModel(
         private val _uiState = MutableStateFlow<ListeningPracticeUiState>(ListeningPracticeUiState.Loading)
         val uiState: StateFlow<ListeningPracticeUiState> = _uiState.asStateFlow()
 
+        private enum class ContentStatus {
+                Loading,
+                Ready,
+                Completed,
+                Error,
+        }
+
         private data class PracticeState(
+                val status: ContentStatus = ContentStatus.Loading,
                 val lines: List<LyricLine> = emptyList(),
                 val currentLineIndex: Int = 0,
                 val userInput: String = "",
@@ -36,6 +44,7 @@ internal class ListeningPracticeScreenModel(
                 val incorrectCount: Int = 0,
                 val practiceMode: PracticeMode = PracticeMode.FULL_SONG,
                 val lastAnsweredLine: LyricLine? = null,
+                val errorMessage: String? = null,
         )
 
         private val practiceState = MutableStateFlow(PracticeState())
@@ -50,31 +59,46 @@ internal class ListeningPracticeScreenModel(
 
         private fun loadPractice() {
                 screenModelScope.launch {
-                        _uiState.value = ListeningPracticeUiState.Loading
+                        practiceState.value = PracticeState()
                         try {
                                 when (val result = loadPracticeData(track)) {
                                         is PracticeDataResult.NoLyrics ->
-                                                _uiState.value = ListeningPracticeUiState.Error("Не удалось получить текст песни")
+                                                practiceState.update {
+                                                        it.copy(
+                                                                status = ContentStatus.Error,
+                                                                errorMessage = "Не удалось получить текст песни",
+                                                        )
+                                                }
 
                                         is PracticeDataResult.NoStreaming ->
-                                                _uiState.value = ListeningPracticeUiState.Error("Не удалось получить аудио трека")
+                                                practiceState.update {
+                                                        it.copy(
+                                                                status = ContentStatus.Error,
+                                                                errorMessage = "Не удалось получить аудио трека",
+                                                        )
+                                                }
 
                                         is PracticeDataResult.Success -> {
                                                 val lines = result.lyricLines
                                                 playback.prepare(result.downloadInfo.url)
                                                 val hasTimecodes = lines.any { it.hasTimecode }
                                                 practiceState.value = PracticeState(
+                                                        status = ContentStatus.Ready,
                                                         lines = lines,
                                                         practiceMode = PracticeMode.FULL_SONG,
                                                 )
-                                                publishReady()
                                                 if (hasTimecodes) autoPlayCurrentLineIfPossible()
                                         }
                                 }
                         } catch (ce: CancellationException) {
                                 throw ce
                         } catch (e: Exception) {
-                                _uiState.value = ListeningPracticeUiState.Error(e.message ?: "Неизвестная ошибка")
+                                practiceState.update {
+                                        it.copy(
+                                                status = ContentStatus.Error,
+                                                errorMessage = e.message ?: "Неизвестная ошибка",
+                                        )
+                                }
                         }
                 }
         }
@@ -86,65 +110,22 @@ internal class ListeningPracticeScreenModel(
                                 playback.isPlaying,
                                 playback.currentPositionMs,
                                 playback.durationMs,
-                                playback.isReady,
                                 playback.currentLineIsPlaying,
                                 playback.isSlowMode,
                         ) { values ->
                                 Snapshot(
+                                        track = track,
                                         practice = values[0] as PracticeState,
                                         isPlaying = values[1] as Boolean,
                                         positionMs = values[2] as Long,
                                         durationMs = values[3] as Long,
-                                        isReady = values[4] as Boolean,
-                                        currentLineIsPlaying = values[5] as Boolean,
-                                        isSlowMode = values[6] as Boolean,
+                                        currentLineIsPlaying = values[4] as Boolean,
+                                        isSlowMode = values[5] as Boolean,
                                 )
                         }.collect { snapshot ->
-                                val current = _uiState.value
-                                when {
-                                        current is ListeningPracticeUiState.Ready -> _uiState.value = current.copy(
-                                                lines = snapshot.practice.lines,
-                                                currentLineIndex = snapshot.practice.currentLineIndex,
-                                                isPlaying = snapshot.isPlaying,
-                                                currentPositionMs = snapshot.positionMs,
-                                                durationMs = snapshot.durationMs,
-                                                userInput = snapshot.practice.userInput,
-                                                correctCount = snapshot.practice.correctCount,
-                                                incorrectCount = snapshot.practice.incorrectCount,
-                                                practiceMode = snapshot.practice.practiceMode,
-                                                currentLineIsPlaying = snapshot.currentLineIsPlaying,
-                                                isSlowMode = snapshot.isSlowMode,
-                                                lastAnsweredLine = snapshot.practice.lastAnsweredLine,
-                                        )
-
-                                        current is ListeningPracticeUiState.Loading &&
-                                            snapshot.isReady &&
-                                            snapshot.practice.lines.isNotEmpty() -> publishReady()
-
-                                        else -> Unit
-                                }
+                                _uiState.value = snapshot.toUiState()
                         }
                 }
-        }
-
-        private fun publishReady() {
-                val state = practiceState.value
-                _uiState.value = ListeningPracticeUiState.Ready(
-                        track = track,
-                        lines = state.lines,
-                        currentLineIndex = state.currentLineIndex,
-                        isPlaying = playback.isPlaying.value,
-                        currentPositionMs = playback.currentPositionMs.value,
-                        durationMs = playback.durationMs.value,
-                        userInput = state.userInput,
-                        correctCount = state.correctCount,
-                        incorrectCount = state.incorrectCount,
-                        practiceMode = state.practiceMode,
-                        hasTimecodes = state.lines.any { it.hasTimecode },
-                        currentLineIsPlaying = playback.currentLineIsPlaying.value,
-                        isSlowMode = playback.isSlowMode.value,
-                        lastAnsweredLine = state.lastAnsweredLine,
-                )
         }
 
         fun onSwitchMode(mode: PracticeMode) {
@@ -152,7 +133,6 @@ internal class ListeningPracticeScreenModel(
                 playback.setSlowMode(false)
                 practiceState.update { it.copy(practiceMode = mode, userInput = "", lastAnsweredLine = null) }
                 if (mode == PracticeMode.RANDOM_LINE) pickRandomLine()
-                publishReady()
                 if (mode == PracticeMode.FULL_SONG) autoPlayCurrentLineIfPossible()
         }
 
@@ -207,6 +187,7 @@ internal class ListeningPracticeScreenModel(
         }
 
         fun onToggleSlowMode() = playback.toggleSlowMode()
+        fun onAppBackground() = playback.stopSegment()
         fun onMoveBackClick() {
                 if (playback.currentLineIsPlaying.value) playback.stopSegment()
                 playback.rewind(SEEK_STEP_MS)
@@ -248,7 +229,6 @@ internal class ListeningPracticeScreenModel(
                 val state = practiceState.value
                 if (state.practiceMode != PracticeMode.RANDOM_LINE || state.lastAnsweredLine == null) return
                 pickRandomLine(clearFeedback = true)
-                publishReady()
         }
 
         fun onRestart() {
@@ -256,6 +236,7 @@ internal class ListeningPracticeScreenModel(
                 playback.setSlowMode(false)
                 practiceState.update {
                         it.copy(
+                                status = ContentStatus.Ready,
                                 lines = it.lines.map { line -> line.copy(userInput = "", checkResult = LineCheckResult.PENDING) },
                                 currentLineIndex = 0, userInput = "",
                                 correctCount = 0, incorrectCount = 0, lastAnsweredLine = null,
@@ -263,7 +244,6 @@ internal class ListeningPracticeScreenModel(
                 }
                 if (practiceState.value.practiceMode == PracticeMode.RANDOM_LINE) pickRandomLine()
                 else playback.seekTo(0)
-                publishReady()
                 autoPlayCurrentLineIfPossible()
         }
 
@@ -301,7 +281,6 @@ internal class ListeningPracticeScreenModel(
                                         lastAnsweredLine = updatedLine,
                                 )
                         }
-                        publishReady()
                         return
                 }
 
@@ -317,14 +296,8 @@ internal class ListeningPracticeScreenModel(
                 }
                 if (nextIndex >= updatedLines.size) {
                         playback.pause()
-                        _uiState.value = ListeningPracticeUiState.Completed(
-                                track = track,
-                                lines = updatedLines,
-                                correctCount = newCorrect,
-                                incorrectCount = newIncorrect,
-                        )
+                        practiceState.update { it.copy(status = ContentStatus.Completed) }
                 } else {
-                        publishReady()
                         autoPlayCurrentLineIfPossible()
                 }
         }
@@ -341,14 +314,47 @@ internal class ListeningPracticeScreenModel(
         override fun onDispose() = playback.release()
 
         private data class Snapshot(
+                val track: PracticeTrack,
                 val practice: PracticeState,
                 val isPlaying: Boolean,
                 val positionMs: Long,
                 val durationMs: Long,
-                val isReady: Boolean,
                 val currentLineIsPlaying: Boolean,
                 val isSlowMode: Boolean,
-        )
+        ) {
+                fun toUiState(): ListeningPracticeUiState {
+                        return when (practice.status) {
+                                ContentStatus.Loading -> ListeningPracticeUiState.Loading
+                                ContentStatus.Error -> ListeningPracticeUiState.Error(
+                                        practice.errorMessage ?: "Неизвестная ошибка"
+                                )
+
+                                ContentStatus.Completed -> ListeningPracticeUiState.Completed(
+                                        track = track,
+                                        lines = practice.lines,
+                                        correctCount = practice.correctCount,
+                                        incorrectCount = practice.incorrectCount,
+                                )
+
+                                ContentStatus.Ready -> ListeningPracticeUiState.Ready(
+                                        track = track,
+                                        lines = practice.lines,
+                                        currentLineIndex = practice.currentLineIndex,
+                                        isPlaying = isPlaying,
+                                        currentPositionMs = positionMs,
+                                        durationMs = durationMs,
+                                        userInput = practice.userInput,
+                                        correctCount = practice.correctCount,
+                                        incorrectCount = practice.incorrectCount,
+                                        practiceMode = practice.practiceMode,
+                                        hasTimecodes = practice.lines.any { it.hasTimecode },
+                                        currentLineIsPlaying = currentLineIsPlaying,
+                                        isSlowMode = isSlowMode,
+                                        lastAnsweredLine = practice.lastAnsweredLine,
+                                )
+                        }
+                }
+        }
 
         private companion object {
                 const val SEEK_STEP_MS = 5_000L

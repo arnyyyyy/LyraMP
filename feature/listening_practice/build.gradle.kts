@@ -5,8 +5,6 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
-        alias(libs.plugins.ksp)
-        alias(libs.plugins.androidx.room)
         alias(libs.plugins.serialization)
 }
 
@@ -35,7 +33,6 @@ kotlin {
         sourceSets {
                 androidMain.dependencies {
                         implementation(libs.koin.android)
-                        implementation(libs.androidx.room.sqlite.wrapper)
                         implementation(libs.androidx.media3.exoplayer)
                         implementation(libs.androidx.media3.common)
                 }
@@ -50,11 +47,10 @@ kotlin {
                         implementation(project(":feature:lyrics"))
                         implementation(project(":feature:music_streaming"))
 
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
+                        implementation(libs.runtime)
+                        implementation(libs.foundation)
+                        implementation(libs.material3)
                         implementation(compose.components.resources)
-                        implementation(libs.androidx.sqlite.bundled)
                         implementation(libs.voyager.navigator)
                         implementation(libs.voyager.screenmodel)
                         implementation(libs.voyager.koin)
@@ -67,8 +63,7 @@ kotlin {
                         implementation(libs.multiplatform.settings.no.arg)
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
-                        implementation(libs.androidx.room.runtime)
-                        implementation(libs.androidx.sqlite.bundled)
+                        implementation(libs.androidx.lifecycle.runtimeCompose)
                 }
 
                 commonTest.dependencies {
@@ -89,18 +84,6 @@ android {
                 sourceCompatibility = JavaVersion.VERSION_11
                 targetCompatibility = JavaVersion.VERSION_11
         }
-}
-
-dependencies {
-        implementation(project(":feature:authorization"))
-        add("kspAndroid", libs.androidx.room.compiler)
-        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-        add("kspIosArm64", libs.androidx.room.compiler)
-
-}
-
-room {
-        schemaDirectory("$projectDir/schemas")
 }
 
 compose.resources {

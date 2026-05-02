@@ -8,7 +8,7 @@ import com.arno.lyramp.feature.lyrics.domain.LyricsResult
 import com.arno.lyramp.feature.music_streaming.domain.GetStreamingInfoUseCase
 import com.arno.lyramp.feature.music_streaming.domain.StreamingResult
 import com.arno.lyramp.util.Log
-import kotlinx.coroutines.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class AuditionLinePickerUseCase(
         private val libraryProvider: AuditionLibraryProvider,
@@ -71,4 +71,3 @@ internal class AuditionLinePickerUseCase(
                 }
         }
 }
-

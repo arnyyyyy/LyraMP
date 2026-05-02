@@ -5,7 +5,7 @@ import com.arno.lyramp.feature.listening_practice.model.LyricLine
 internal object LyricsParser {
         private val LRC_PATTERN = Regex("""^\[(\d{2}):(\d{2})\.(\d{2,3})]\s*(.*)$""")
 
-        fun parseLrc(lyrics: String): List<LyricLine>? {
+        fun parseLrc(lyrics: String, durationMs: Long? = null): List<LyricLine>? {
                 val parsed = lyrics.lines().mapNotNull { line ->
                         val match = LRC_PATTERN.matchEntire(line.trim()) ?: return@mapNotNull null
                         val minutes = match.groupValues[1].toLong()
@@ -19,7 +19,11 @@ internal object LyricsParser {
                 }
                 if (parsed.isEmpty()) return null
                 return parsed.mapIndexed { index, (startMs, text) ->
-                        val endMs = if (index + 1 < parsed.size) parsed[index + 1].first else startMs + 5000
+                        val endMs = if (index + 1 < parsed.size) {
+                                parsed[index + 1].first
+                        } else {
+                                durationMs?.takeIf { it > startMs } ?: (startMs + DEFAULT_LAST_LINE_DURATION_MS)
+                        }
                         LyricLine(index = index, text = text, startMs = startMs, endMs = endMs)
                 }
         }
@@ -29,4 +33,6 @@ internal object LyricsParser {
                         line.trim().takeIf { it.isNotBlank() }?.let { LyricLine(index = index, text = it) }
                 }
         }
+
+        private const val DEFAULT_LAST_LINE_DURATION_MS = 5_000L
 }

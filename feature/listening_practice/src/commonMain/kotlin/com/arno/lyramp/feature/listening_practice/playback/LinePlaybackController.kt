@@ -73,7 +73,12 @@ internal class LinePlaybackController {
                 linePlaybackJob?.cancel()
                 linePlaybackJob = scope.launch {
                         val playStartMs = (startMs - LINE_PLAYBACK_PADDING_MS).coerceAtLeast(0)
-                        val playEndMs = endMs + LINE_PLAYBACK_PADDING_MS
+                        val durationMs = player.durationMs.value
+                        val playEndMs = if (durationMs > 0) {
+                                (endMs + LINE_PLAYBACK_PADDING_MS).coerceAtMost(durationMs)
+                        } else {
+                                endMs + LINE_PLAYBACK_PADDING_MS
+                        }
                         try {
                                 player.pause()
                                 _currentLineIsPlaying.value = false
