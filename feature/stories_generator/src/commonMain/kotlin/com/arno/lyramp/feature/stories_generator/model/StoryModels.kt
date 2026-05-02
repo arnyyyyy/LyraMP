@@ -3,12 +3,12 @@ package com.arno.lyramp.feature.stories_generator.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class StoryWord(
+internal data class StoryWord(
         val word: String,
         val translation: String,
 )
 
-enum class StoryGenre(val displayName: String, val emoji: String, val promptHint: String) {
+internal enum class StoryGenre(val displayName: String, val emoji: String, val promptHint: String) {
         COMEDY("Комедия", "😂", "funny and lighthearted comedy"),
         HORROR("Ужасы", "👻", "creepy horror with suspense"),
         DRAMA("Драма", "🎭", "emotional dramatic story"),
@@ -19,7 +19,7 @@ enum class StoryGenre(val displayName: String, val emoji: String, val promptHint
         }
 }
 
-data class GeneratedStory(
+internal data class GeneratedStory(
         val id: Long = 0L,
         val title: String,
         val genre: StoryGenre,
@@ -31,7 +31,7 @@ data class GeneratedStory(
         val isRead: Boolean = false
 )
 
-enum class DownloadableModel(
+internal enum class DownloadableModel(
         val label: String,
         val fileName: String,
         val downloadUrl: String,

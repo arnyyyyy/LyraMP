@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
-class ModelDownloadRepository {
+internal class ModelDownloadRepository {
         private val modelDir: String
                 get() = getAppFilesDir()
 

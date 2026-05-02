@@ -63,7 +63,7 @@ internal class StoryGenerationService(
                                         currentCoroutineContext().ensureActive()
                                         if (repository.countUnreadByLanguage(targetLanguage) >= targetUnread) break
 
-                                        val story = generateAutoStoryLocked(
+                                        generateAutoStoryLocked(
                                                 language = targetLanguage,
                                                 candidates = candidates,
                                                 wordsCount = wordsCount,

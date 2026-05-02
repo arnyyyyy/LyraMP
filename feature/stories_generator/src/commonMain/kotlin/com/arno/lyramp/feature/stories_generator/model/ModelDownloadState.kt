@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.stories_generator.model
 
-sealed interface ModelDownloadState {
+internal sealed interface ModelDownloadState {
         object NotDownloaded : ModelDownloadState
         object Downloaded : ModelDownloadState
 

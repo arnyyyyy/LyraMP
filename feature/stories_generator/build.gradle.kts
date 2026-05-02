@@ -45,9 +45,9 @@ kotlin {
                         implementation(project(":feature:user_settings"))
                         implementation(project(":feature:learn_words"))
 
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
+                        implementation(libs.runtime)
+                        implementation(libs.foundation)
+                        implementation(libs.material3)
                         implementation(compose.components.resources)
 
                         implementation(libs.voyager.navigator)

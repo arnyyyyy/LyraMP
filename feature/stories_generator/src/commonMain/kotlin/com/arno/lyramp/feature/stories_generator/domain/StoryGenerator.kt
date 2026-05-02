@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class StoryGenerator {
+internal class StoryGenerator {
 
         private val nativeLock = Mutex()
         private var loadedModelPath: String? = null

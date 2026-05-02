@@ -16,7 +16,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-class ModelDownloadService(
+internal class ModelDownloadService(
         private val repository: ModelDownloadRepository,
         private val generator: StoryGenerator,
 ) {
