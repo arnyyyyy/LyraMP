@@ -1,9 +1,9 @@
 package com.arno.lyramp.feature.music_streaming.domain
 
- class GetStreamingInfoUseCase(
+class GetStreamingInfoUseCase(
         private val streamingServiceFactory: StreamingServiceFactory
 ) {
-        suspend fun getStreamingInfo(trackId: String): StreamingResult {
+        suspend operator fun invoke(trackId: String): StreamingResult {
                 if (trackId.isBlank()) return StreamingResult.NotFound
 
                 val service = streamingServiceFactory.getService()

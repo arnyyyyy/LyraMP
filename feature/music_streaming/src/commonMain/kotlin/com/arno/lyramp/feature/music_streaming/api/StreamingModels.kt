@@ -1,13 +1,7 @@
-package com.arno.lyramp.feature.music_streaming.model
+package com.arno.lyramp.feature.music_streaming.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-data class StreamingTrackInfo(
-        val url: String,
-        val encryptionKey: String? = null,
-        val transport: String? = null
-)
 
 @Serializable
 data class TrackDownloadInfoResponse(

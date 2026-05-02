@@ -1,8 +1,6 @@
 package com.arno.lyramp.feature.music_streaming.api
 
 import com.arno.lyramp.core.Secrets
-import com.arno.lyramp.feature.music_streaming.model.DownloadInfo
-import com.arno.lyramp.feature.music_streaming.model.TrackDownloadInfoResponse
 import com.arno.lyramp.util.HmacSha256
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -15,7 +13,7 @@ import kotlin.io.encoding.Base64
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
- class YandexStreamingApi(private val client: HttpClient) {
+class YandexStreamingApi(private val client: HttpClient) {
         @OptIn(ExperimentalTime::class)
         suspend fun getTrackDownloadInfo(token: String, trackId: String): DownloadInfo {
                 val ts = Clock.System.now().epochSeconds

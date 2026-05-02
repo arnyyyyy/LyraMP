@@ -8,11 +8,11 @@ import com.arno.lyramp.feature.music_streaming.domain.GetStreamingInfoUseCase
 import com.arno.lyramp.feature.music_streaming.domain.StreamingResult
 
 internal class LoadPracticeDataUseCase(
-        private val getStreamingInfoUseCase: GetStreamingInfoUseCase,
+        private val getStreamingInfo: GetStreamingInfoUseCase,
         private val getTimestampedLyrics: GetTimestampedLyricsUseCase
 ) {
         suspend operator fun invoke(track: PracticeTrack): PracticeDataResult {
-                val streamingResult = getStreamingInfoUseCase.getStreamingInfo(track.id)
+                val streamingResult = getStreamingInfo(track.id)
                 val streaming = when (streamingResult) {
                         is StreamingResult.Found -> streamingResult.info
                         StreamingResult.NotFound -> return PracticeDataResult.NoStreaming

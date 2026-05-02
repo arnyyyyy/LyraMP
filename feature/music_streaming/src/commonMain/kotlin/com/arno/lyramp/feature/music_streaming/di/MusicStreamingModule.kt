@@ -8,10 +8,7 @@ import org.koin.dsl.module
 
 val musicStreamingModule = module {
         single<YandexStreamingApi> { YandexStreamingApi(get()) }
-
         single<YandexStreamingService> { YandexStreamingService(get(), get()) }
-
         single<StreamingServiceFactory> { StreamingServiceFactory(get(), get()) }
-
         single<GetStreamingInfoUseCase> { GetStreamingInfoUseCase(get()) }
 }

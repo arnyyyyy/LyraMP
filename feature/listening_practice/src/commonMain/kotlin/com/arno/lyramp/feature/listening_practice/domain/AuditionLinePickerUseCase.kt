@@ -48,7 +48,7 @@ internal class AuditionLinePickerUseCase(
                         val lines = LyricsParser.parseLrc(timestampedLyrics)?.filter { it.hasTimecode } ?: return null
                         if (lines.isEmpty()) return null
 
-                        val streamingResult = getStreamingInfo.getStreamingInfo(track.id)
+                        val streamingResult = getStreamingInfo(track.id)
                         val streaming = when (streamingResult) {
                                 is StreamingResult.Found -> streamingResult.info
                                 StreamingResult.NotFound -> return null
