@@ -1,11 +1,16 @@
 package com.arno.lyramp.feature.listening_history.data
 
 import com.arno.lyramp.core.model.TrackInfo
+import com.arno.lyramp.feature.listening_history.domain.model.toDomain
+import com.arno.lyramp.feature.listening_history.domain.model.toEntity
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.listening_history.model.stableKey
 import com.arno.lyramp.feature.translation.domain.DetectLanguageUseCase
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 internal class ListeningHistoryRepository(
         private val musicService: MusicService,
@@ -13,20 +18,25 @@ internal class ListeningHistoryRepository(
         private val detectLanguage: DetectLanguageUseCase,
         private val syncer: ListeningHistorySyncer = ListeningHistorySyncer(dao),
 ) {
-        fun getListeningHistory(languageDetectionLimit: Int) = flow {
+        fun observeVisibleTracks() = dao.getAllAsFlow().map { tracks ->
+                tracks.map { it.toDomain() }.filterNonNative()
+        }.flowOn(Dispatchers.Default)
+
+        suspend fun syncListeningHistory(languageDetectionLimit: Int) = withContext(Dispatchers.Default) {
+                val hasAnyCachedRows = dao.count() > 0
                 val cachedTracks = dao.getAll()
 
-                if (cachedTracks.isNotEmpty()) {
+                if (hasAnyCachedRows) {
                         val fresh = musicService.getListeningHistory(limit = null)
                         syncer.applyDiff(cachedTracks, fresh)
                         detectLanguagesForNextBatch(languageDetectionLimit)
-                        emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 } else {
                         val tracks = musicService.getListeningHistory(limit = null)
                         dao.insertAll(tracks.reversed().map { it.toEntity() })
                         detectLanguagesForNextBatch(languageDetectionLimit)
-                        emit(dao.getAll().map { it.toDomain() }.filterNonNative())
                 }
+
+                dao.getAll().map { it.toDomain() }.filterNonNative()
         }
 
         suspend fun getRecentTracks() = dao.getAll().map { entity ->
@@ -94,6 +104,7 @@ internal class ListeningHistoryRepository(
                 }
         }
 
+        // TODO вынос перевода из репозитория
         suspend fun prefillFromOnboarding(
                 tracks: List<ListeningHistoryMusicTrack>,
                 trackLanguages: Map<String, String>
@@ -107,13 +118,15 @@ internal class ListeningHistoryRepository(
                 if (entities.isNotEmpty()) dao.insertAll(entities)
         }
 
-        suspend fun hideTrack(track: ListeningHistoryMusicTrack) = dao.hideTrackByKey(track.stableKey())
-
+        suspend fun hideTrack(track: ListeningHistoryMusicTrack) = dao.hideTrackByIdentity(
+                trackId = track.stableKey(),
+                name = track.name,
+                artists = track.artists.joinToString(","),
+        )
 
         suspend fun updateTrackLanguage(trackId: String, language: String) = dao.updateLanguage(trackId, language)
 
-
-        suspend fun addManualTrack(name: String, artist: String, language: String? = null): ListeningHistoryMusicTrack {
+        suspend fun addManualTrack(name: String, artist: String, language: String? = null) {
                 val id = "${name}||${artist}"
                 val language = language ?: detectLanguage(name)
                 val entity = ListeningHistoryTrackEntity(
@@ -127,16 +140,11 @@ internal class ListeningHistoryRepository(
                         sourceId = null,
                 )
                 dao.insertAll(listOf(entity))
-                return ListeningHistoryMusicTrack(
-                        id = id,
-                        name = name,
-                        artists = listOf(artist),
-                        language = language,
-                )
         }
 
         suspend fun deleteTracksBySourceId(sourceId: String) = dao.deleteBySourceId(sourceId)
 
+        // TODO вынести из репозитория
         private suspend fun detectLanguagesForNextBatch(limit: Int) {
                 if (limit <= 0) return
                 dao.getTracksWithoutLanguage().balancedBySource(limit).forEach { track ->

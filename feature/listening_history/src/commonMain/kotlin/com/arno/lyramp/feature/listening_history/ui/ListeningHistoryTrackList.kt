@@ -1,13 +1,12 @@
 package com.arno.lyramp.feature.listening_history.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,15 +52,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.core.model.LyraLang.getLanguageFlag
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
+import com.arno.lyramp.feature.listening_history.model.hasResolvedYandexTrackId
 import com.arno.lyramp.feature.listeningHistory.resources.Res
 import com.arno.lyramp.feature.listeningHistory.resources.lyrics
 import com.arno.lyramp.feature.listeningHistory.resources.practice
@@ -76,6 +78,8 @@ import kotlin.math.roundToInt
 private const val BUTTON_WIDTH_DP = 68
 private const val SWIPE_PANEL_WIDTH_DP = BUTTON_WIDTH_DP * 2
 private const val SWIPE_THRESHOLD = 100f
+private const val SEARCH_NO_RESULTS_TITLE = "Ничего не найдено"
+private const val SEARCH_NO_RESULTS_SUBTITLE = "Попробуйте другой запрос"
 
 @Composable
 internal fun TrackList(
@@ -91,6 +95,7 @@ internal fun TrackList(
 ) {
         val listState = rememberLazyListState()
         var trackToEditLanguage by remember { mutableStateOf<ListeningHistoryMusicTrack?>(null) }
+        val focusManager = LocalFocusManager.current
 
         LaunchedEffect(scrollToTopToken) {
                 if (scrollToTopToken > 0 && searchQuery.isBlank()) {
@@ -124,7 +129,13 @@ internal fun TrackList(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .padding(top = 8.dp)
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 16.dp)
+                        .pointerInput(Unit) {
+                                awaitEachGesture {
+                                        awaitFirstDown(requireUnconsumed = false)
+                                        focusManager.clearFocus()
+                                }
+                        },
                 verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
                 item(key = "search_bar") {
@@ -134,11 +145,21 @@ internal fun TrackList(
                         )
                 }
 
-                itemsIndexed(tracks, key = { index, track -> "${track.id ?: track.name}#$index" }) { _, track ->
+                if (tracks.isEmpty() && searchQuery.isNotBlank()) {
+                        item(key = "search_empty") {
+                                SearchEmptyItem()
+                        }
+                }
+
+                itemsIndexed(
+                        tracks,
+                        key = { _, track -> track.id ?: "${track.name}||${track.artists.joinToString(",")}" }
+                ) { _, track ->
                         SwipeableTrackItem(
+                                modifier = Modifier.animateItem(),
                                 track = track,
                                 onLyricsClick = { onTrackClick(track) },
-                                onPracticeClick = if (onPracticeClick != null && track.id != null) {
+                                onPracticeClick = if (onPracticeClick != null && track.hasResolvedYandexTrackId()) {
                                         { onPracticeClick(track) }
                                 } else null,
                                 onHideClick = if (onHideTrack != null) {
@@ -210,6 +231,7 @@ private fun LibrarySearchBar(
 
 @Composable
 private fun SwipeableTrackItem(
+        modifier: Modifier = Modifier,
         track: ListeningHistoryMusicTrack,
         onLyricsClick: () -> Unit,
         onPracticeClick: (() -> Unit)?,
@@ -218,89 +240,78 @@ private fun SwipeableTrackItem(
 ) {
         val offsetX = remember { Animatable(0f) }
         val coroutineScope = rememberCoroutineScope()
-        var isVisible by remember { mutableStateOf(true) }
 
-        AnimatedVisibility(
-                visible = isVisible,
-                exit = shrinkVertically(animationSpec = tween(300)) + fadeOut(animationSpec = tween(200))
-        ) {
-                Box(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+        Box(modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))) {
+                Row(
+                        modifier = Modifier.matchParentSize(),
+                        horizontalArrangement = Arrangement.End
                 ) {
-                        Row(
-                                modifier = Modifier.matchParentSize(),
-                                horizontalArrangement = Arrangement.End
+                        Box(
+                                modifier = Modifier
+                                        .fillMaxHeight()
+                                        .width(BUTTON_WIDTH_DP.dp)
+                                        .background(LyraColorScheme.primary.copy(alpha = 0.9f))
+                                        .clickable {
+                                                coroutineScope.launch {
+                                                        offsetX.animateTo(0f, tween(150))
+                                                }
+                                                onEditLanguageClick?.invoke()
+                                        },
+                                contentAlignment = Alignment.Center
                         ) {
-                                Box(
-                                        modifier = Modifier
-                                                .fillMaxHeight()
-                                                .width(BUTTON_WIDTH_DP.dp)
-                                                .background(LyraColorScheme.primary.copy(alpha = 0.9f))
-                                                .clickable {
-                                                        coroutineScope.launch {
-                                                                offsetX.animateTo(0f, tween(150))
-                                                        }
-                                                        onEditLanguageClick?.invoke()
-                                                },
-                                        contentAlignment = Alignment.Center
-                                ) {
-                                        Text(text = "🌍", fontSize = 24.sp)
-                                }
-
-                                Box(
-                                        modifier = Modifier
-                                                .fillMaxHeight()
-                                                .width(BUTTON_WIDTH_DP.dp)
-                                                .background(LyraColors.Incorrect.copy(alpha = 0.9f))
-                                                .clickable {
-                                                        coroutineScope.launch {
-                                                                offsetX.animateTo(0f, tween(150))
-                                                        }
-                                                        isVisible = false
-                                                        onHideClick?.invoke()
-                                                },
-                                        contentAlignment = Alignment.Center
-                                ) {
-                                        Text(text = "🗑️", fontSize = 24.sp)
-                                }
+                                Text(text = "🌍", fontSize = 24.sp)
                         }
 
                         Box(
                                 modifier = Modifier
-                                        .fillMaxWidth()
-                                        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                                        .pointerInput(Unit) {
-                                                detectHorizontalDragGestures(
-                                                        onDragEnd = {
-                                                                coroutineScope.launch {
-                                                                        if (offsetX.value < -SWIPE_THRESHOLD) {
-                                                                                offsetX.animateTo(
-                                                                                        -SWIPE_PANEL_WIDTH_DP.dp.toPx(),
-                                                                                        tween(200)
-                                                                                )
-                                                                        } else {
-                                                                                offsetX.animateTo(0f, tween(200))
-                                                                        }
+                                        .fillMaxHeight()
+                                        .width(BUTTON_WIDTH_DP.dp)
+                                        .background(LyraColors.Incorrect.copy(alpha = 0.9f))
+                                        .clickable {
+                                                coroutineScope.launch {
+                                                        offsetX.animateTo(0f, tween(150))
+                                                }
+                                                onHideClick?.invoke()
+                                        },
+                                contentAlignment = Alignment.Center
+                        ) {
+                                Text(text = "🗑️", fontSize = 24.sp)
+                        }
+                }
+
+                Box(
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                                .pointerInput(Unit) {
+                                        detectHorizontalDragGestures(
+                                                onDragEnd = {
+                                                        coroutineScope.launch {
+                                                                if (offsetX.value < -SWIPE_THRESHOLD) {
+                                                                        offsetX.animateTo(
+                                                                                -SWIPE_PANEL_WIDTH_DP.dp.toPx(),
+                                                                                tween(200)
+                                                                        )
+                                                                } else {
+                                                                        offsetX.animateTo(0f, tween(200))
                                                                 }
                                                         }
-                                                ) { change, dragAmount ->
-                                                        change.consume()
-                                                        coroutineScope.launch {
-                                                                val newValue = (offsetX.value + dragAmount)
-                                                                        .coerceIn(-SWIPE_PANEL_WIDTH_DP.dp.toPx(), 0f)
-                                                                offsetX.snapTo(newValue)
-                                                        }
+                                                }
+                                        ) { change, dragAmount ->
+                                                change.consume()
+                                                coroutineScope.launch {
+                                                        val newValue = (offsetX.value + dragAmount)
+                                                                .coerceIn(-SWIPE_PANEL_WIDTH_DP.dp.toPx(), 0f)
+                                                        offsetX.snapTo(newValue)
                                                 }
                                         }
-                        ) {
-                                TrackItem(
-                                        track = track,
-                                        onLyricsClick = onLyricsClick,
-                                        onPracticeClick = onPracticeClick,
-                                )
-                        }
+                                }
+                ) {
+                        TrackItem(
+                                track = track,
+                                onLyricsClick = onLyricsClick,
+                                onPracticeClick = onPracticeClick,
+                        )
                 }
         }
 }
@@ -459,5 +470,36 @@ private fun TrackItem(
                                 )
                         }
                 }
+        }
+}
+
+@Composable
+private fun SearchEmptyItem() {
+        Column(
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+                Text(
+                        text = SEARCH_NO_RESULTS_TITLE,
+                        style = TextStyle(
+                                color = LyraColorScheme.onSurface,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                )
+                Text(
+                        text = SEARCH_NO_RESULTS_SUBTITLE,
+                        style = TextStyle(
+                                color = LyraColorScheme.onSurfaceVariant,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                )
         }
 }

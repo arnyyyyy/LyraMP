@@ -2,6 +2,7 @@ package com.arno.lyramp.di
 
 import com.arno.lyramp.feature.listening_history.domain.usecase.GetLocalListeningHistoryUseCase
 import com.arno.lyramp.feature.listening_history.domain.service.MusicService
+import com.arno.lyramp.feature.listening_history.model.hasResolvedYandexTrackId
 import com.arno.lyramp.feature.listening_practice.domain.AuditionLibraryProvider
 import com.arno.lyramp.feature.listening_practice.model.PracticeTrack
 import org.koin.dsl.module
@@ -17,7 +18,8 @@ val auditionBridgeModule = module {
                                 return source
                                         .filter { language == null || it.language == language }
                                         .mapNotNull { track ->
-                                                val id = track.id ?: return@mapNotNull null
+                                                 if (!track.hasResolvedYandexTrackId()) return@mapNotNull null
+                                                 val id = requireNotNull(track.id)
                                                 PracticeTrack(
                                                         id = id,
                                                         albumId = track.albumId,

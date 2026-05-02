@@ -3,6 +3,7 @@ package com.arno.lyramp.feature.listening_history.domain.usecase
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryRepository
 import com.arno.lyramp.feature.listening_history.domain.model.AlbumSuggestionResult
 
+// TODO: потом удалить, отказалась от фичи
 class GetSuggestedAlbumsUseCase internal constructor(
         private val repository: ListeningHistoryRepository,
 ) {

@@ -1,4 +1,4 @@
-package com.arno.lyramp.feature.listening_history.mapper
+package com.arno.lyramp.feature.listening_history.domain.mapper
 
 import com.arno.lyramp.feature.listening_history.api.YandexTrack
 import com.arno.lyramp.feature.listening_history.api.YandexTrackItem

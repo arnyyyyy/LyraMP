@@ -9,8 +9,7 @@ internal class GetPlaylistSourcesUseCase(
         operator fun invoke() = buildList {
                 repository.getAll().forEach { url ->
                         addSource(
-                                id = PlaylistSource.storedPlaylistId(url),
-                                url = url,
+                                id = PlaylistSource.storedPlaylistId(url), url = url,
                         )
                 }
         }

@@ -37,6 +37,7 @@ import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
+import com.arno.lyramp.feature.listening_history.model.hasResolvedYandexTrackId
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryScreenModel
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState
 import com.arno.lyramp.ui.OnboardingBackground
@@ -187,8 +188,9 @@ object ShowListeningHistoryScreen : Screen {
                                 ) {
                                         Box(
                                                 modifier = Modifier.fillMaxSize(),
-                                                contentAlignment = when (uiState) {
-                                                        is ListeningHistoryUiState.Success -> Alignment.TopCenter
+                                                contentAlignment = when {
+                                                        uiState is ListeningHistoryUiState.Success -> Alignment.TopCenter
+                                                        uiState is ListeningHistoryUiState.Empty && searchQuery.isNotBlank() -> Alignment.TopCenter
                                                         else -> Alignment.Center
                                                 }
                                         ) {
@@ -198,11 +200,22 @@ object ShowListeningHistoryScreen : Screen {
                                                         }
 
                                                         is ListeningHistoryUiState.Empty -> {
-                                                                EmptyStateCard(
-                                                                        icon = "📖",
-                                                                        title = stringResource(Res.string.history_empty_title),
-                                                                        subtitle = stringResource(Res.string.history_empty_subtitle),
-                                                                )
+                                                                if (searchQuery.isNotBlank()) {
+                                                                        TrackList(
+                                                                                tracks = emptyList(),
+                                                                                searchQuery = searchQuery,
+                                                                                onSearchQueryChange = screenModel::setSearchQuery,
+                                                                                availableLanguages = AVAILABLE_LANGUAGES,
+                                                                                scrollToTopToken = 0,
+                                                                                onTrackClick = {},
+                                                                        )
+                                                                } else {
+                                                                        EmptyStateCard(
+                                                                                icon = "📖",
+                                                                                title = stringResource(Res.string.history_empty_title),
+                                                                                subtitle = stringResource(Res.string.history_empty_subtitle),
+                                                                        )
+                                                                }
                                                         }
 
                                                         is ListeningHistoryUiState.Error -> {
@@ -227,21 +240,18 @@ object ShowListeningHistoryScreen : Screen {
                                                                                         )
                                                                                 )
                                                                         },
-                                                                        onPracticeClick = if (screenModel.isPracticeAvailable) { track ->
-                                                                                if (track.id != null) {
-                                                                                        navigator.push(
-                                                                                                screenFactory.listeningPracticeScreen(
-                                                                                                        id = track.id,
-                                                                                                        albumId = track.albumId,
-                                                                                                        name = track.name,
-                                                                                                        artists = track.artists,
-                                                                                                        albumName = track.albumName,
-                                                                                                        imageUrl = track.imageUrl
-                                                                                                )
+                                                                        onPracticeClick = if (isYandexAuthorized) practiceClick@{ track ->
+                                                                                if (!track.hasResolvedYandexTrackId()) return@practiceClick
+                                                                                navigator.push(
+                                                                                        screenFactory.listeningPracticeScreen(
+                                                                                                id = requireNotNull(track.id),
+                                                                                                albumId = track.albumId,
+                                                                                                name = track.name,
+                                                                                                artists = track.artists,
+                                                                                                albumName = track.albumName,
+                                                                                                imageUrl = track.imageUrl
                                                                                         )
-                                                                                } else {
-                                                                                        null
-                                                                                }
+                                                                                )
                                                                         } else null,
                                                                         onHideTrack = { track ->
                                                                                 screenModel.hideTrack(track)

@@ -1,5 +1,6 @@
-package com.arno.lyramp.feature.listening_history.data
+package com.arno.lyramp.feature.listening_history.domain.model
 
+import com.arno.lyramp.feature.listening_history.data.ListeningHistoryTrackEntity
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 
 internal fun ListeningHistoryTrackEntity.toDomain() = ListeningHistoryMusicTrack(

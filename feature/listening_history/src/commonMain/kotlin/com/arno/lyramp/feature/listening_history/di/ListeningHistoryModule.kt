@@ -4,7 +4,7 @@ import com.arno.lyramp.core.background.BackgroundTaskRegistry
 import com.arno.lyramp.core.data.PlaylistSourcesRepository
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
-import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
+import com.arno.lyramp.feature.listening_history.api.ExternalPlaylistApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.background.LyricsPrefetchBackgroundTask
 import com.arno.lyramp.feature.listening_history.data.ListeningHistoryDatabase
@@ -38,7 +38,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val listeningHistoryModule = module {
-        single { AppleMusicApi(get()) }
+        single { ExternalPlaylistApi(get()) }
         single { YandexMusicApi(get()) }
 
         single<DynamicMusicService> {
@@ -46,7 +46,7 @@ val listeningHistoryModule = module {
                 val getPlaylistSources = get<GetPlaylistSourcesUseCase>()
                 val getLastService = get<GetLastAuthorizedServiceUseCase>()
                 val yandexApi = get<YandexMusicApi>()
-                val appleMusicApi = get<AppleMusicApi>()
+                val externalPlaylistApi = get<ExternalPlaylistApi>()
 
                 DynamicMusicService(
                         factory = {
@@ -55,7 +55,7 @@ val listeningHistoryModule = module {
                                         authToken = authToken,
                                         getPlaylistSources = getPlaylistSources,
                                         yandexApi = yandexApi,
-                                        appleMusicApi = appleMusicApi,
+                                        externalPlaylistApi = externalPlaylistApi,
                                 )
                         }
                 )
@@ -90,7 +90,7 @@ val listeningHistoryModule = module {
         single {
                 RemovePlaylistSourceUseCase(
                         listeningHistoryRepository = get(),
-                        repository = get(),
+                        playlistSourcesRepository = get(),
                 )
         }
 

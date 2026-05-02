@@ -18,12 +18,12 @@ internal class ListeningHistoryUiStateBuilder {
         ): List<String> {
                 val trackCountByLanguage = tracks.groupBy { it.language }.mapValues { it.value.size }
                 return if (learningLanguages.isNotEmpty()) {
-                        learningLanguages.filter { (trackCountByLanguage[it] ?: 0) > MIN_TRACKS_PER_LANGUAGE }.sorted()
+                        learningLanguages.filter {
+                                (trackCountByLanguage[it] ?: 0) > MIN_TRACKS_PER_LANGUAGE
+                        }.sorted()
                 } else {
-                        tracks.mapNotNull { it.language }
-                                .distinct()
-                                .filter { (trackCountByLanguage[it] ?: 0) > MIN_TRACKS_PER_LANGUAGE }
-                                .sorted()
+                        tracks.mapNotNull { it.language }.distinct()
+                                .filter { (trackCountByLanguage[it] ?: 0) > MIN_TRACKS_PER_LANGUAGE }.sorted()
                 }
         }
 
@@ -122,7 +122,6 @@ internal class ListeningHistoryUiStateBuilder {
 
         private companion object {
                 const val MIN_TRACKS_PER_LANGUAGE = 3
+                const val SOURCE_FILTER_MANUAL = "__manual__"
         }
 }
-
-internal const val SOURCE_FILTER_MANUAL = "__manual__"

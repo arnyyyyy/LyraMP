@@ -2,6 +2,7 @@ package com.arno.lyramp.feature.listening_history.data
 
 import com.arno.lyramp.core.model.LyraLang.foldLatinDiacritics
 import com.arno.lyramp.core.util.replaceNonLetterDigitWithSpace
+import com.arno.lyramp.feature.listening_history.domain.model.toEntity
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.feature.listening_history.model.stableKey
 
@@ -9,20 +10,34 @@ internal class ListeningHistorySyncer(
         private val dao: ListeningHistoryDao,
 ) {
         suspend fun applyDiff(cached: List<ListeningHistoryTrackEntity>, fresh: List<ListeningHistoryMusicTrack>) {
+                val hiddenTracks = dao.getHiddenTracks()
+                val hiddenIds = hiddenTracks.map { it.stableKey() }.toSet()
+                val hiddenTitleKeys = hiddenTracks.map { it.titleArtistKey() }.toSet()
+                val cachedHiddenDuplicates = cached.filter { track ->
+                        track.stableKey() in hiddenIds || track.titleArtistKey() in hiddenTitleKeys
+                }
+                cachedHiddenDuplicates.forEach { track ->
+                        dao.hideTrackByIdentity(
+                                trackId = track.stableKey(),
+                                name = track.name,
+                                artists = track.artists,
+                        )
+                }
+
+                val visibleCached = cached - cachedHiddenDuplicates.toSet()
                 val freshIds = fresh.map { it.stableKey() }.toSet()
                 val freshTitleKeys = fresh.map { it.titleArtistKey() }.toSet()
-                val cachedIds = cached.map { it.stableKey() }.toSet()
-                val cachedTitleKeys = cached.map { it.titleArtistKey() }.toSet()
-                val hiddenIds = dao.getHiddenTrackKeys().toSet()
+                val cachedIds = visibleCached.map { it.stableKey() }.toSet()
+                val cachedTitleKeys = visibleCached.map { it.titleArtistKey() }.toSet()
 
                 backfillMissingSourceIds(fresh)
 
-                val manualIds = cached
+                val manualIds = visibleCached
                         .filter { it.sourceId == null && it.trackId?.contains("||") == true }
                         .map { it.stableKey() }
                         .toSet()
 
-                val matchedByTitleIds = cached
+                val matchedByTitleIds = visibleCached
                         .filter { it.titleArtistKey() in freshTitleKeys }
                         .map { it.stableKey() }
                         .toSet()
@@ -38,7 +53,8 @@ internal class ListeningHistorySyncer(
                         val id = track.stableKey()
                         id !in cachedIds &&
                             track.titleArtistKey() !in cachedTitleKeys &&
-                            id !in hiddenIds
+                            id !in hiddenIds &&
+                            track.titleArtistKey() !in hiddenTitleKeys
                 }
                 if (toInsert.isNotEmpty()) {
                         dao.insertAll(toInsert.reversed().map { it.toEntity() })
@@ -52,7 +68,8 @@ internal class ListeningHistorySyncer(
                         if (trackId != null) {
                                 dao.backfillSourceIdByTrackId(trackId, sourceId)
                         } else {
-                                dao.backfillSourceIdByTitleAndArtists(
+                                dao.backfillSourceIdByTitleAndArtists( // NB доп проверки в дао, по сути одно и то же
+                                        // проверяем, мб инвариант тут ввести
                                         name = track.name,
                                         artists = track.artists.joinToString(","),
                                         sourceId = sourceId,

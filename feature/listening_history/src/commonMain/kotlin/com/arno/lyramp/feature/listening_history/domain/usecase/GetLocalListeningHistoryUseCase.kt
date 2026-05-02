@@ -6,4 +6,5 @@ class GetLocalListeningHistoryUseCase internal constructor(
         private val repository: ListeningHistoryRepository,
 ) {
         suspend operator fun invoke() = repository.getVisibleTracks()
+        fun observe() = repository.observeVisibleTracks()
 }

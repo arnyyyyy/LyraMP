@@ -13,7 +13,7 @@ internal class YandexLyricsService(
         override val serviceName: String = "Yandex.Music"
 
         override suspend fun getLyrics(artist: String, song: String, trackId: String?): String? {
-                val id = trackId ?: return null
+                val id = trackId?.takeIf { it.isResolvedYandexTrackId() } ?: return null
                 val token = provideAuthToken(MusicServiceType.YANDEX) ?: return null
 
                 return runCatching { yandexLyricsApi.getLyrics(token, id, LyricsType.PLAIN) }
@@ -22,7 +22,7 @@ internal class YandexLyricsService(
         }
 
         override suspend fun getTimestampedLyrics(artist: String, song: String, trackId: String?): String? {
-                val id = trackId ?: return null
+                val id = trackId?.takeIf { it.isResolvedYandexTrackId() } ?: return null
                 val token = provideAuthToken(MusicServiceType.YANDEX) ?: return null
 
                 return runCatching { yandexLyricsApi.getLyrics(token, id, LyricsType.TIMESTAMPED) }
@@ -30,3 +30,5 @@ internal class YandexLyricsService(
                         .getOrNull()
         }
 }
+
+private fun String.isResolvedYandexTrackId(): Boolean = isNotBlank() && !contains("||")

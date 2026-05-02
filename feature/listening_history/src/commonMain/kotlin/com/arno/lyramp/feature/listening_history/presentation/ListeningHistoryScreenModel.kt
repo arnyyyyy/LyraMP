@@ -17,11 +17,12 @@ import com.arno.lyramp.feature.listening_history.domain.usecase.ResolveRemaining
 import com.arno.lyramp.feature.listening_history.domain.usecase.SavePlaylistUrlUseCase
 import com.arno.lyramp.feature.listening_history.domain.usecase.UpdateTrackLanguageUseCase
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
-import com.arno.lyramp.feature.listening_history.model.stableKey
 import com.arno.lyramp.feature.listening_history.presentation.ListeningHistoryUiState.Error
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLearningLanguagesUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import com.arno.lyramp.feature.user_settings.domain.usecase.SaveSelectedLanguageUseCase
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,8 +50,6 @@ internal class ListeningHistoryScreenModel(
         private val _isYandexAuthorized = MutableStateFlow(getLastAuthorizedService() == MusicServiceType.YANDEX.name)
         val isYandexAuthorized: StateFlow<Boolean> = _isYandexAuthorized.asStateFlow()
 
-        val isPracticeAvailable: Boolean
-                get() = _isYandexAuthorized.value
         private val _uiState =
                 MutableStateFlow<ListeningHistoryUiState>(ListeningHistoryUiState.Loading)
         val uiState: StateFlow<ListeningHistoryUiState> = _uiState.asStateFlow()
@@ -77,8 +76,12 @@ internal class ListeningHistoryScreenModel(
         private val _folderItems = MutableStateFlow<List<FolderItem>>(emptyList())
         val folderItems: StateFlow<List<FolderItem>> = _folderItems.asStateFlow()
 
+        private var syncJob: Job? = null
+        private var pendingSyncAfterCurrent = false
+
         init {
                 refreshPlaylistSources()
+                observeLocalListeningHistory()
                 loadHistory()
                 screenModelScope.launch {
                         selectedLanguage.collect {
@@ -90,15 +93,21 @@ internal class ListeningHistoryScreenModel(
                 }
         }
 
-        private fun loadHistory() {
+        private fun observeLocalListeningHistory() {
                 screenModelScope.launch {
-                        loadHistoryInternal(resolveAfterLoad = true)
+                        getLocalListeningHistory.observe().collect { tracks ->
+                                applyTracks(
+                                        tracks = tracks,
+                                        showEmptyState = _uiState.value !is ListeningHistoryUiState.Loading
+                                            && _uiState.value !is Error,
+                                )
+                        }
                 }
         }
 
-        fun refreshLanguages() {
-                refreshLanguagesInternal()
-        }
+        private fun loadHistory() = startSync(showRefreshing = false, forceRestart = false)
+
+        fun refreshLanguages() = refreshLanguagesInternal() // TODO
 
         private fun refreshLanguagesInternal(showEmptyState: Boolean = true) {
                 val languages = uiStateBuilder.availableLanguages(
@@ -141,112 +150,97 @@ internal class ListeningHistoryScreenModel(
                 updateFilteredTracks()
         }
 
-        fun refresh() {
-                screenModelScope.launch {
-                        _isRefreshing.value = true
+        fun refresh() = startSync(showRefreshing = true, forceRestart = false)
+
+        private fun startSync(showRefreshing: Boolean, forceRestart: Boolean) {
+                val activeJob = syncJob
+                if (activeJob?.isActive == true) {
+                        if (forceRestart) pendingSyncAfterCurrent = true
+                        return
+                }
+
+                syncJob = screenModelScope.launch {
+                        if (showRefreshing) {
+                                _isRefreshing.value = true
+                        }
                         try {
                                 loadHistoryInternal(resolveAfterLoad = true)
-                                runCatching { prefetchLyrics(maxTracks = 5) }
-                                if (_uiState.value !is Error) {
-                                        collectLocalListeningHistory()
+                                if (showRefreshing) {
+                                        runCatching { prefetchLyrics(maxTracks = 5) }
                                 }
+                        } catch (ce: CancellationException) {
+                                throw ce
                         } finally {
-                                _isRefreshing.value = false
+                                if (showRefreshing) {
+                                        _isRefreshing.value = false
+                                }
+                                val shouldRunPendingSync = pendingSyncAfterCurrent
+                                pendingSyncAfterCurrent = false
+                                syncJob = null
+                                if (shouldRunPendingSync) {
+                                        startSync(showRefreshing = true, forceRestart = false)
+                                }
                         }
                 }
         }
 
-        fun selectLanguage(language: String) {
-                saveSelectedLanguage(language)
-        }
+        fun selectLanguage(language: String) = saveSelectedLanguage(language)
 
         fun hideTrack(track: ListeningHistoryMusicTrack) {
-                screenModelScope.launch {
-                        hideTrackUseCase(track)
-                        val key = track.stableKey()
-                        _allTracks.value = _allTracks.value.filter { it.stableKey() != key }
-                        updateFilteredTracks()
-                }
+                _allTracks.value = _allTracks.value.filter { it != track }
+                updateFilteredTracks()
+                screenModelScope.launch { hideTrackUseCase(track) }
         }
 
         fun updateTrackLanguage(track: ListeningHistoryMusicTrack, language: String) {
                 val trackId = track.id ?: return
-                screenModelScope.launch {
-                        updateTrackLanguage(trackId, language)
-                        _allTracks.value = _allTracks.value.map {
-                                if (it.id == trackId) it.copy(language = language) else it
-                        }
-                        updateFilteredTracks()
-                }
+                screenModelScope.launch { updateTrackLanguage(trackId, language) }
         }
 
         fun onPlaylistUrlChanged(url: String) {
                 savePlaylistUrl(url)
                 refreshPlaylistSources()
-                refresh()
+                startSync(showRefreshing = true, forceRestart = true)
         }
 
         fun removePlaylistSource(sourceId: String) {
                 screenModelScope.launch {
                         removePlaylistSource.invoke(sourceId)
                         refreshPlaylistSources()
-                        _allTracks.value = _allTracks.value.filter { it.sourceId != sourceId }
-                        updateFilteredTracks()
-                        refresh()
+                        startSync(showRefreshing = true, forceRestart = true)
                 }
         }
 
-        fun addManualTrack(name: String, artist: String) {
-                screenModelScope.launch {
-                        val track = addManualTrack.invoke(name, artist, selectedLanguage.value)
-                        _allTracks.value = listOf(track) + _allTracks.value
-                        refreshLanguagesInternal()
-                }
+        fun addManualTrack(name: String, artist: String) = screenModelScope.launch {
+                addManualTrack(name, artist, selectedLanguage.value)
         }
 
         private fun refreshPlaylistSources() {
                 _playlistSources.value = getPlaylistSources()
+                rebuildFolderItems()
         }
 
         fun onYandexLoginSuccess(token: String, expiresIn: Long?) {
                 completeYandexLogin(token, expiresIn)
                 _isYandexAuthorized.value = getLastAuthorizedService() == MusicServiceType.YANDEX.name
-                refresh()
+                startSync(showRefreshing = true, forceRestart = true)
         }
 
         private suspend fun loadHistoryInternal(resolveAfterLoad: Boolean) {
-                if (_allTracks.value.isEmpty()) {
-                        collectLocalListeningHistory(showEmptyState = false)
-                        if (_allTracks.value.isEmpty()) _uiState.value = ListeningHistoryUiState.Loading
-                }
-
-                val networkTracks = fetchListeningHistory() ?: return
-                if (resolveAfterLoad && _isYandexAuthorized.value) {
-                        resolveRemainingsByYandex()
-                        collectLocalListeningHistory()
-                } else {
-                        applyTracks(networkTracks)
-                }
+                if (_allTracks.value.isEmpty()) _uiState.value = ListeningHistoryUiState.Loading
+                val synced = syncListeningHistory() ?: return
+                applyTracks(synced)
+                if (resolveAfterLoad && _isYandexAuthorized.value) resolveRemainingsByYandex()
         }
 
-        private suspend fun fetchListeningHistory(): List<ListeningHistoryMusicTrack>? {
-                var latest: List<ListeningHistoryMusicTrack>? = null
-                return runCatching {
-                        getListeningHistory()
-                                .collect { tracks -> latest = tracks }
-                        latest.orEmpty()
-                }.getOrElse { e ->
+        private suspend fun syncListeningHistory(): List<ListeningHistoryMusicTrack>? {
+                return runCatching { getListeningHistory() }.getOrElse { e ->
+                        if (e is CancellationException) throw e
                         if (_allTracks.value.isEmpty()) {
                                 _uiState.value = Error(e.message ?: "Unknown error")
                         }
                         null
                 }
-        }
-
-        private suspend fun collectLocalListeningHistory(showEmptyState: Boolean = true): List<ListeningHistoryMusicTrack> {
-                val tracks = getLocalListeningHistory()
-                applyTracks(tracks, showEmptyState)
-                return tracks
         }
 
         private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>, showEmptyState: Boolean = true) {

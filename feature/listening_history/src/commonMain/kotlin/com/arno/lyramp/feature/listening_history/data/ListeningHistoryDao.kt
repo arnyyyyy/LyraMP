@@ -142,25 +142,19 @@ internal interface ListeningHistoryDao {
         @Query(
                 """UPDATE listening_history_tracks
                 SET isShowing = 0
-                WHERE CASE
-                        WHEN trackId IS NOT NULL AND trackId != '' THEN trackId
-                        ELSE name || '||' || artists
-                END = :key"""
+                WHERE (
+                        :trackId IS NOT NULL
+                        AND :trackId != ''
+                        AND trackId = :trackId
+                ) OR (name = :name AND artists = :artists)"""
         )
-        suspend fun hideTrackByKey(key: String)
+        suspend fun hideTrackByIdentity(trackId: String?, name: String, artists: String)
 
         @Query("DELETE FROM listening_history_tracks WHERE sourceId = :sourceId")
         suspend fun deleteBySourceId(sourceId: String)
 
-        @Query(
-                """SELECT CASE
-                        WHEN trackId IS NOT NULL AND trackId != '' THEN trackId
-                        ELSE name || '||' || artists
-                END
-                FROM listening_history_tracks
-                WHERE isShowing = 0"""
-        )
-        suspend fun getHiddenTrackKeys(): List<String>
+        @Query("SELECT * FROM listening_history_tracks WHERE isShowing = 0")
+        suspend fun getHiddenTracks(): List<ListeningHistoryTrackEntity>
 
         @Query("DELETE FROM listening_history_tracks")
         suspend fun deleteAll()

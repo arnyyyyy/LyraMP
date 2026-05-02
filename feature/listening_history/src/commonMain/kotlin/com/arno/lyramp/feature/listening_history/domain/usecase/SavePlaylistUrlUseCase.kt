@@ -5,8 +5,5 @@ import com.arno.lyramp.core.data.PlaylistSourcesRepository
 internal class SavePlaylistUrlUseCase(
         private val repository: PlaylistSourcesRepository,
 ) {
-        operator fun invoke(url: String) {
-                repository.add(url)
-        }
+        operator fun invoke(url: String) = repository.add(url)
 }
-

@@ -5,6 +5,7 @@ import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
 import com.arno.lyramp.feature.listening_history.domain.model.AlbumWithTracksResult
 
+// TODO: потом удалить, отказалась от фичи
 class GetAlbumWithTracksUseCase internal constructor(
         private val api: YandexMusicApi,
         private val provideAuthToken: ProvideAuthTokenUseCase

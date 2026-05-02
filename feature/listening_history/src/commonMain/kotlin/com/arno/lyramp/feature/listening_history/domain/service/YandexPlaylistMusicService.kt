@@ -1,28 +1,29 @@
 package com.arno.lyramp.feature.listening_history.domain.service
 
-import com.arno.lyramp.feature.listening_history.api.AppleMusicApi
+import com.arno.lyramp.feature.listening_history.api.ExternalPlaylistApi
 import com.arno.lyramp.feature.listening_history.api.YandexMusicApi
-import com.arno.lyramp.feature.listening_history.mapper.YandexPlaylistParser
+import com.arno.lyramp.feature.listening_history.domain.mapper.YandexPlaylistParser
 import com.arno.lyramp.feature.listening_history.model.ListeningHistoryMusicTrack
 import com.arno.lyramp.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal class YandexPlaylistMusicService(
-        private val playlistUrlProvider: () -> String?,
-        private val htmlApi: AppleMusicApi,
+        private val url: String,
+        private val htmlApi: ExternalPlaylistApi,
         private val yandexApi: YandexMusicApi,
 ) : MusicService {
         private val parser by lazy { YandexPlaylistParser() }
 
         override suspend fun getListeningHistory(limit: Int?): List<ListeningHistoryMusicTrack> {
-                val url = playlistUrlProvider() ?: error("No Yandex playlist URL")
                 val html = htmlApi.loadPlaylistHtml(url)
 
-                val ownerInfo = parser.extractOwnerInfo(html)
+                val ownerInfo = withContext(Dispatchers.Default) { parser.extractOwnerInfo(html) }
                 if (ownerInfo != null) {
                         val apiTracks = loadFromApi(ownerInfo.uid, ownerInfo.kind)
                         if (apiTracks != null) return apiTracks
                 }
-                val tracks = parser.parse(html)
+                val tracks = withContext(Dispatchers.Default) { parser.parse(html) }
                 return if (limit != null) tracks.take(limit) else tracks
         }
 

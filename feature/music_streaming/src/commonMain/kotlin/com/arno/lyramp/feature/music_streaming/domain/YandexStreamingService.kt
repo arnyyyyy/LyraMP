@@ -16,6 +16,8 @@ class YandexStreamingService(
         override suspend fun getTrackStreamingInfo(
                 trackId: String
         ): StreamingTrackInfo? {
+                if (!trackId.isResolvedYandexTrackId()) return null
+
                 val token = authToken(MusicServiceType.YANDEX) ?: return null
 
                 return runCatching {
@@ -30,3 +32,5 @@ class YandexStreamingService(
                         .getOrNull()
         }
 }
+
+private fun String.isResolvedYandexTrackId(): Boolean = isNotBlank() && !contains("||")

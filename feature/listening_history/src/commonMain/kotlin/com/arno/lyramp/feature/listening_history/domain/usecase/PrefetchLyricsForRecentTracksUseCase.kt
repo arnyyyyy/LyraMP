@@ -7,31 +7,31 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
+// TODO: потом при подгрузке текста для трека из Apple при внимании пользователя к нему
+// если не префетчили трек или не проверяли, что он есть в ЯМ, делаем это
 internal class PrefetchLyricsForRecentTracksUseCase(
         private val repository: ListeningHistoryRepository,
         private val checkSyncedLyrics: CheckSyncedLyricsUseCase,
 ) {
-        suspend operator fun invoke(maxTracks: Int = DEFAULT_MAX_TRACKS): Int {
+        suspend operator fun invoke(maxTracks: Int = DEFAULT_MAX_TRACKS) {
                 val candidates = repository.getTracksForLyricsPrefetch(maxTracks)
-                if (candidates.isEmpty()) return 0
+                if (candidates.isEmpty()) return
 
-                var processed = 0
                 for (track in candidates) {
                         try {
                                 currentCoroutineContext().ensureActive()
                                 val hasSyncedLyrics = checkSyncedLyrics(track.artist, track.name, track.trackId)
                                 repository.setLyricsPrefetchStatus(track.localId, hasSyncedLyrics)
-                                processed++
                         } catch (ce: CancellationException) {
                                 throw ce
                         } catch (e: Exception) {
                                 Log.logger.w(e) { "Lyrics prefetch failed for ${track.name}" }
                         }
                 }
-                return processed
+                return
         }
 
-        companion object {
+        private companion object {
                 const val DEFAULT_MAX_TRACKS = 5
         }
 }

@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 
-internal class AppleMusicApi(private val client: HttpClient) {
+internal class ExternalPlaylistApi(private val client: HttpClient) {
         suspend fun loadPlaylistHtml(playlist: String): String {
                 return client.get(playlist) {
                         header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)")
