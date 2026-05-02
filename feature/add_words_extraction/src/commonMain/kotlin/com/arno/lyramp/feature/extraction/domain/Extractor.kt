@@ -33,6 +33,7 @@ internal class Extractor(
                 languageFilter: String? = null,
                 cefrFilter: Set<CefrLevel>? = null,
                 levelsKey: String? = null,
+                fillWithUnknown: Boolean = false,
                 onProgress: (progress: Float, trackName: String) -> Unit = { _, _ -> }
         ): ExtractionResult = withContext(Dispatchers.IO) {
                 val exhaustedIds = if (levelsKey != null) getExhaustedTrackIds(levelsKey) else emptySet()
@@ -48,8 +49,9 @@ internal class Extractor(
 
                 if (candidateTracks.isEmpty()) return@withContext ExtractionResult(0, 0, 0)
 
-                val vocabByLang = candidateTracks.mapNotNull { it.language }.toSet()
-                        .associateWith { lang -> getCefrVocabulary(lang) }
+                val uniqueLangs = candidateTracks.mapNotNull { it.language }.toSet()
+                val vocabByLang = uniqueLangs.associateWith { lang -> getCefrVocabulary(lang) }
+                val shownWordsByLang = uniqueLangs.associateWith { lang -> getShownWords.forExtraction(lang) }
 
                 val allExtractedWords = mutableListOf<ExtractedWord>()
                 val seenWords = mutableSetOf<String>()
@@ -64,10 +66,10 @@ internal class Extractor(
                         try {
                                 coroutineContext.ensureActive()
                                 val trackLang = track.language ?: continue
-                                val shownWordsForTrack = getShownWords.forExtraction(trackLang)
+                                val shownWordsForTrack = shownWordsByLang[trackLang] ?: emptySet()
                                 val result = processTrack(
                                         track, vocabByLang, shownWordsForTrack, seenWords,
-                                        allExtractedWords.size, cefrFilter, levelsKey
+                                        allExtractedWords.size, cefrFilter, levelsKey, fillWithUnknown
                                 )
                                 if (result != null) {
                                         allExtractedWords.addAll(result.words)
@@ -92,7 +94,9 @@ internal class Extractor(
                 }
 
                 val sorted = allExtractedWords.sortedWith(
-                        compareBy<ExtractedWord> { it.cefrLevel.ordinal }.thenBy { it.word }
+                        compareBy<ExtractedWord> {
+                                it.cefrLevel?.ordinal ?: Int.MAX_VALUE
+                        }.thenBy { it.word }
                 )
 
                 ExtractionResult(processedTracks, totalWordsInLyrics, sorted.size, sorted)
@@ -106,6 +110,7 @@ internal class Extractor(
                 currentWordCount: Int,
                 cefrFilter: Set<CefrLevel>?,
                 levelsKey: String?,
+                fillWithUnknown: Boolean = false,
         ): TrackProcessingResult? {
                 val trackLang = track.language ?: return null
                 val cefrVocab = vocabByLang[trackLang] ?: return null
@@ -142,6 +147,24 @@ internal class Extractor(
                                         language = trackLang
                                 )
                         )
+                }
+
+                if (fillWithUnknown && currentWordCount + extracted.size < MAX_NEW_WORDS) {
+                        val unknownWords = WordExtractionUtils.extractUnknownWords(lyrics, cefrVocab, trackLang)
+                        for ((word, lyricLine) in unknownWords) {
+                                if (currentWordCount + extracted.size >= MAX_NEW_WORDS) break
+                                if (!seenWords.add(word) || word in shownWords) continue
+                                extracted.add(
+                                        ExtractedWord(
+                                                word = word,
+                                                cefrLevel = null,
+                                                lyricLine = lyricLine,
+                                                trackName = track.name,
+                                                artists = track.artists.split(",").map { it.trim() },
+                                                language = trackLang
+                                        )
+                                )
+                        }
                 }
 
                 return TrackProcessingResult(extracted, wordToInfo.size)

@@ -22,8 +22,8 @@ class CefrRepository : WordDifficultyProvider {
                 }.groupBy({ it.first }, { it.second })
         }
 
-        override suspend fun getWordLevels(language: String): Map<String, CefrLevel> =
-                getVocabularyMap(language) // TODO без бриджа
+        // TODO без бриджа
+        override suspend fun getWordLevels(language: String) = getVocabularyMap(language)
 
         suspend fun getVocabularyMap(language: String = "en"): Map<String, CefrLevel> {
                 cache[language]?.let { return it }

@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import com.arno.lyramp.ui.LocalNavBarHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,6 +59,7 @@ object ExtractionVoyagerScreen : Screen {
                 val screenModel = getScreenModel<ExtractionScreenModel>()
                 val uiState by screenModel.uiState.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
+                val navBarHeight = LocalNavBarHeight.current
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
@@ -67,7 +68,7 @@ object ExtractionVoyagerScreen : Screen {
                                 modifier = Modifier
                                         .fillMaxSize()
                                         .statusBarsPadding()
-                                        .navigationBarsPadding()
+                                        .padding(bottom = navBarHeight)
                                         .padding(horizontal = 20.dp)
                         ) {
                                 Spacer(modifier = Modifier.height(16.dp))

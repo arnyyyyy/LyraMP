@@ -4,7 +4,7 @@ import com.arno.lyramp.core.model.CefrLevel
 
 internal data class ExtractedWord(
         val word: String,
-        val cefrLevel: CefrLevel,
+        val cefrLevel: CefrLevel?,
         val lyricLine: String,
         val trackName: String,
         val artists: List<String>,

@@ -6,6 +6,7 @@ import com.arno.lyramp.feature.extraction.data.PendingExtractionRepository
 import com.arno.lyramp.feature.extraction.domain.Extractor
 import com.arno.lyramp.feature.extraction.domain.model.ExtractionResult
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetLanguageSettingsUseCase
+import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class ExtractionBackgroundTask(
@@ -25,6 +26,7 @@ internal class ExtractionBackgroundTask(
                         languageFilter = settings.lang,
                         cefrFilter = settings.cefrFilter,
                         levelsKey = settings.levelsKey,
+                        fillWithUnknown = settings.wordLevel == RecommendedWordLevel.UPPER,
                 )
 
                 if (result.words.isEmpty()) {

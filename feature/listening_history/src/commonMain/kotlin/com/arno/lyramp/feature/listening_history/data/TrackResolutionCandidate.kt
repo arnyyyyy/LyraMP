@@ -4,4 +4,5 @@ internal data class TrackResolutionCandidate(
         val localId: Long,
         val name: String,
         val artists: List<String>,
+        val sourceId: String?,
 )
