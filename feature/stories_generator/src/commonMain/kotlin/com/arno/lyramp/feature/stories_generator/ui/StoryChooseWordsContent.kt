@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
+import com.arno.lyramp.feature.stories_generator.model.ModelDownloadState
 import com.arno.lyramp.feature.stories_generator.presentation.StoryUiState
 import com.arno.lyramp.feature.stories_generator.resources.Res
 import com.arno.lyramp.feature.stories_generator.resources.select_all
@@ -36,6 +37,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ChooseWordsContent(
         state: StoryUiState.Ready,
+        modelState: ModelDownloadState,
         onToggleSelectAll: () -> Unit,
         onToggleWord: (Long) -> Unit,
         onGenerate: () -> Unit
@@ -76,7 +78,7 @@ internal fun ChooseWordsContent(
                         text = stringResource(Res.string.story_generate),
                         onClick = onGenerate,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = state.selectedWords.isNotEmpty()
+                        enabled = state.selectedWords.isNotEmpty() && modelState is ModelDownloadState.Downloaded
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

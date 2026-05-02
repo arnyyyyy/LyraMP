@@ -6,12 +6,14 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
-import platform.Foundation.NSData
+import platform.Foundation.NSFileHandle
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSOutputStream
 import platform.Foundation.NSURL
-import platform.Foundation.dataWithContentsOfFile
+import platform.Foundation.closeFile
+import platform.Foundation.fileHandleForReadingAtPath
 import platform.Foundation.getBytes
+import platform.Foundation.readDataOfLength
 
 actual fun fileExists(path: String): Boolean {
         return NSFileManager.defaultManager.fileExistsAtPath(path)
@@ -58,11 +60,17 @@ actual fun openFileForWriting(path: String, append: Boolean): FileWriteStream {
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun readFileHead(path: String, count: Int): ByteArray {
-        val data = NSData.dataWithContentsOfFile(path) ?: return ByteArray(0)
-        val length = minOf(count.toULong(), data.length).toInt()
-        val result = ByteArray(length)
-        result.usePinned { pinned ->
-                data.getBytes(pinned.addressOf(0), length.toULong())
+        if (count <= 0) return ByteArray(0)
+        val handle = NSFileHandle.fileHandleForReadingAtPath(path) ?: return ByteArray(0)
+        return try {
+                val data = handle.readDataOfLength(count.toULong())
+                val length = data.length.toInt()
+                val result = ByteArray(length)
+                result.usePinned { pinned ->
+                        data.getBytes(pinned.addressOf(0), length.toULong())
+                }
+                result
+        } finally {
+                handle.closeFile()
         }
-        return result
 }

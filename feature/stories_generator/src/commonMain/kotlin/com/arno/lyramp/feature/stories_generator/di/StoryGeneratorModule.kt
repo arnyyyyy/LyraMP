@@ -6,19 +6,22 @@ import com.arno.lyramp.feature.stories_generator.background.StoryCatalogBackgrou
 import com.arno.lyramp.feature.stories_generator.data.GeneratedStoriesDatabase
 import com.arno.lyramp.feature.stories_generator.data.GeneratedStoryRepository
 import com.arno.lyramp.feature.stories_generator.data.getGeneratedStoriesDatabase
-import com.arno.lyramp.feature.stories_generator.domain.LlamatikStoryGenerator
+import com.arno.lyramp.feature.stories_generator.domain.StoryGenerator
+import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadService
 import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadRepository
 import com.arno.lyramp.feature.stories_generator.domain.StoryGenerationService
 import com.arno.lyramp.feature.stories_generator.presentation.StoriesCatalogScreenModel
 import com.arno.lyramp.feature.stories_generator.presentation.StoryDetailScreenModel
 import com.arno.lyramp.feature.stories_generator.presentation.StoryScreenModel
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
+import com.arno.lyramp.feature.user_settings.domain.usecase.ObserveSelectedLanguageUseCase
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val storyGeneratorModule = module {
         single<ModelDownloadRepository> { ModelDownloadRepository() }
-        single { LlamatikStoryGenerator() }
+        single { StoryGenerator() }
+        single { ModelDownloadService(repository = get(), generator = get()) }
 
         single<GeneratedStoriesDatabase> { getGeneratedStoriesDatabase(get(named("generated_stories"))) }
         single { get<GeneratedStoriesDatabase>().generatedStoryDao() }
@@ -37,10 +40,9 @@ val storyGeneratorModule = module {
         factory {
                 StoryScreenModel(
                         getAllLearnWords = get(),
-                        modelDownloadRepository = get(),
+                        downloadCoordinator = get(),
                         getSelectedLanguageUseCase = get(),
-                        repository = get(),
-                        generator = get(),
+                        generationService = get(),
                 )
         }
 
@@ -48,7 +50,10 @@ val storyGeneratorModule = module {
                 StoriesCatalogScreenModel(
                         repository = get(),
                         generationService = get(),
-                        getAllLearnWords = get<GetAllLearnWordsUseCase>()
+                        downloadCoordinator = get(),
+                        getAllLearnWords = get<GetAllLearnWordsUseCase>(),
+                        getSelectedLanguage = get<GetSelectedLanguageUseCase>(),
+                        observeSelectedLanguage = get<ObserveSelectedLanguageUseCase>(),
                 )
         }
 
@@ -63,6 +68,7 @@ val storyGeneratorModule = module {
                 StoryCatalogBackgroundTask(
                         repository = koin.get<GeneratedStoryRepository>(),
                         generationService = koin.get<StoryGenerationService>(),
+                        getSelectedLanguage = koin.get<GetSelectedLanguageUseCase>(),
                 )
         }
 }

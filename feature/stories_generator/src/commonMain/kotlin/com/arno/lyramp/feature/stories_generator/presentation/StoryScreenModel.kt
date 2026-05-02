@@ -5,9 +5,8 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.arno.lyramp.feature.user_settings.domain.usecase.GetSelectedLanguageUseCase
 import com.arno.lyramp.feature.learn_words.data.LearnWordEntity
 import com.arno.lyramp.feature.learn_words.domain.usecase.GetAllLearnWordsUseCase
-import com.arno.lyramp.feature.stories_generator.domain.LlamatikStoryGenerator
-import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadRepository
-import com.arno.lyramp.feature.stories_generator.data.GeneratedStoryRepository
+import com.arno.lyramp.feature.stories_generator.domain.ModelDownloadService
+import com.arno.lyramp.feature.stories_generator.domain.StoryGenerationService
 import com.arno.lyramp.feature.stories_generator.model.DownloadableModel
 import com.arno.lyramp.feature.stories_generator.model.ModelDownloadState
 import com.arno.lyramp.feature.stories_generator.model.StoryGenre
@@ -20,22 +19,16 @@ import kotlinx.coroutines.launch
 
 internal class StoryScreenModel(
         private val getAllLearnWords: GetAllLearnWordsUseCase,
-        private val modelDownloadRepository: ModelDownloadRepository,
+        private val downloadCoordinator: ModelDownloadService,
         private val getSelectedLanguageUseCase: GetSelectedLanguageUseCase,
-        private val repository: GeneratedStoryRepository,
-        private val generator: LlamatikStoryGenerator,
+        private val generationService: StoryGenerationService,
 ) : ScreenModel {
 
         private val _uiState = MutableStateFlow<StoryUiState>(StoryUiState.Idle)
         val uiState: StateFlow<StoryUiState> = _uiState.asStateFlow()
 
-        private val _modelState = MutableStateFlow<ModelDownloadState>(ModelDownloadState.NotDownloaded)
-        val modelState: StateFlow<ModelDownloadState> = _modelState.asStateFlow()
-
-        private val _activeModel = MutableStateFlow<DownloadableModel?>(null)
-        val activeModel: StateFlow<DownloadableModel?> = _activeModel.asStateFlow()
-
-        private var modelInitStarted = false
+        val modelState: StateFlow<ModelDownloadState> = downloadCoordinator.state
+        val activeModel: StateFlow<DownloadableModel?> = downloadCoordinator.activeModel
 
         private var allWords: List<LearnWordEntity> = emptyList()
         private var currentLanguage: String? = null
@@ -43,7 +36,9 @@ internal class StoryScreenModel(
         init {
                 currentLanguage = getSelectedLanguageUseCase()
                 loadWords()
-                checkModelState()
+                screenModelScope.launch {
+                        generationService.cancelBackgroundGeneration()
+                }
         }
 
         private fun loadWords() {
@@ -58,81 +53,27 @@ internal class StoryScreenModel(
                 }
         }
 
-        private fun checkModelState() {
-                val downloaded = modelDownloadRepository.findDownloadedModel()
-                if (downloaded != null) {
-                        _activeModel.value = downloaded
-                        _modelState.value = ModelDownloadState.Downloaded
-                        tryInitModel(downloaded)
-                } else {
-                        _modelState.value = ModelDownloadState.NotDownloaded
-                }
-        }
-
-        private fun tryInitModel(model: DownloadableModel) {
-                if (modelInitStarted) return
-                modelInitStarted = true
-                _modelState.value = ModelDownloadState.Checking
-
-                screenModelScope.launch {
-                        try {
-                                val modelPath = modelDownloadRepository.getModelFilePath(model)
-                                val loaded = generator.loadModelFromPath(modelPath)
-                                if (loaded) {
-                                        _activeModel.value = model
-                                        _modelState.value = ModelDownloadState.Downloaded
-                                } else {
-                                        modelInitStarted = false
-                                        _modelState.value = ModelDownloadState.Error(
-                                                "Не удалось загрузить модель. " +
-                                                    "Возможно, не хватает памяти — попробуйте модель поменьше."
-                                        )
-                                }
-                        } catch (ce: CancellationException) {
-                                throw ce
-                        } catch (e: Exception) {
-                                modelInitStarted = false
-                                _modelState.value = ModelDownloadState.Error(
-                                        "AI-движок не доступен: ${e.message ?: "неизвестная ошибка"}"
-                                )
-                        }
-                }
-        }
-
         fun downloadModel(model: DownloadableModel) {
-                screenModelScope.launch {
-                        val current = _activeModel.value
-                        if (current != null && current != model) {
-                                generator.release()
-                                modelInitStarted = false
-                                modelDownloadRepository.deleteModel(current)
-                        }
+                this.downloadCoordinator.startDownload(model)
+        }
 
-                        _activeModel.value = model
-                        modelDownloadRepository.downloadModel(model).collect { state ->
-                                _modelState.value = state
-                                if (state is ModelDownloadState.Downloaded) {
-                                        tryInitModel(model)
-                                }
-                        }
-                }
+        fun pauseDownload() {
+                this.downloadCoordinator.pauseDownload()
+        }
+
+        fun resumeDownload() {
+                this.downloadCoordinator.resumeDownload()
         }
 
         fun deleteModel() {
-                screenModelScope.launch {
-                        generator.release()
-                        modelInitStarted = false
-                        modelDownloadRepository.deleteAllModels()
-                        _activeModel.value = null
-                        _modelState.value = ModelDownloadState.NotDownloaded
-                }
+                this.downloadCoordinator.deleteAll()
         }
 
         private fun rebuildReadyState() {
                 currentLanguage = getSelectedLanguageUseCase()
 
                 val filtered = if (currentLanguage != null) {
-                        allWords.filter { it.sourceLang == currentLanguage }
+                        allWords.filter { it.sourceLang == currentLanguage || it.sourceLang == null }
                 } else {
                         allWords
                 }
@@ -168,6 +109,13 @@ internal class StoryScreenModel(
                 val state = _uiState.value
                 if (state !is StoryUiState.Ready) return
 
+                if (modelState.value !is ModelDownloadState.Downloaded) {
+                        _uiState.value = StoryUiState.Error(
+                                "Модель ещё не готова. Дождитесь окончания загрузки."
+                        )
+                        return
+                }
+
                 val selectedWords = state.words
                         .filter { it.id in state.selectedWords }
                         .map { entity ->
@@ -187,14 +135,18 @@ internal class StoryScreenModel(
                 screenModelScope.launch {
                         try {
                                 val genre = StoryGenre.random()
-                                val story = generator.generateStory(
-                                        selectedWords,
+                                val story = generationService.generateManualAndSave(
+                                        words = selectedWords,
                                         language = currentLanguage ?: "en",
                                         genre = genre
                                 )
-                                val newId = repository.save(story, isManual = true)
-                                val saved = if (newId > 0L) story.copy(id = newId) else story
-                                _uiState.value = StoryUiState.StoryGenerated(saved)
+                                if (story == null) {
+                                        _uiState.value = StoryUiState.Error(
+                                                "Не удалось сгенерировать историю. Проверьте, что модель готова."
+                                        )
+                                } else {
+                                        _uiState.value = StoryUiState.StoryGenerated(story)
+                                }
                         } catch (ce: CancellationException) {
                                 throw ce
                         } catch (e: Exception) {

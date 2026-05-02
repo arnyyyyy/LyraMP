@@ -58,6 +58,8 @@ object StoryGeneratorVoyagerScreen : Screen {
                                                 modelState = modelState,
                                                 activeModel = activeModel,
                                                 onDownload = { screenModel.downloadModel(it) },
+                                                onPause = { screenModel.pauseDownload() },
+                                                onResume = { screenModel.resumeDownload() },
                                                 onDelete = { screenModel.deleteModel() }
                                         )
                                         Spacer(modifier = Modifier.height(16.dp))
@@ -79,6 +81,7 @@ object StoryGeneratorVoyagerScreen : Screen {
                                                 is StoryUiState.Ready -> {
                                                         ChooseWordsContent(
                                                                 state = state,
+                                                                modelState = modelState,
                                                                 onToggleSelectAll = { screenModel.toggleSelectAll() },
                                                                 onToggleWord = { screenModel.toggleSelectWord(it) },
                                                                 onGenerate = { screenModel.generateStory() }

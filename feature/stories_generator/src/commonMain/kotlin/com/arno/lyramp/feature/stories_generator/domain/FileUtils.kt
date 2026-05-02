@@ -5,7 +5,6 @@ expect fun fileExists(path: String): Boolean
 expect fun deleteFile(path: String)
 expect fun renameFile(from: String, to: String)
 
-
 interface FileWriteStream {
         fun write(buffer: ByteArray, count: Int)
         fun close()

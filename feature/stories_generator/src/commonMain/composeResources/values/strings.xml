@@ -16,6 +16,11 @@
     <string name="percent">%1$d%</string>
     <string name="retry">Попробовать снова</string>
     <string name="back">Назад</string>
+    <string name="model_paused">⏸ На паузе • %1$d%</string>
+    <string name="model_pause_action">Пауза</string>
+    <string name="model_resume_action">Продолжить</string>
+    <string name="catalog_install_model_title">Установите модель</string>
+    <string name="catalog_install_model_subtitle">Она будет генерировать истории на основе изучаемых слов</string>
 
     <string name="catalog_title">Истории</string>
     <string name="catalog_subtitle">Сгенерированные ИИ истории</string>

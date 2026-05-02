@@ -73,6 +73,7 @@ internal class ListeningHistoryRepository(
                         localId = entity.localId,
                         name = entity.name,
                         artists = entity.artists.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                        sourceId = entity.sourceId,
                 )
         }
 
@@ -84,6 +85,7 @@ internal class ListeningHistoryRepository(
                 albumId: String?,
                 albumName: String?,
                 artists: List<String>,
+                sourceId: String?,
         ) {
                 if (dao.hasShowingTrackIdExceptLocalId(newTrackId, localId)) {
                         dao.deleteByLocalId(localId)
@@ -94,6 +96,7 @@ internal class ListeningHistoryRepository(
                                 albumId = albumId,
                                 albumName = albumName,
                                 artists = artists.joinToString(","),
+                                sourceId = sourceId ?: MANUAL_SOURCE_KEY,
                         )
                 }
         }
@@ -137,7 +140,7 @@ internal class ListeningHistoryRepository(
                         artists = artist,
                         albumName = null,
                         imageUrl = null,
-                        sourceId = null,
+                        sourceId = MANUAL_SOURCE_KEY,
                 )
                 dao.insertAll(listOf(entity))
         }

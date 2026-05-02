@@ -61,6 +61,20 @@ object LyraLang {
 
         fun displayName(code: String) = DISPLAY_NAMES[code.lowercase()] ?: "🌍 $code"
 
+        fun llmPromptName(code: String): String = when (code.lowercase().substringBefore('-').substringBefore('_')) {
+                "en" -> "English"
+                "fr" -> "French"
+                "de" -> "German"
+                "es" -> "Spanish"
+                "it" -> "Italian"
+                "hu" -> "Hungarian"
+                "ja" -> "Japanese"
+                "zh" -> "Chinese"
+                "he", "iw" -> "Hebrew"
+                "ar" -> "Arabic"
+                else -> code
+        }
+
         fun getLanguageFlag(languageCode: String): String {
                 return when (languageCode.lowercase()) {
                         "en" -> "🇬🇧"

@@ -12,11 +12,10 @@ internal class GeneratedStoryRepository(
 ) {
         private val json = Json { ignoreUnknownKeys = true }
 
-        fun observeAll() = dao.observeAll().map { list -> list.map { it.toDomain() } }
+        fun observeByLanguage(language: String) = dao.observeByLanguage(language).map { list -> list.map { it.toDomain() } }
 
         suspend fun getById(id: Long) = dao.findById(id)?.toDomain()
-        suspend fun count() = dao.count()
-        suspend fun countUnread() = dao.countUnread()
+        suspend fun countUnreadByLanguage(language: String) = dao.countUnreadByLanguage(language)
         suspend fun markAsRead(id: Long) = dao.markAsRead(id)
 
         suspend fun save(story: GeneratedStory, isManual: Boolean = false): Long {
@@ -36,7 +35,7 @@ internal class GeneratedStoryRepository(
                 return dao.insert(entity)
         }
 
-        suspend fun trimToSize(keep: Int) = dao.trimToSize(keep)
+        suspend fun trimToSizeByLanguage(language: String, keep: Int) = dao.trimToSizeByLanguage(language, keep)
         suspend fun deleteStory(id: Long) = dao.deleteById(id)
         suspend fun wouldBeDuplicate(
                 words: List<StoryWord>,

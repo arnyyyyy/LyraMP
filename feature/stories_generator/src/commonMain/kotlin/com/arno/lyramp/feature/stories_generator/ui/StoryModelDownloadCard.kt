@@ -35,6 +35,7 @@ import com.arno.lyramp.feature.stories_generator.resources.downloading_proc
 import com.arno.lyramp.feature.stories_generator.resources.model_change
 import com.arno.lyramp.feature.stories_generator.resources.model_default_name
 import com.arno.lyramp.feature.stories_generator.resources.model_loading
+import com.arno.lyramp.feature.stories_generator.resources.model_paused
 import com.arno.lyramp.feature.stories_generator.resources.model_ready
 import com.arno.lyramp.feature.stories_generator.resources.nums_description
 import com.arno.lyramp.feature.stories_generator.resources.percent
@@ -48,102 +49,33 @@ internal fun ModelDownloadCard(
         modelState: ModelDownloadState,
         activeModel: DownloadableModel?,
         onDownload: (DownloadableModel) -> Unit,
+        onPause: () -> Unit = {},
+        onResume: () -> Unit = {},
         onDelete: () -> Unit
 ) {
         when (modelState) {
                 is ModelDownloadState.NotDownloaded -> {
-                        Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                                DownloadableModel.entries.forEach { model ->
-                                        Box(
-                                                modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .background(LyraColorScheme.surface, RoundedCornerShape(14.dp))
-                                                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(14.dp))
-                                                        .padding(14.dp)
-                                        ) {
-                                                Row(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                                ) {
-                                                        Text(text = "🧠", fontSize = 28.sp)
-
-                                                        Column(modifier = Modifier.weight(1f)) {
-                                                                Text(
-                                                                        text = model.label,
-                                                                        fontSize = 15.sp,
-                                                                        fontWeight = FontWeight.SemiBold,
-                                                                        color = LyraColorScheme.onSurface
-                                                                )
-                                                                Text(
-                                                                        text = stringResource(Res.string.nums_description, model.description, model.sizeLabel),
-                                                                        fontSize = 12.sp,
-                                                                        color = LyraColorScheme.onSurfaceVariant
-                                                                )
-                                                        }
-
-                                                        Button(
-                                                                onClick = { onDownload(model) },
-                                                                shape = RoundedCornerShape(10.dp),
-                                                                colors = ButtonDefaults.buttonColors(
-                                                                        containerColor = LyraColorScheme.primary
-                                                                )
-                                                        ) {
-                                                                Text(text = "⬇", fontSize = 14.sp, color = Color.White)
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
+                        ModelsList(onDownload = onDownload)
                 }
 
                 is ModelDownloadState.Downloading -> {
-                        val animatedProgress by animateFloatAsState(
-                                targetValue = modelState.progress,
-                                label = "download_progress"
+                        DownloadingCard(
+                                model = activeModel,
+                                progress = modelState.progress,
+                                isPaused = false,
+                                onPauseOrResume = onPause,
+                                onDelete = onDelete,
                         )
-                        val percent = (animatedProgress * 100).toInt()
+                }
 
-                        SurfaceCard {
-                                Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                        Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                                Text(
-                                                        text = stringResource(
-                                                                Res.string.downloading_proc,
-                                                                activeModel?.label ?: stringResource(Res.string.model_default_name)
-                                                        ),
-                                                        fontSize = 14.sp,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = LyraColorScheme.onSurface
-                                                )
-                                                Text(
-                                                        text = stringResource(Res.string.percent, percent),
-                                                        fontSize = 14.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = LyraColorScheme.primary
-                                                )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        LinearProgressIndicator(
-                                                progress = { animatedProgress },
-                                                modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(6.dp)
-                                                        .clip(RoundedCornerShape(3.dp)),
-                                                color = LyraColorScheme.primary,
-                                                trackColor = LyraColorScheme.outline
-                                        )
-                                }
-                        }
+                is ModelDownloadState.Paused -> {
+                        DownloadingCard(
+                                model = activeModel,
+                                progress = modelState.progress,
+                                isPaused = true,
+                                onPauseOrResume = onResume,
+                                onDelete = onDelete,
+                        )
                 }
 
                 is ModelDownloadState.Checking -> {
@@ -244,6 +176,155 @@ internal fun ModelDownloadCard(
         }
 }
 
+@Composable
+private fun ModelsList(onDownload: (DownloadableModel) -> Unit) {
+        Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+                DownloadableModel.entries.forEach { model ->
+                        Box(
+                                modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(LyraColorScheme.surface, RoundedCornerShape(14.dp))
+                                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(14.dp))
+                                        .padding(14.dp)
+                        ) {
+                                Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                        Text(text = "🧠", fontSize = 28.sp)
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                        text = model.label,
+                                                        fontSize = 15.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = LyraColorScheme.onSurface
+                                                )
+                                                Text(
+                                                        text = stringResource(
+                                                                Res.string.nums_description,
+                                                                model.description,
+                                                                model.sizeLabel
+                                                        ),
+                                                        fontSize = 12.sp,
+                                                        color = LyraColorScheme.onSurfaceVariant
+                                                )
+                                        }
+
+                                        Button(
+                                                onClick = { onDownload(model) },
+                                                shape = RoundedCornerShape(10.dp),
+                                                colors = ButtonDefaults.buttonColors(
+                                                        containerColor = LyraColorScheme.primary
+                                                )
+                                        ) {
+                                                Text(text = "⬇", fontSize = 14.sp, color = Color.White)
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+@Composable
+private fun DownloadingCard(
+        model: DownloadableModel?,
+        progress: Float,
+        isPaused: Boolean,
+        onPauseOrResume: () -> Unit,
+        onDelete: () -> Unit,
+) {
+        val animatedProgress by animateFloatAsState(
+                targetValue = progress,
+                label = "download_progress"
+        )
+        val percent = (animatedProgress * 100).toInt()
+
+        SurfaceCard {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                                text = if (isPaused) stringResource(Res.string.model_paused, percent)
+                                                else stringResource(
+                                                        Res.string.downloading_proc,
+                                                        model?.label ?: stringResource(Res.string.model_default_name)
+                                                ),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = LyraColorScheme.onSurface,
+                                        )
+                                        if (!isPaused) {
+                                                Text(
+                                                        text = stringResource(Res.string.percent, percent),
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = LyraColorScheme.primary,
+                                                )
+                                        }
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                IconActionButton(
+                                        text = if (isPaused) "▶" else "⏸",
+                                        onClick = onPauseOrResume,
+                                        containerColor = LyraColorScheme.primary.copy(alpha = 0.15f),
+                                        contentColor = LyraColorScheme.primary,
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                IconActionButton(
+                                        text = "🗑",
+                                        onClick = onDelete,
+                                        containerColor = LyraColors.Incorrect.copy(alpha = 0.15f),
+                                        contentColor = LyraColors.Incorrect,
+                                )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        LinearProgressIndicator(
+                                progress = { animatedProgress },
+                                modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                color = if (isPaused) LyraColorScheme.onSurfaceVariant else LyraColorScheme.primary,
+                                trackColor = LyraColorScheme.outline,
+                        )
+                }
+        }
+}
+
+@Composable
+private fun IconActionButton(
+        text: String,
+        onClick: () -> Unit,
+        containerColor: Color,
+        contentColor: Color,
+) {
+        Button(
+                onClick = onClick,
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                        containerColor = containerColor,
+                        contentColor = contentColor,
+                ),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+                Text(text = text, fontSize = 14.sp)
+        }
+}
 
 @Composable
 private fun SurfaceCard(

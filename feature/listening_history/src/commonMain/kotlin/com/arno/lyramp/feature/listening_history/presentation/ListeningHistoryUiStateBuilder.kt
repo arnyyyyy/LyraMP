@@ -38,7 +38,7 @@ internal class ListeningHistoryUiStateBuilder {
 
                 selectedSourceId?.let { sourceId ->
                         list = if (sourceId == SOURCE_FILTER_MANUAL) {
-                                list.filter { it.sourceId.isNullOrEmpty() }
+                                list.filter { it.isManualSource() }
                         } else {
                                 list.filter { it.sourceId == sourceId }
                         }
@@ -101,7 +101,7 @@ internal class ListeningHistoryUiStateBuilder {
                         }
                 }
 
-                val manualCount = tracks.count { it.sourceId.isNullOrEmpty() }
+                val manualCount = tracks.count { it.isManualSource() }
                 if (manualCount > 0) {
                         items += FolderItem(
                                 id = SOURCE_FILTER_MANUAL,
@@ -119,6 +119,9 @@ internal class ListeningHistoryUiStateBuilder {
                 "yandex" in url -> "🎵"
                 else -> "📁"
         }
+
+        private fun ListeningHistoryMusicTrack.isManualSource(): Boolean =
+                sourceId.isNullOrEmpty() || sourceId == SOURCE_FILTER_MANUAL
 
         private companion object {
                 const val MIN_TRACKS_PER_LANGUAGE = 3

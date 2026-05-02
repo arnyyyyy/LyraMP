@@ -38,6 +38,7 @@ internal class ResolveRemainingsByYandexUseCase(
                                         albumId = match.albums?.firstOrNull()?.id?.toString(),
                                         albumName = match.albums?.firstOrNull()?.title,
                                         artists = track.artists,
+                                        sourceId = track.sourceId,
                                 )
                         }
                 }

@@ -48,7 +48,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.feature.stories_generator.model.DownloadableModel
 import com.arno.lyramp.feature.stories_generator.model.GeneratedStory
+import com.arno.lyramp.feature.stories_generator.model.ModelDownloadState
 import com.arno.lyramp.feature.stories_generator.presentation.CatalogUiState
 import com.arno.lyramp.feature.stories_generator.presentation.StoriesCatalogScreenModel
 import com.arno.lyramp.feature.stories_generator.resources.Res
@@ -56,6 +58,8 @@ import com.arno.lyramp.feature.stories_generator.resources.catalog_create_own
 import com.arno.lyramp.feature.stories_generator.resources.catalog_empty_subtitle
 import com.arno.lyramp.feature.stories_generator.resources.catalog_empty_title
 import com.arno.lyramp.feature.stories_generator.resources.catalog_generating_in_background
+import com.arno.lyramp.feature.stories_generator.resources.catalog_install_model_subtitle
+import com.arno.lyramp.feature.stories_generator.resources.catalog_install_model_title
 import com.arno.lyramp.feature.stories_generator.resources.catalog_not_enough_words_subtitle
 import com.arno.lyramp.feature.stories_generator.resources.catalog_not_enough_words_title
 import com.arno.lyramp.feature.stories_generator.resources.catalog_subtitle
@@ -79,6 +83,8 @@ object StoriesCatalogScreen : Screen {
                 val screenModel = getScreenModel<StoriesCatalogScreenModel>()
                 val navigator = LocalNavigator.currentOrThrow
                 val uiState by screenModel.uiState.collectAsState()
+                val modelState by screenModel.modelState.collectAsState()
+                val activeModel by screenModel.activeModel.collectAsState()
 
                 MainFeatureScaffold(
                         icon = "📚",
@@ -96,6 +102,16 @@ object StoriesCatalogScreen : Screen {
                                         when (val state = uiState) {
                                                 is CatalogUiState.Loading ->
                                                         LoadingCard(message = "")
+
+                                                is CatalogUiState.NoModel ->
+                                                        InstallModelCard(
+                                                                modelState = modelState,
+                                                                activeModel = activeModel,
+                                                                onDownload = { screenModel.downloadModel(it) },
+                                                                onPause = { screenModel.pauseDownload() },
+                                                                onResume = { screenModel.resumeDownload() },
+                                                                onDelete = { screenModel.deleteModel() },
+                                                        )
 
                                                 is CatalogUiState.NotEnoughWords ->
                                                         EmptyStateCard(
@@ -133,15 +149,17 @@ object StoriesCatalogScreen : Screen {
                                         }
                                 }
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                if (uiState !is CatalogUiState.NoModel) {
+                                        Spacer(modifier = Modifier.height(12.dp))
 
-                                LyraFilledButton(
-                                        text = "✍️ " + stringResource(Res.string.catalog_create_own),
-                                        onClick = { navigator.push(StoryGeneratorVoyagerScreen) },
-                                        modifier = Modifier.fillMaxWidth()
-                                )
+                                        LyraFilledButton(
+                                                text = "✍️ " + stringResource(Res.string.catalog_create_own),
+                                                onClick = { navigator.push(StoryGeneratorVoyagerScreen) },
+                                                modifier = Modifier.fillMaxWidth()
+                                        )
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                }
                         }
                 }
         }
@@ -166,6 +184,54 @@ private fun CatalogList(
                                 story = story,
                                 onClick = { onStoryClick(story) },
                                 onDelete = { onDeleteStory(story) },
+                        )
+                }
+        }
+}
+
+@Composable
+private fun InstallModelCard(
+        modelState: ModelDownloadState,
+        activeModel: DownloadableModel?,
+        onDownload: (DownloadableModel) -> Unit,
+        onPause: () -> Unit,
+        onResume: () -> Unit,
+        onDelete: () -> Unit,
+) {
+        Box(
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .background(LyraColorScheme.surface, RoundedCornerShape(20.dp))
+                        .border(1.dp, LyraColorScheme.outline, RoundedCornerShape(20.dp))
+                        .padding(horizontal = 20.dp, vertical = 24.dp),
+        ) {
+                Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth(),
+                ) {
+                        Text(text = "✨", fontSize = 56.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                                text = stringResource(Res.string.catalog_install_model_title),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = LyraColorScheme.onSurface,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                                text = stringResource(Res.string.catalog_install_model_subtitle),
+                                fontSize = 13.sp,
+                                color = LyraColorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                        )
+                        Spacer(Modifier.height(20.dp))
+                        ModelDownloadCard(
+                                modelState = modelState,
+                                activeModel = activeModel,
+                                onDownload = onDownload,
+                                onPause = onPause,
+                                onResume = onResume,
+                                onDelete = onDelete,
                         )
                 }
         }

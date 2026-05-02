@@ -33,7 +33,7 @@ internal class ListeningHistorySyncer(
                 backfillMissingSourceIds(fresh)
 
                 val manualIds = visibleCached
-                        .filter { it.sourceId == null && it.trackId?.contains("||") == true }
+                        .filter { it.sourceId == MANUAL_SOURCE_KEY || (it.sourceId == null && it.trackId?.contains("||") == true) }
                         .map { it.stableKey() }
                         .toSet()
 
@@ -90,4 +90,8 @@ internal class ListeningHistorySyncer(
                         .replaceNonLetterDigitWithSpace()
                         .replace(Regex("\\s+"), " ")
                         .trim()
+
+        private companion object {
+                const val MANUAL_SOURCE_KEY = "__manual__"
+        }
 }

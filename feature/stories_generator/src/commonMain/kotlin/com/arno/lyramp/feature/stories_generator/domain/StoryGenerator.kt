@@ -1,9 +1,9 @@
 package com.arno.lyramp.feature.stories_generator.domain
 
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.feature.stories_generator.model.GeneratedStory
 import com.arno.lyramp.feature.stories_generator.model.StoryGenre
 import com.arno.lyramp.feature.stories_generator.model.StoryWord
-import com.arno.lyramp.util.Log
 import com.llamatik.library.platform.LlamaBridge
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class LlamatikStoryGenerator {
+class StoryGenerator {
 
         private val nativeLock = Mutex()
         private var loadedModelPath: String? = null
@@ -62,7 +62,7 @@ class LlamatikStoryGenerator {
                 val raw = withContext(Dispatchers.Default) {
                         nativeLock.withLock {
                                 LlamaBridge.generateWithContext(
-                                        systemPrompt = systemPromptFor(genre),
+                                        systemPrompt = systemPromptFor(genre, language),
                                         contextBlock = "",
                                         userPrompt = buildUserPrompt(words, language, genre)
                                 )
@@ -91,7 +91,6 @@ class LlamatikStoryGenerator {
 
         private fun cleanResponse(raw: String): String {
                 var text = raw
-                Log.logger.d { "AAAAA" + text }
                 val imCut = text.indexOf("</start_of_turn>")
                 if (imCut > 0) text = text.substring(0, imCut)
                 return text.trim()
@@ -106,18 +105,22 @@ class LlamatikStoryGenerator {
                 return words.ifBlank { genre.displayName }
         }
 
-        private fun systemPromptFor(genre: StoryGenre): String =
-                "You are a storyteller. Given a list of words and a genre (${genre.promptHint}), " +
+        private fun systemPromptFor(genre: StoryGenre, language: String): String {
+                val targetLanguage = LyraLang.llmPromptName(language)
+                return "You are a storyteller." +
+                    "Write ONLY in $targetLanguage. Given a list of words and a genre (${genre.promptHint}), " +
                     "write a short story (3-5 sentences) using all of them in the requested genre."
+        }
 
         private fun buildUserPrompt(words: List<StoryWord>, language: String, genre: StoryGenre): String {
+                val targetLanguage = LyraLang.llmPromptName(language)
                 val selected = words
                         .map { it.word.lowercase() }
                         .filter { it.length > 2 }
                         .take(8)
                 val wordList = selected.joinToString(", ")
 
-                return "Genre: ${genre.promptHint}. Write a story using ALL OF words: $wordList"
-                // TODO ЯЗЫК
+                return "Language: $targetLanguage. Genre: ${genre.promptHint}. " +
+                    "Write the story in $targetLanguage and use ALL OF words: $wordList"
         }
 }

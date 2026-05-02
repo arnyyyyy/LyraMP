@@ -110,7 +110,8 @@ internal interface ListeningHistoryDao {
                 SET trackId = :newTrackId,
                         albumId = :albumId,
                         albumName = :albumName,
-                        artists = :artists
+                        artists = :artists,
+                        sourceId = :sourceId
                 WHERE localId = :localId"""
         )
         suspend fun resolveTrackByLocalId(
@@ -119,6 +120,7 @@ internal interface ListeningHistoryDao {
                 albumId: String?,
                 albumName: String?,
                 artists: String,
+                sourceId: String?,
         )
 
         @Query(
