@@ -25,30 +25,26 @@ internal class StatsScreenModel(
         val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
         init {
-                screenModelScope.launch {
-                        loadStatsInternal()
-                }
+                screenModelScope.launch { loadStatsInternal() }
         }
 
         fun retryLoad() = screenModelScope.launch { loadStatsInternal() }
 
-        fun refresh() {
-                screenModelScope.launch {
-                        val current = _uiState.value
-                        if (current is StatsUiState.Ready) {
-                                _uiState.value = current.copy(isRefreshing = true)
-                        }
-                        try {
-                                processTracks()
-                                loadStatsInternal()
-                        } catch (ce: CancellationException) {
-                                throw ce
-                        } catch (e: Exception) {
-                                Log.logger.e(e) { "Stats refresh failed" }
-                                val now = _uiState.value
-                                if (now is StatsUiState.Ready) {
-                                        _uiState.value = now.copy(isRefreshing = false)
-                                }
+        fun refresh() = screenModelScope.launch {
+                val current = _uiState.value
+                if (current is StatsUiState.Ready) {
+                        _uiState.value = current.copy(isRefreshing = true)
+                }
+                try {
+                        processTracks()
+                        loadStatsInternal()
+                } catch (ce: CancellationException) {
+                        throw ce
+                } catch (e: Exception) {
+                        Log.logger.e(e) { "Stats refresh failed" }
+                        val now = _uiState.value
+                        if (now is StatsUiState.Ready) {
+                                _uiState.value = now.copy(isRefreshing = false)
                         }
                 }
         }

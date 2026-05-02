@@ -1,6 +1,6 @@
 package com.arno.lyramp.feature.stats.domain.model
 
-data class TrackStatsMeta(
+internal data class TrackStatsMeta(
         val trackId: String,
         val trackName: String,
         val artists: String,

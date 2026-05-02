@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_screen_title">Статистика</string>
+    <string name="stats_section_vocabulary">СЛОВАРЬ</string>
+    <string name="stats_section_cefr">ПРОГРЕСС ПО CEFR</string>
+    <string name="stats_section_library">МЕДИАТЕКА</string>
+    <string name="stats_card_learning">В изучении</string>
+    <string name="stats_card_learned">Выучено</string>
+    <string name="stats_library_total">Всего треков</string>
+    <string name="stats_library_processed">Обработано для CEFR</string>
+    <string name="stats_library_fully_learned">Выучено полностью</string>
+    <string name="stats_refresh">Обновить</string>
+    <string name="stats_empty_cefr">Нет данных для CEFR. Нажми «Обновить», чтобы начать обработку.</string>
+    <string name="stats_loading">Собираем статистику…</string>
+    <string name="stats_error_title">Не удалось загрузить статистику</string>
+</resources>

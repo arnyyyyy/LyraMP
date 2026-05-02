@@ -1,13 +1,12 @@
 package com.arno.lyramp.feature.stats.data
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 
 @Dao
 internal interface StatsTrackMetaDao {
-        @Insert(onConflict = OnConflictStrategy.REPLACE)
+        @Upsert
         suspend fun upsert(row: StatsTrackMetaEntity)
 
         @Query("SELECT * FROM track_stats_meta WHERE language = :language")

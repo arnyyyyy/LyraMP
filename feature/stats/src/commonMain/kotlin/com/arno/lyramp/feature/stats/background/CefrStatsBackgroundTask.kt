@@ -15,7 +15,7 @@ internal class CefrStatsBackgroundTask(
         override val constraints: TaskConstraints = TaskConstraints(requiresNetwork = true)
 
         override suspend fun execute(): Boolean = try {
-                processTracks(maxTracks = DAILY_TRACK_BUDGET)
+                processTracks(maxTracks = ProcessTracksCefrUseCase.DEFAULT_MAX_TRACKS)
                 true
         } catch (ce: CancellationException) {
                 throw ce
@@ -26,6 +26,5 @@ internal class CefrStatsBackgroundTask(
 
         companion object {
                 const val TASK_ID = "lyra_cefr_stats_background"
-                private const val DAILY_TRACK_BUDGET = 15
         }
 }

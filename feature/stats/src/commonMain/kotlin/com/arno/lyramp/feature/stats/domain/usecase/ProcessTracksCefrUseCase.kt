@@ -118,7 +118,7 @@ internal class ProcessTracksCefrUseCase(
                 lyrics.lowercase().wordTokenSequence().count()
         }
 
-        private companion object {
+        companion object {
                 const val DEFAULT_MAX_TRACKS = 15
         }
 }

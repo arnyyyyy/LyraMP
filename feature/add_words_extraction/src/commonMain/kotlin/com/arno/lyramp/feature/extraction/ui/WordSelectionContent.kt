@@ -38,7 +38,7 @@ internal fun WordSelectionContent(
                         WordItem(
                                 word = w.word,
                                 subtitle = w.lyricLine,
-                                levelTag = w.cefrLevel.name
+                                levelTag = w.cefrLevel?.name ?: "?"
                         )
                 },
                 selectedWords = state.selectedWords,
