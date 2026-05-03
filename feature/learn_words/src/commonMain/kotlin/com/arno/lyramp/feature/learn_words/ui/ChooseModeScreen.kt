@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -38,12 +37,13 @@ import com.arno.lyramp.feature.learn_words.resources.notebook_icon
 import com.arno.lyramp.feature.learn_words.resources.words_empty_subtitle
 import com.arno.lyramp.feature.learn_words.resources.words_empty_title
 import com.arno.lyramp.feature.learn_words.resources.words_loading
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel
-import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel.Companion.AVAILABLE_LANGUAGES
 import com.arno.lyramp.feature.user_settings.ui.LanguageSelectorDropdown
 import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import com.arno.lyramp.ui.EmptyStateCard
 import com.arno.lyramp.ui.LoadingCard
+import com.arno.lyramp.ui.LocalNavBarHeight
 import com.arno.lyramp.ui.OnboardingBackground
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -55,6 +55,7 @@ object ChooseModeScreen : Screen {
                 val uiState by screenModel.uiState.collectAsState()
                 val selectedLanguage by screenModel.selectedLanguage.collectAsState()
                 val availableLanguages by screenModel.availableLanguages.collectAsState()
+                val isYandexAuthorized by screenModel.isYandexAuthorized.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
                 val screenFactory: ScreenFactory = koinInject()
                 val userSettingsScreenModel: UserSettingsScreenModel = koinInject()
@@ -64,7 +65,7 @@ object ChooseModeScreen : Screen {
                 if (showSettingsSheet) {
                         UserSettingsSheet(
                                 state = settingsState,
-                                availableLanguages = AVAILABLE_LANGUAGES,
+                                availableLanguages = LyraLang.SUPPORTED.toList(),
                                 onToggleLanguage = userSettingsScreenModel::toggleLanguage,
                                 onSelectLevel = userSettingsScreenModel::selectLevel,
                                 onDone = {
@@ -79,10 +80,12 @@ object ChooseModeScreen : Screen {
                         )
                 }
 
+                val navBarHeight = LocalNavBarHeight.current
+
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
 
-                        Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                        Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(bottom = navBarHeight)) {
                                 Row(
                                         modifier = Modifier
                                                 .fillMaxWidth()
@@ -137,7 +140,8 @@ object ChooseModeScreen : Screen {
                                                                                         LearnWordsScreen(
                                                                                                 mode = selectedMode,
                                                                                                 language = selectedLanguage,
-                                                                                                cefrGroup = null
+                                                                                                cefrGroup = null,
+                                                                                                useMixedPractice = isYandexAuthorized,
                                                                                         )
                                                                                 )
                                                                         },
@@ -150,6 +154,8 @@ object ChooseModeScreen : Screen {
                                                                         onNavigateToExtraction = { navigator.push(screenFactory.extractionScreen()) },
                                                                         onNavigateToSuggestions = { navigator.push(screenFactory.albumSelectorScreen()) },
                                                                         onNavigateToStats = { navigator.push(screenFactory.statsScreen(selectedLanguage)) },
+                                                                        onNavigateToAudition = { navigator.push(screenFactory.auditionScreen(selectedLanguage)) },
+                                                                        showAudition = isYandexAuthorized,
                                                                         wordCount = state.words.size,
                                                                 )
                                                         }

@@ -52,8 +52,8 @@ import com.arno.lyramp.feature.listeningHistory.resources.history_empty_subtitle
 import com.arno.lyramp.feature.listeningHistory.resources.history_empty_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_error_title
 import com.arno.lyramp.feature.listeningHistory.resources.history_loading
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel
-import com.arno.lyramp.feature.user_settings.presentation.UserSettingsScreenModel.Companion.AVAILABLE_LANGUAGES
 import com.arno.lyramp.feature.user_settings.ui.UserSettingsSheet
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -95,7 +95,7 @@ object ShowListeningHistoryScreen : Screen {
                 if (showSettingsSheet) {
                         UserSettingsSheet(
                                 state = settingsState,
-                                availableLanguages = AVAILABLE_LANGUAGES,
+                                availableLanguages = LyraLang.SUPPORTED.toList(),
                                 onToggleLanguage = userSettingsScreenModel::toggleLanguage,
                                 onSelectLevel = userSettingsScreenModel::selectLevel,
                                 onDone = {
@@ -205,7 +205,7 @@ object ShowListeningHistoryScreen : Screen {
                                                                                 tracks = emptyList(),
                                                                                 searchQuery = searchQuery,
                                                                                 onSearchQueryChange = screenModel::setSearchQuery,
-                                                                                availableLanguages = AVAILABLE_LANGUAGES,
+                                                                                availableLanguages = LyraLang.SUPPORTED.toList(),
                                                                                 scrollToTopToken = 0,
                                                                                 onTrackClick = {},
                                                                         )
@@ -227,7 +227,7 @@ object ShowListeningHistoryScreen : Screen {
                                                                         tracks = state.tracks,
                                                                         searchQuery = searchQuery,
                                                                         onSearchQueryChange = screenModel::setSearchQuery,
-                                                                        availableLanguages = AVAILABLE_LANGUAGES,
+                                                                        availableLanguages = LyraLang.SUPPORTED.toList(),
                                                                         scrollToTopToken = scrollToTopToken.value,
                                                                         onTrackClick = { track ->
                                                                                 navigator.push(

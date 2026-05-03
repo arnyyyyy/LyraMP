@@ -45,9 +45,10 @@ kotlin {
                         implementation(project(":feature:add_words_extraction"))
                         implementation(project(":feature:user_settings"))
 
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
+                        implementation(libs.runtime)
+                        implementation(libs.foundation)
+                        implementation(libs.material3)
+                        implementation(libs.material.icons.extended)
                         implementation(compose.ui)
                         implementation(compose.components.resources)
 

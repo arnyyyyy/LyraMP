@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arno.lyramp.core.model.LyraLang.getLanguageFlag
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
 import com.arno.lyramp.ui.theme.LyraColorScheme
 
@@ -49,9 +49,9 @@ internal fun LanguageChip(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-                Text(text = getLanguageFlag(code), fontSize = 18.sp)
+                Text(text = LyraLang.getLanguageFlag(code), fontSize = 18.sp)
                 Text(
-                        text = getLanguageDisplayName(code),
+                        text = LyraLang.nativeName(code),
                         fontSize = 14.sp,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color = textColor,
@@ -80,10 +80,10 @@ internal fun LanguageLevelCard(
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                 ) {
-                        Text(text = getLanguageFlag(language), fontSize = 22.sp)
+                        Text(text = LyraLang.getLanguageFlag(language), fontSize = 22.sp)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                                text = getLanguageDisplayName(language),
+                                text = LyraLang.nativeName(language),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = LyraColorScheme.onSurface,
@@ -160,18 +160,4 @@ private fun WordLevelOption(
                         Text(text = "✓", fontSize = 16.sp, color = LyraColorScheme.primary, fontWeight = FontWeight.Bold)
                 }
         }
-}
-
-private fun getLanguageDisplayName(code: String): String = when (code) {
-        "en" -> "English"
-        "fr" -> "Français"
-        "de" -> "Deutsch"
-        "es" -> "Español"
-        "it" -> "Italiano"
-        "hu" -> "Magyar"
-        "ja" -> "日本語"
-        "zh" -> "中文"
-        "he" -> "עברית"
-        "ar" -> "العربية"
-        else -> "${getLanguageFlag(code)} $code"
 }

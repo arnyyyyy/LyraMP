@@ -47,14 +47,14 @@ internal class ChooseModeScreenModel(
         }
 
         fun refreshLanguages() {
-                refreshLanguagesInternal()
+                screenModelScope.launch { refreshLanguagesInternal() }
         }
 
         fun selectLanguage(language: String) {
                 saveSelectedLanguage(language)
         }
 
-        private fun refreshLanguagesInternal() {
+        private suspend fun refreshLanguagesInternal() {
                 val dbLanguages = _allWords.value.mapNotNull { it.sourceLang }.distinct().sorted()
                 val learningLanguages = getLearningLanguages()
                 val languages = if (learningLanguages.isNotEmpty()) {

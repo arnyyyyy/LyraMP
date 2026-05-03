@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import com.arno.lyramp.ui.LocalNavBarHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
@@ -60,6 +60,7 @@ data class AlbumLearningScreen(private val albumId: String) : Screen {
                 val uiState by screenModel.uiState.collectAsState()
                 val navigator = LocalNavigator.currentOrThrow
                 val screenFactory: ScreenFactory = koinInject()
+                val navBarHeight = LocalNavBarHeight.current
 
                 Box(modifier = Modifier.fillMaxSize()) {
                         OnboardingBackground(modifier = Modifier.fillMaxSize())
@@ -67,7 +68,7 @@ data class AlbumLearningScreen(private val albumId: String) : Screen {
                                 modifier = Modifier
                                         .fillMaxSize()
                                         .statusBarsPadding()
-                                        .navigationBarsPadding()
+                                        .padding(bottom = navBarHeight)
                         ) {
                                 when (val state = uiState) {
                                         is AlbumSuggestionUiState.Loading,

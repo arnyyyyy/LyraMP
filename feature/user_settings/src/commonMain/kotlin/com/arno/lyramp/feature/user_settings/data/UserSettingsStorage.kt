@@ -26,7 +26,9 @@ internal object UserSettingsStorage {
 
         fun getWordLevelForLanguage(language: String): RecommendedWordLevel {
                 val name = settings.getStringOrNull(levelKey(language)) ?: return RecommendedWordLevel.ALL
-                return runCatching { RecommendedWordLevel.valueOf(name) }.getOrDefault(RecommendedWordLevel.ALL)
+                return runCatching {
+                        RecommendedWordLevel.valueOf(name)
+                }.getOrDefault(RecommendedWordLevel.ALL)
         }
 
         fun setWordLevelForLanguage(language: String, level: RecommendedWordLevel) {

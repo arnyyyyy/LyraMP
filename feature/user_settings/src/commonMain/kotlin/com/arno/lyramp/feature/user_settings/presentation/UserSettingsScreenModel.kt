@@ -1,25 +1,35 @@
 package com.arno.lyramp.feature.user_settings.presentation
 
 import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
+import com.arno.lyramp.core.model.LyraLang
 import com.arno.lyramp.feature.user_settings.data.UserSettingsRepository
 import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class UserSettingsScreenModel(
+class UserSettingsScreenModel internal constructor(
         private val repository: UserSettingsRepository,
 ) : ScreenModel {
-
         private val _state = MutableStateFlow(UserSettingsState())
         val state: StateFlow<UserSettingsState> = _state.asStateFlow()
 
         init {
-                _state.value = UserSettingsState(
-                        selectedLanguages = repository.getLearningLanguages(),
-                        wordLevels = AVAILABLE_LANGUAGES.associateWith { repository.getWordLevelForLanguage(it) },
-                )
+                screenModelScope.launch {
+                        val languages = repository.getLearningLanguages()
+                        val levels = LyraLang.SUPPORTED.associateWith {
+                                repository.getWordLevelForLanguage(it)
+                        }
+
+                        _state.value = UserSettingsState(
+                                isLoading = false,
+                                selectedLanguages = languages,
+                                wordLevels = levels,
+                        )
+                }
         }
 
         fun toggleLanguage(language: String) {
@@ -36,15 +46,13 @@ class UserSettingsScreenModel(
 
         fun saveAndClose() {
                 val currentState = _state.value
-                repository.saveLearningLanguages(currentState.selectedLanguages)
-                currentState.selectedLanguages.forEach { lang ->
-                        currentState.wordLevels[lang]?.let {
-                                repository.saveWordLevelForLanguage(lang, it)
+                screenModelScope.launch {
+                        repository.saveLearningLanguages(currentState.selectedLanguages)
+                        currentState.selectedLanguages.forEach { lang ->
+                                currentState.wordLevels[lang]?.let {
+                                        repository.saveWordLevelForLanguage(lang, it)
+                                }
                         }
                 }
-        }
-
-        companion object {
-                val AVAILABLE_LANGUAGES = listOf("en", "fr", "de", "es", "it", "hu", "ja", "zh", "he", "ar")
         }
 }

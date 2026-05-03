@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -67,14 +69,29 @@ fun UserSettingsSheet(
                         }
                 },
         ) {
-                SheetContent(
-                        availableLanguages = availableLanguages,
-                        selectedLanguages = state.selectedLanguages,
-                        wordLevels = state.wordLevels,
-                        onToggleLanguage = onToggleLanguage,
-                        onSelectLevel = onSelectLevel,
-                        onDone = onDone,
-                )
+                if (state.isLoading) {
+                        Box(
+                                modifier = Modifier
+                                        .fillMaxWidth()
+                                        .navigationBarsPadding()
+                                        .padding(vertical = 48.dp),
+                                contentAlignment = Alignment.Center,
+                        ) {
+                                CircularProgressIndicator(
+                                        modifier = Modifier.size(36.dp),
+                                        color = LyraColorScheme.primary,
+                                )
+                        }
+                } else {
+                        SheetContent(
+                                availableLanguages = availableLanguages,
+                                selectedLanguages = state.selectedLanguages,
+                                wordLevels = state.wordLevels,
+                                onToggleLanguage = onToggleLanguage,
+                                onSelectLevel = onSelectLevel,
+                                onDone = onDone,
+                        )
+                }
         }
 }
 

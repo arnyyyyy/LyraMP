@@ -1,32 +1,37 @@
 package com.arno.lyramp.feature.user_settings.data
 
 import com.arno.lyramp.feature.user_settings.model.RecommendedWordLevel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
-class UserSettingsRepository {
-
+internal class UserSettingsRepository {
         private val _selectedLanguage = MutableStateFlow(UserSettingsStorage.selectedLanguage)
         val selectedLanguageFlow: StateFlow<String?> = _selectedLanguage.asStateFlow()
 
-        fun getSelectedLanguage(): String? = _selectedLanguage.value
+        fun getSelectedLanguage() = _selectedLanguage.value
 
         fun saveSelectedLanguage(language: String?) {
                 UserSettingsStorage.selectedLanguage = language
                 _selectedLanguage.value = language
         }
 
-        fun getLearningLanguages(): Set<String> = UserSettingsStorage.learningLanguages
+        suspend fun getLearningLanguages() = withContext(Dispatchers.IO) {
+                UserSettingsStorage.learningLanguages
+        }
 
-        fun saveLearningLanguages(languages: Set<String>) {
+        suspend fun saveLearningLanguages(languages: Set<String>) = withContext(Dispatchers.IO) {
                 UserSettingsStorage.learningLanguages = languages
         }
 
-        fun getWordLevelForLanguage(language: String): RecommendedWordLevel =
+        suspend fun getWordLevelForLanguage(language: String) = withContext(Dispatchers.IO) {
                 UserSettingsStorage.getWordLevelForLanguage(language)
+        }
 
-        fun saveWordLevelForLanguage(language: String, level: RecommendedWordLevel) {
+        suspend fun saveWordLevelForLanguage(language: String, level: RecommendedWordLevel) = withContext(Dispatchers.IO) {
                 UserSettingsStorage.setWordLevelForLanguage(language, level)
         }
 }

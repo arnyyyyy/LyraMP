@@ -107,9 +107,9 @@ internal class ListeningHistoryScreenModel(
 
         private fun loadHistory() = startSync(showRefreshing = false, forceRestart = false)
 
-        fun refreshLanguages() = refreshLanguagesInternal() // TODO
+        fun refreshLanguages() = screenModelScope.launch { refreshLanguagesInternal() }
 
-        private fun refreshLanguagesInternal(showEmptyState: Boolean = true) {
+        private suspend fun refreshLanguagesInternal(showEmptyState: Boolean = true) {
                 val languages = uiStateBuilder.availableLanguages(
                         tracks = _allTracks.value,
                         learningLanguages = getLearningLanguages(),
@@ -243,7 +243,7 @@ internal class ListeningHistoryScreenModel(
                 }
         }
 
-        private fun applyTracks(tracks: List<ListeningHistoryMusicTrack>, showEmptyState: Boolean = true) {
+        private suspend fun applyTracks(tracks: List<ListeningHistoryMusicTrack>, showEmptyState: Boolean = true) {
                 _allTracks.value = tracks
                 rebuildFolderItems()
                 refreshLanguagesInternal(showEmptyState)

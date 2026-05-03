@@ -61,6 +61,25 @@ object LyraLang {
 
         fun displayName(code: String) = DISPLAY_NAMES[code.lowercase()] ?: "🌍 $code"
 
+        private val NATIVE_NAMES: Map<String, String> = mapOf(
+                "en" to "English",
+                "fr" to "Français",
+                "de" to "Deutsch",
+                "es" to "Español",
+                "it" to "Italiano",
+                "hu" to "Magyar",
+                "ja" to "日本語",
+                "zh" to "中文",
+                "he" to "עברית",
+                "iw" to "עברית",
+                "ar" to "العربية",
+                "ru" to "Русский",
+                "pt" to "Português",
+                "ko" to "한국어",
+        )
+
+        fun nativeName(code: String): String = NATIVE_NAMES[code.lowercase()] ?: code
+
         fun llmPromptName(code: String): String = when (code.lowercase().substringBefore('-').substringBefore('_')) {
                 "en" -> "English"
                 "fr" -> "French"

@@ -125,10 +125,11 @@ internal class AlbumSuggestionScreenModel(
 
         fun saveWordsAndComplete() {
                 val nav = _nav.value as? NavTarget.ReviewWords ?: return
-                val settings = getLanguageSettings()
-                val result = albumResult
 
                 screenModelScope.launch {
+                        val settings = getLanguageSettings()
+                        val result = albumResult
+
                         try {
                                 val candidates = if (nav.isAlbumMode)
                                         repository.getCandidatesByAlbum(albumId).distinctBy { it.word }

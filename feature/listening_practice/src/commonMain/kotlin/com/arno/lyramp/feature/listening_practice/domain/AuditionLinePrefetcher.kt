@@ -3,6 +3,7 @@ package com.arno.lyramp.feature.listening_practice.domain
 import com.arno.lyramp.feature.listening_practice.model.AuditionLine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
@@ -18,7 +19,7 @@ internal class AuditionLinePrefetcher(
                 close()
                 channel = Channel(capacity = CHANNEL_CAPACITY)
                 val ch = channel
-                producerJob = scope.launch {
+                producerJob = scope.launch(Dispatchers.Default) {
                         try {
                                 picker.reset(language)
                                 while (isActive) {
