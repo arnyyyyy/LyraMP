@@ -12,7 +12,7 @@ import org.koin.dsl.module
 
 val listeningPracticeModule = module {
         single { LoadPracticeDataUseCase(get(), get()) }
-        single { AuditionLinePickerUseCase(get(), get(), get()) }
+        factory { AuditionLinePickerUseCase(get(), get(), get()) }
         single { CheckAnswerUseCase() }
 
         factory { LinePlaybackController() }

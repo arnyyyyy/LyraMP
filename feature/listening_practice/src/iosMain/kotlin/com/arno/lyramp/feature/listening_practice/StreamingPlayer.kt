@@ -210,8 +210,10 @@ actual class StreamingPlayer {
         }
 
         actual fun release() {
-                cleanupPlayer()
-                scope.cancel()
+                scope.launch {
+                        cleanupPlayer()
+                        scope.cancel()
+                }
         }
 
         private fun cleanupPlayer() {
