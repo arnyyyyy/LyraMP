@@ -8,7 +8,9 @@ import com.arno.lyramp.feature.stats.data.StatsTrackMetaRepository
 import com.arno.lyramp.feature.stats.data.getStatsDatabase
 import com.arno.lyramp.feature.stats.domain.usecase.GetLanguageStatsUseCase
 import com.arno.lyramp.feature.stats.domain.usecase.ProcessTracksCefrUseCase
+import com.arno.lyramp.feature.stats.presentation.StatsCefrWordsScreenModel
 import com.arno.lyramp.feature.stats.presentation.StatsScreenModel
+import com.arno.lyramp.feature.stats.presentation.StatsVocabularyScreenModel
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -47,6 +49,27 @@ val statsModule = module {
                         observeSelectedLanguage = get(),
                         getLanguageStats = get(),
                         processTracks = get(),
+                )
+        }
+
+        factory { (language: String, statusName: String) ->
+                StatsVocabularyScreenModel(
+                        language = language,
+                        statusName = statusName,
+                        getAllLearnWords = get(),
+                        toggleImportance = get(),
+                        classifyWordsByCefr = get(),
+                )
+        }
+
+        factory { (language: String, groupName: String) ->
+                StatsCefrWordsScreenModel(
+                        language = language,
+                        groupName = groupName,
+                        cefrWordRepository = get(),
+                        getAllLearnWords = get(),
+                        getShownWords = get(),
+                        markWordStringsAsShown = get(),
                 )
         }
 
