@@ -1,5 +1,6 @@
-package com.arno.lyramp.di
+package com.arno.lyramp.feature.authorization.di
 
+import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.russhwolf.settings.Settings
@@ -16,11 +17,18 @@ actual val secureStorageModule: Module = module {
                         .build()
                 val prefs = EncryptedSharedPreferences.create(
                         context,
-                        "auth_storage",
+                        AUTH_STORAGE_NAME,
                         masterKey,
                         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
                 )
                 SharedPreferencesSettings(prefs)
+        }
+
+        single<Settings>(plainSettingsQualifier) {
+                val context = androidContext()
+                SharedPreferencesSettings(
+                        context.getSharedPreferences("${context.packageName}_preferences", Context.MODE_PRIVATE)
+                )
         }
 }

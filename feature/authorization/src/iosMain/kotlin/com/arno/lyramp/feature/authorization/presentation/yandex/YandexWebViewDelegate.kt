@@ -11,6 +11,7 @@ import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class)
 internal class YandexWebViewDelegate(
+        private val authBus: YandexAuthBus,
         private val onTokenFound: () -> Unit
 ) : NSObject(), WKNavigationDelegateProtocol {
 
@@ -18,7 +19,7 @@ internal class YandexWebViewDelegate(
 
         private fun tryHandleToken(url: String): Boolean {
                 if (tokenHandled) return false
-                val extracted = YandexTokenExtractor.extractFromUrl(url)
+                val extracted = YandexTokenExtractor.extractFromUrl(url, authBus)
                 if (extracted) {
                         tokenHandled = true
                         onTokenFound()

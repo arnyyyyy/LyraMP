@@ -8,4 +8,20 @@ plugins {
         alias(libs.plugins.kotlinMultiplatform) apply false
         alias(libs.plugins.ksp) apply false
         alias(libs.plugins.androidx.room) apply false
+        alias(libs.plugins.dependency.analysis)
+}
+
+subprojects {
+        apply(plugin = "com.autonomousapps.dependency-analysis")
+
+        pluginManager.withPlugin("com.android.application") {
+                configurations.matching { it.name == "annotationProcessor" }.configureEach {
+                        isCanBeResolved = true
+                }
+        }
+        pluginManager.withPlugin("com.android.library") {
+                configurations.matching { it.name == "annotationProcessor" }.configureEach {
+                        isCanBeResolved = true
+                }
+        }
 }

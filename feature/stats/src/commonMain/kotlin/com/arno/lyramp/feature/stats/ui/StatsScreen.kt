@@ -29,6 +29,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.arno.lyramp.core.navigation.ScreenFactory
 import com.arno.lyramp.feature.stats.presentation.StatsScreenModel
 import com.arno.lyramp.feature.stats.presentation.StatsUiState
 import com.arno.lyramp.feature.stats.resources.Res
@@ -41,12 +42,14 @@ import com.arno.lyramp.ui.ErrorCard
 import com.arno.lyramp.ui.LoadingCard
 import com.arno.lyramp.ui.OnboardingBackground
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 class StatsScreen(private val language: String?) : Screen {
         @Composable
         override fun Content() {
                 val navigator = LocalNavigator.currentOrThrow
+                val screenFactory: ScreenFactory = koinInject()
                 val screenModel = getScreenModel<StatsScreenModel> { parametersOf(language) }
                 val state by screenModel.uiState.collectAsState()
 
@@ -76,7 +79,33 @@ class StatsScreen(private val language: String?) : Screen {
                                                 )
                                         }
 
-                                        is StatsUiState.Ready -> StatsContent(snapshot = s.snapshot)
+                                        is StatsUiState.Ready -> StatsContent(
+                                                snapshot = s.snapshot,
+                                                onLearningWordsClick = {
+                                                        navigator.push(
+                                                                screenFactory.statsVocabularyScreen(
+                                                                        language = s.snapshot.language,
+                                                                        statusName = "LEARNING",
+                                                                )
+                                                        )
+                                                },
+                                                onLearnedWordsClick = {
+                                                        navigator.push(
+                                                                screenFactory.statsVocabularyScreen(
+                                                                        language = s.snapshot.language,
+                                                                        statusName = "LEARNED",
+                                                                )
+                                                        )
+                                                },
+                                                onCefrGroupClick = { group ->
+                                                        navigator.push(
+                                                                screenFactory.statsCefrWordsScreen(
+                                                                        language = s.snapshot.language,
+                                                                        groupName = group.name,
+                                                                )
+                                                        )
+                                                },
+                                        )
                                 }
                         }
                 }

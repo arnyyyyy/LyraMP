@@ -42,7 +42,6 @@ import com.arno.lyramp.feature.authorization.presentation.AuthEvent
 import com.arno.lyramp.feature.authorization.presentation.AuthNews
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
 import com.arno.lyramp.feature.authorization.presentation.launchAuthUrl
-import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
 import com.arno.lyramp.feature.authorization.ui.background.AuthBackground
 import com.arno.lyramp.core.navigation.ScreenFactory
 import org.jetbrains.compose.resources.stringResource
@@ -63,21 +62,8 @@ object AuthScreen : Screen {
                 val navigator = LocalNavigator.current
                 val screenModel = getScreenModel<AuthorizationScreenModel>()
                 val screenFactory: ScreenFactory = koinInject()
-                val yandexAuthBus: YandexAuthBus = koinInject()
 
                 val state by screenModel.state.collectAsState()
-
-                LaunchedEffect(Unit) {
-                        yandexAuthBus.flow.collect { result ->
-                                screenModel.onEvent(
-                                        AuthEvent.OnYandexAuthCompleted(
-                                                token = result.token,
-                                                expiresIn = result.expiresIn
-                                        )
-                                )
-                                yandexAuthBus.consume()
-                        }
-                }
 
                 LaunchedEffect(Unit) {
                         screenModel.news.collect { effect ->

@@ -2,6 +2,7 @@ package com.arno.lyramp.feature.stats.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,7 +40,12 @@ import com.arno.lyramp.feature.stats.resources.stats_section_vocabulary
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun StatsContent(snapshot: LanguageStatsSnapshot) {
+internal fun StatsContent(
+        snapshot: LanguageStatsSnapshot,
+        onLearningWordsClick: () -> Unit,
+        onLearnedWordsClick: () -> Unit,
+        onCefrGroupClick: (CefrDifficultyGroup) -> Unit,
+) {
         val scrollState = rememberScrollState()
         Column(
                 modifier = Modifier.fillMaxSize()
@@ -47,8 +53,15 @@ internal fun StatsContent(snapshot: LanguageStatsSnapshot) {
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-                VocabularySection(snapshot = snapshot)
-                CefrProgressSection(groupStats = snapshot.groupStats)
+                VocabularySection(
+                        snapshot = snapshot,
+                        onLearningWordsClick = onLearningWordsClick,
+                        onLearnedWordsClick = onLearnedWordsClick,
+                )
+                CefrProgressSection(
+                        groupStats = snapshot.groupStats,
+                        onCefrGroupClick = onCefrGroupClick,
+                )
                 LibrarySection(snapshot = snapshot)
                 Spacer(modifier = Modifier.height(24.dp))
         }
@@ -66,7 +79,11 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun VocabularySection(snapshot: LanguageStatsSnapshot) {
+private fun VocabularySection(
+        snapshot: LanguageStatsSnapshot,
+        onLearningWordsClick: () -> Unit,
+        onLearnedWordsClick: () -> Unit,
+) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionHeader(stringResource(Res.string.stats_section_vocabulary))
                 Row(
@@ -78,12 +95,14 @@ private fun VocabularySection(snapshot: LanguageStatsSnapshot) {
                                 value = snapshot.learningWordsCount,
                                 label = stringResource(Res.string.stats_card_learning),
                                 accent = Color(0xFF4A90E2),
+                                onClick = onLearningWordsClick,
                         )
                         NumberCard(
                                 modifier = Modifier.weight(1f),
                                 value = snapshot.learnedWordsCount,
                                 label = stringResource(Res.string.stats_card_learned),
                                 accent = Color(0xFF34C759),
+                                onClick = onLearnedWordsClick,
                         )
                 }
         }
@@ -95,11 +114,13 @@ private fun NumberCard(
         value: Int,
         label: String,
         accent: Color,
+        onClick: () -> Unit,
 ) {
         Column(
                 modifier = modifier
                         .background(Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
                         .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(16.dp))
+                        .clickable(onClick = onClick)
                         .padding(horizontal = 16.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -119,7 +140,10 @@ private fun NumberCard(
 }
 
 @Composable
-private fun CefrProgressSection(groupStats: List<CefrGroupStats>) {
+private fun CefrProgressSection(
+        groupStats: List<CefrGroupStats>,
+        onCefrGroupClick: (CefrDifficultyGroup) -> Unit,
+) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionHeader(stringResource(Res.string.stats_section_cefr))
 
@@ -138,21 +162,35 @@ private fun CefrProgressSection(groupStats: List<CefrGroupStats>) {
                                         fontSize = 14.sp,
                                 )
                         } else {
-                                groupStats.forEach { CefrGroupRow(it) }
+                                groupStats.forEach { stat ->
+                                        CefrGroupRow(
+                                                stat = stat,
+                                                onClick = { onCefrGroupClick(stat.group) },
+                                        )
+                                }
                         }
                 }
         }
 }
 
 @Composable
-private fun CefrGroupRow(stat: CefrGroupStats) {
+private fun CefrGroupRow(
+        stat: CefrGroupStats,
+        onClick: () -> Unit,
+) {
         val color = when (stat.group) {
                 CefrDifficultyGroup.BEGINNER -> Color(0xFF4CAF50)
                 CefrDifficultyGroup.INTERMEDIATE -> Color(0xFFFF9800)
                 CefrDifficultyGroup.ADVANCED -> Color(0xFFF44336)
         }
         val percentage = (stat.ratio * 100).toInt()
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(
+                modifier = Modifier.clickable(
+                        enabled = stat.total > 0,
+                        onClick = onClick,
+                ),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
                 Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

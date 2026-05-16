@@ -79,7 +79,6 @@ data class AuditionScreen(val language: String?) : Screen {
                         screenModel.onAppBackground()
                 }
 
-
                 MainFeatureScaffold(
                         icon = "🎙️",
                         title = stringResource(Res.string.audition_title),

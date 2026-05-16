@@ -13,6 +13,7 @@ import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByAlbumUs
 import com.arno.lyramp.feature.learn_words.domain.usecase.GetLearnWordsByTrackUseCase
 import com.arno.lyramp.feature.learn_words.domain.usecase.ObserveLearnWordsByAlbumUseCase
 import com.arno.lyramp.feature.learn_words.domain.usecase.SaveLearnWordUseCase
+import com.arno.lyramp.feature.learn_words.domain.usecase.ToggleLearnWordImportanceUseCase
 import com.arno.lyramp.feature.learn_words.presentation.AllWordsListScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.ChooseModeScreenModel
 import com.arno.lyramp.feature.learn_words.presentation.LearnWordsLaunchArgs
@@ -37,6 +38,7 @@ val learnWordsModule = module {
         single { GetLearnWordsByTrackUseCase(dao = get()) }
         single { GetLearnWordsByAlbumUseCase(repository = get()) }
         single { ObserveLearnWordsByAlbumUseCase(repository = get()) }
+        single { ToggleLearnWordImportanceUseCase(repository = get()) }
         single<SaveWordUseCase> {
                 val save = get<SaveLearnWordUseCase>()
                 SaveWordUseCase { word, translation, sourceLang, trackName, artists, lyricLine ->

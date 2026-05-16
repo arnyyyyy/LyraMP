@@ -7,7 +7,11 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 
-internal fun createYandexAuthWebView(context: Context, onTokenFound: () -> Unit): WebView {
+internal fun createYandexAuthWebView(
+        context: Context,
+        authBus: YandexAuthBus,
+        onTokenFound: () -> Unit
+): WebView {
         val webView = WebView(context).apply {
                 @Suppress("SetJavaScriptEnabled")
                 settings.apply {
@@ -30,12 +34,12 @@ internal fun createYandexAuthWebView(context: Context, onTokenFound: () -> Unit)
         webView.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                         val url = request?.url?.toString() ?: return false
-                        return tryExtractToken(url, onTokenFound)
+                        return tryExtractToken(url, authBus, onTokenFound)
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
-                        url?.let { tryExtractToken(it, onTokenFound) }
+                        url?.let { tryExtractToken(it, authBus, onTokenFound) }
                 }
 
                 override fun onReceivedError(
@@ -44,7 +48,7 @@ internal fun createYandexAuthWebView(context: Context, onTokenFound: () -> Unit)
                         error: WebResourceError?
                 ) {
                         val url = request?.url?.toString()
-                        if (url != null && tryExtractToken(url, onTokenFound)) return
+                        if (url != null && tryExtractToken(url, authBus, onTokenFound)) return
                         super.onReceivedError(view, request, error)
                 }
         }
@@ -57,8 +61,8 @@ internal fun createYandexAuthWebView(context: Context, onTokenFound: () -> Unit)
         return webView
 }
 
-private fun tryExtractToken(url: String, onTokenFound: () -> Unit): Boolean {
-        val found = YandexTokenExtractor.extractFromUrl(url)
+private fun tryExtractToken(url: String, authBus: YandexAuthBus, onTokenFound: () -> Unit): Boolean {
+        val found = YandexTokenExtractor.extractFromUrl(url, authBus)
         if (found) onTokenFound()
         return found
 }

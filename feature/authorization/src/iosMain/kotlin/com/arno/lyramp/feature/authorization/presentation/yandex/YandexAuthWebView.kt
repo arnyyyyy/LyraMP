@@ -25,10 +25,10 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-fun launchYandexAuthWebView(authUrl: String) {
+fun launchYandexAuthWebView(authUrl: String, authBus: YandexAuthBus) {
         val root = findRootViewController() ?: return
 
-        val authVC = YandexAuthViewController(authUrl)
+        val authVC = YandexAuthViewController(authUrl, authBus)
         val nav = UINavigationController(rootViewController = authVC)
         root.presentViewController(nav, true, null)
 }
@@ -49,7 +49,8 @@ private fun findRootViewController(): UIViewController? {
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private class YandexAuthViewController(
-        private val authUrl: String
+        private val authUrl: String,
+        private val authBus: YandexAuthBus
 ) : UIViewController(nibName = null, bundle = null) {
 
         private val webViewConfig = WKWebViewConfiguration().apply {
@@ -78,7 +79,7 @@ private class YandexAuthViewController(
                 view.setBackgroundColor(UIColor.whiteColor)
                 view.addSubview(webView)
 
-                webViewDelegate = YandexWebViewDelegate { dismissViewControllerAnimated(true, null) }
+                webViewDelegate = YandexWebViewDelegate(authBus) { dismissViewControllerAnimated(true, null) }
                 webView.navigationDelegate = webViewDelegate
 
                 this.navigationItem().setRightBarButtonItem(

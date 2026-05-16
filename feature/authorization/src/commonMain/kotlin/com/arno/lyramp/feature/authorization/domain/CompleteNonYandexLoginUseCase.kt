@@ -6,9 +6,10 @@ import com.arno.lyramp.feature.authorization.domain.model.MusicServiceType
 
 class CompleteNonYandexLoginUseCase internal constructor(
         private val playlistSources: PlaylistSourcesRepository,
+        private val authSelectionStorage: AuthSelectionStorage,
 ) {
         operator fun invoke(playlistUrl: String?) {
                 playlistUrl?.takeIf { it.isNotBlank() }?.let(playlistSources::add)
-                AuthSelectionStorage.lastAuthorizedService = MusicServiceType.NONE.name
+                authSelectionStorage.lastAuthorizedService = MusicServiceType.NONE.name
         }
 }

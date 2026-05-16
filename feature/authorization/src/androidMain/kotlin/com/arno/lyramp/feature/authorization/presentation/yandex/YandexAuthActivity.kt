@@ -5,8 +5,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class YandexAuthActivity : ComponentActivity() {
+class YandexAuthActivity : ComponentActivity(), KoinComponent {
+        private val yandexAuthBus: YandexAuthBus by inject()
+
         override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
 
@@ -16,7 +20,11 @@ class YandexAuthActivity : ComponentActivity() {
                         return
                 }
 
-                val webView = createYandexAuthWebView(context = this, onTokenFound = ::finish)
+                val webView = createYandexAuthWebView(
+                        context = this,
+                        authBus = yandexAuthBus,
+                        onTokenFound = ::finish
+                )
                 webView.layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
                 )

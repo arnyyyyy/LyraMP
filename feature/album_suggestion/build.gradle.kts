@@ -5,6 +5,9 @@ plugins {
         alias(libs.plugins.androidLibrary)
         alias(libs.plugins.composeMultiplatform)
         alias(libs.plugins.composeCompiler)
+        alias(libs.plugins.serialization)
+        alias(libs.plugins.ksp)
+        alias(libs.plugins.androidx.room)
 }
 
 kotlin {
@@ -24,7 +27,7 @@ kotlin {
                 iosSimulatorArm64()
         ).forEach { iosTarget ->
                 iosTarget.binaries.framework {
-                        baseName = "AuthorizationFeature"
+                        baseName = "AlbumLearningFeature"
                         isStatic = true
                 }
         }
@@ -32,25 +35,35 @@ kotlin {
         sourceSets {
                 androidMain.dependencies {
                         implementation(libs.koin.android)
-                        implementation(libs.androidx.security.crypto)
+                        implementation(libs.androidx.room.sqlite.wrapper)
                 }
 
                 iosMain.dependencies {
+                        implementation(libs.jetbrains.kotlinx.coroutines.core)
                 }
 
                 commonMain.dependencies {
                         implementation(project(":core"))
+                        implementation(project(":feature:learn_words"))
+                        implementation(project(":feature:listening_history"))
+                        implementation(project(":feature:lyrics"))
+                        implementation(project(":feature:add_words_extraction"))
+                        implementation(project(":feature:user_settings"))
+                        implementation(project(":feature:authorization"))
 
-                        implementation(libs.runtime)
-                        implementation(libs.foundation)
-                        implementation(libs.material3)
+                        implementation(compose.runtime)
+                        implementation(compose.foundation)
+                        implementation(compose.material3)
                         implementation(compose.components.resources)
                         implementation(libs.voyager.navigator)
                         implementation(libs.voyager.screenmodel)
                         implementation(libs.voyager.koin)
+                        implementation(libs.kotlinx.coroutines.core)
                         implementation(libs.koin.core)
                         implementation(libs.koin.compose)
-                        implementation(libs.multiplatform.settings)
+                        implementation(libs.coil3.compose)
+                        implementation(libs.androidx.room.runtime)
+                        implementation(libs.androidx.sqlite.bundled)
                 }
 
                 commonTest.dependencies {
@@ -60,7 +73,7 @@ kotlin {
 }
 
 android {
-        namespace = "com.arno.lyramp.feature.authorization"
+        namespace = "com.arno.lyramp.feature.album_learning"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
 
         defaultConfig {
@@ -75,6 +88,16 @@ android {
 
 compose.resources {
         publicResClass = false
-        packageOfResClass = "com.arno.lyramp.feature.authorization.resources"
+        packageOfResClass = "com.arno.lyramp.feature.album_learning.resources"
         generateResClass = auto
+}
+
+room {
+        schemaDirectory("$projectDir/schemas")
+}
+
+dependencies {
+        add("kspAndroid", libs.androidx.room.compiler)
+        add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+        add("kspIosArm64", libs.androidx.room.compiler)
 }

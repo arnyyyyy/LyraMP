@@ -3,20 +3,20 @@ package com.arno.lyramp.feature.authorization.presentation.yandex
 import android.util.Log
 
 internal object YandexTokenExtractor {
-        fun extractFromUrl(url: String): Boolean {
+        fun extractFromUrl(url: String, authBus: YandexAuthBus): Boolean {
                 if (url.isBlank() || !url.contains("access_token")) return false
 
                 return try {
                         val fragmentIndex = url.indexOf('#')
                         if (fragmentIndex != -1) {
                                 val fragment = url.substring(fragmentIndex + 1)
-                                if (parseAndSaveToken(fragment)) return true
+                                if (parseAndSaveToken(fragment, authBus)) return true
                         }
 
                         val tokenStart = url.indexOf("access_token=")
                         if (tokenStart != -1) {
                                 val tokenPart = url.substring(tokenStart)
-                                if (parseAndSaveToken(tokenPart)) return true
+                                if (parseAndSaveToken(tokenPart, authBus)) return true
                         }
 
                         false
@@ -26,7 +26,7 @@ internal object YandexTokenExtractor {
                 }
         }
 
-        private fun parseAndSaveToken(params: String): Boolean {
+        private fun parseAndSaveToken(params: String, authBus: YandexAuthBus): Boolean {
                 return try {
                         val paramsMap = params.split("&").associate { param ->
                                 val parts = param.split("=", limit = 2)
@@ -38,7 +38,7 @@ internal object YandexTokenExtractor {
 
                         if (accessToken.isNullOrEmpty()) return false
 
-                        YandexAuthBusProvider.get().emit(accessToken, expiresIn)
+                        authBus.emit(accessToken, expiresIn)
                         true
                 } catch (e: Exception) {
                         Log.e(TAG, "Token parsing failed: ${e.message}", e)

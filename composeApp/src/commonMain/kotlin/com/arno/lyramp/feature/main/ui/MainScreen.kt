@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import com.arno.lyramp.ui.LocalNavBarHeight
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
@@ -37,15 +42,28 @@ internal object MainScreen : Screen {
 
         @Composable
         override fun Content() {
+                val density = LocalDensity.current
+                val navBarHeightPx = remember { mutableStateOf(0) }
+
                 TabNavigator(
                         tab = LibraryTab,
                         tabDisposable = {
                                 TabDisposable(navigator = it, tabs = listOf(LibraryTab, WordsTab))
                         }
                 ) {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                                CurrentTab()
-                                NavBar(modifier = Modifier.align(Alignment.BottomCenter))
+                        CompositionLocalProvider(
+                                LocalNavBarHeight provides with(density) { navBarHeightPx.value.toDp() }
+                        ) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                        CurrentTab()
+                                        NavBar(
+                                                modifier = Modifier
+                                                        .align(Alignment.BottomCenter)
+                                                        .onGloballyPositioned { coordinates ->
+                                                                navBarHeightPx.value = coordinates.size.height
+                                                        }
+                                        )
+                                }
                         }
                 }
         }

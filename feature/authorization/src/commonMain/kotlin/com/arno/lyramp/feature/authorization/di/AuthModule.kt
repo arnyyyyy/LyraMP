@@ -6,23 +6,23 @@ import com.arno.lyramp.feature.authorization.domain.CompleteYandexLoginUseCase
 import com.arno.lyramp.feature.authorization.domain.GetLastAuthorizedServiceUseCase
 import com.arno.lyramp.feature.authorization.domain.ProvideAuthTokenUseCase
 import com.arno.lyramp.feature.authorization.presentation.AuthorizationScreenModel
+import com.arno.lyramp.feature.authorization.data.AuthSelectionStorage
 import com.arno.lyramp.feature.authorization.data.YandexAuthRepository
 import com.arno.lyramp.feature.authorization.presentation.AuthReducer
 import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBus
-import com.arno.lyramp.feature.authorization.presentation.yandex.YandexAuthBusProvider
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val authModule = module {
-        single { YandexAuthRepository(get(named("auth_storage"))) }
+        single { AuthSelectionStorage(get(plainSettingsQualifier)) }
+        single { YandexAuthRepository(get(secureSettingsQualifier), get()) }
 
-        single { YandexAuthBus().also { YandexAuthBusProvider.set(it) } }
+        single { YandexAuthBus() }
 
         single { ProvideAuthTokenUseCase(get()) }
-        factory { GetAppStartDestinationUseCase(get()) }
-        factory { CompleteNonYandexLoginUseCase(get()) }
+        factory { GetAppStartDestinationUseCase(get(), get()) }
+        factory { CompleteNonYandexLoginUseCase(get(), get()) }
         factory { CompleteYandexLoginUseCase(get()) }
-        factory { GetLastAuthorizedServiceUseCase() }
+        factory { GetLastAuthorizedServiceUseCase(get()) }
         factory { AuthReducer() }
-        factory { AuthorizationScreenModel(get(), get()) }
+        factory { AuthorizationScreenModel(get(), get(), get()) }
 }

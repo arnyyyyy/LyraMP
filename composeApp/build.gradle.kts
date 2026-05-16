@@ -7,7 +7,7 @@ plugins {
         alias(libs.plugins.composeCompiler)
         alias(libs.plugins.ksp)
         alias(libs.plugins.androidx.room)
-        kotlin("plugin.serialization") version "2.0.20"
+        alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -53,7 +53,6 @@ kotlin {
                 iosMain.dependencies {
                         implementation(libs.ktor.client.darwin)
                         implementation(libs.krypto)
-                        implementation(libs.jetbrains.kotlinx.coroutines.core)
                 }
 
                 commonMain.dependencies {
@@ -70,6 +69,7 @@ kotlin {
                         implementation(project(":feature:user_settings"))
                         implementation(project(":feature:stories_generator"))
                         implementation(project(":feature:album_suggestion"))
+                        implementation(project(":feature:stats"))
 
                         implementation(compose.runtime)
                         implementation(compose.foundation)

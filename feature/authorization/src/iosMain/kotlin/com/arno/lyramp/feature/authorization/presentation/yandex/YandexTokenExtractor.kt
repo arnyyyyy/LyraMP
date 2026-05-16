@@ -5,14 +5,14 @@ import platform.Foundation.NSURLComponents
 import platform.Foundation.NSURLQueryItem
 
 internal object YandexTokenExtractor {
-        fun extractFromUrl(url: String): Boolean {
+        fun extractFromUrl(url: String, authBus: YandexAuthBus): Boolean {
                 if (url.isBlank() || !url.contains("access_token")) return false
 
                 return try {
                         val fragmentIndex = url.indexOf('#')
                         if (fragmentIndex != -1) {
                                 val fragment = url.substring(fragmentIndex + 1)
-                                if (parseAndSaveToken(fragment)) return true
+                                if (parseAndSaveToken(fragment, authBus)) return true
                         }
 
                         val components = NSURLComponents(string = url)
@@ -26,7 +26,7 @@ internal object YandexTokenExtractor {
                                 ?.value?.toLongOrNull()
 
                         if (!token.isNullOrEmpty()) {
-                                YandexAuthBusProvider.get().emit(token, expiresIn)
+                                authBus.emit(token, expiresIn)
                                 return true
                         }
 
@@ -37,7 +37,7 @@ internal object YandexTokenExtractor {
                 }
         }
 
-        private fun parseAndSaveToken(fragmentString: String): Boolean {
+        private fun parseAndSaveToken(fragmentString: String, authBus: YandexAuthBus): Boolean {
                 return try {
                         val fakeUrl = "https://dummy?$fragmentString"
                         val components = NSURLComponents(string = fakeUrl)
@@ -53,7 +53,7 @@ internal object YandexTokenExtractor {
                                 return false
                         }
 
-                        YandexAuthBusProvider.get().emit(accessToken, expiresIn)
+                        authBus.emit(accessToken, expiresIn)
                         true
                 } catch (e: Throwable) {
                         NSLog("YandexAuth: Token parsing failed: ${e.message}")

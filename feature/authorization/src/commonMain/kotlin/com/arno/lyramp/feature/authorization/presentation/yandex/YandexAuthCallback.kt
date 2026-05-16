@@ -21,13 +21,3 @@ class YandexAuthBus internal constructor() {
         @OptIn(ExperimentalCoroutinesApi::class)
         fun consume() = _flow.resetReplayCache()
 }
-
-internal object YandexAuthBusProvider {
-        private var instance: YandexAuthBus? = null
-
-        fun set(bus: YandexAuthBus) {
-                instance = bus
-        }
-
-        fun get(): YandexAuthBus = instance ?: error("YandexAuthBus is not initialized. Make sure authModule is loaded.")
-}

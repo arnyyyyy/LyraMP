@@ -69,7 +69,7 @@ class AuthPlaylistScreen(val service: MusicServiceType) : Screen {
                                 )
                         }
 
-                        else -> Unit
+                        MusicServiceType.YANDEX -> Unit
                 }
         }
 }

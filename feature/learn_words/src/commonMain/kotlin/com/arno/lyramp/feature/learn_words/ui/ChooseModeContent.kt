@@ -132,11 +132,11 @@ internal fun ModeSelectionContent(
                         onClick = onNavigateToExtraction
                 )
 
-                MusicFeatureCard(
-                        icon = "🎧",
-                        title = stringResource(Res.string.suggestions_card_title),
-                        onClick = onNavigateToSuggestions
-                )
+//                MusicFeatureCard(
+//                        icon = "🎧",
+//                        title = stringResource(Res.string.suggestions_card_title),
+//                        onClick = onNavigateToSuggestions
+//                )
 
                 MusicFeatureCard(
                         icon = "📊",

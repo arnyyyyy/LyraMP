@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +29,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
@@ -39,6 +46,9 @@ import com.arno.lyramp.ui.theme.LyraColorScheme
 import com.arno.lyramp.ui.theme.LyraColors
 import com.arno.lyramp.ui.theme.LyraTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+/** Height of the overlay bottom NavBar (tab row + system navigation bar). */
+val LocalNavBarHeight = compositionLocalOf { 0.dp }
 
 @Composable
 fun LoadingCard(message: String, progress: Float? = null) {
@@ -204,11 +214,12 @@ fun PlayAudioButton(
 fun SlowModeButton(
         isSlowMode: Boolean,
         onClick: () -> Unit,
+        modifier: Modifier = Modifier,
         size: Dp = 44.dp,
 ) {
         Button(
                 onClick = onClick,
-                modifier = Modifier.size(size),
+                modifier = modifier.size(size),
                 shape = CircleShape,
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -231,6 +242,12 @@ fun MainFeatureScaffold(
         actions: @Composable () -> Unit = {},
         content: @Composable () -> Unit
 ) {
+        val navBarHeight = LocalNavBarHeight.current
+        val density = LocalDensity.current
+        val bottomInsets = WindowInsets.ime.union(
+                WindowInsets(0, 0, 0, with(density) { navBarHeight.roundToPx() })
+        )
+
         Box(modifier = modifier.fillMaxSize()) {
                 Box(
                         modifier = Modifier
@@ -241,11 +258,12 @@ fun MainFeatureScaffold(
                 Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         containerColor = Color.Transparent,
-                ) { paddingValues ->
+                        contentWindowInsets = WindowInsets(0),
+                ) { _ ->
                         Column(
                                 modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(paddingValues)
+                                        .statusBarsPadding()
                         ) {
                                 ScreenTopBar(
                                         icon = icon,
@@ -258,7 +276,9 @@ fun MainFeatureScaffold(
                                 Box(
                                         modifier = Modifier
                                                 .fillMaxSize()
-                                                .padding(16.dp),
+                                                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                                .windowInsetsPadding(bottomInsets)
+                                                .padding(bottom = 16.dp),
                                         contentAlignment = Alignment.Center
                                 ) {
                                         content()

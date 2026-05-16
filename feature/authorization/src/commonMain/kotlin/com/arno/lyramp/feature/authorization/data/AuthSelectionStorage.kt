@@ -2,8 +2,7 @@ package com.arno.lyramp.feature.authorization.data
 
 import com.russhwolf.settings.Settings
 
-internal object AuthSelectionStorage {
-        private val settings = Settings()
+internal class AuthSelectionStorage(private val settings: Settings) {
 
         var lastAuthorizedService: String?
                 get() = settings.getStringOrNull(LAST_SERVICE_KEY)
@@ -12,5 +11,7 @@ internal object AuthSelectionStorage {
                         else settings.putString(LAST_SERVICE_KEY, value)
                 }
 
-        private const val LAST_SERVICE_KEY = "last_authorized_service"
+        private companion object {
+                const val LAST_SERVICE_KEY = "last_authorized_service"
+        }
 }
