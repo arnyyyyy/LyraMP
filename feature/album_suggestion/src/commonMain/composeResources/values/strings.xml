@@ -1,0 +1,43 @@
+<resources>
+    <string name="album_learning_title">Учим альбом</string>
+    <string name="album_learning_loading_words">Загрузка…</string>
+    <string name="album_learning_back_to_album">К альбому</string>
+    <string name="album_learning_level">%1$d</string>
+    <string name="album_learning_level_done">✓</string>
+    <string name="album_learning_track_words">Слова: %1$s</string>
+    <string name="album_learning_save_and_next">Сохранить и продолжить</string>
+    <string name="album_learning_next_level">Следующий трек</string>
+    <string name="album_learning_level_complete_title">Уровень пройден!</string>
+    <string name="album_learning_level_complete_words">%1$d новых слов добавлено</string>
+    <string name="album_practice_mode_cards">Флешкарты</string>
+    <string name="album_practice_mode_learn">Заучивание</string>
+    <string name="album_practice_mode_test">Тест</string>
+    <string name="album_practice_mode_more">Найти ещё слова</string>
+    <string name="album_practice_tap_to_flip">Нажми, чтобы перевернуть</string>
+    <string name="album_practice_all_words">Все слова трека</string>
+    <string name="album_practice_progress">%1$d из %2$d выучено</string>
+
+    <string name="album_overview_level_label">📚 Уровень: %1$s</string>
+    <string name="album_overview_progress_summary">Выучено %1$d из %2$d слов · осталось %3$d</string>
+    <string name="album_overview_learn_all">Учить все слова альбома (%1$d)</string>
+    <string name="album_track_card_tap_hint">Нажми, чтобы выбрать слова для изучения</string>
+    <string name="album_track_card_no_words">Нет слов для изучения</string>
+
+    <string name="album_words_all_album">Все слова альбома</string>
+    <string name="album_words_total_count">Слов: %1$d</string>
+    <string name="album_words_learn_count">Учить: %1$d</string>
+    <string name="album_words_select_all">Выбрать все</string>
+    <string name="album_words_deselect_all">Снять все</string>
+
+    <string name="album_selector_load_error">Ошибка загрузки</string>
+    <string name="album_selector_title">Учить альбом</string>
+    <string name="album_selector_loading">Загрузка альбомов…</string>
+    <string name="album_selector_empty_title">Нет альбомов</string>
+    <string name="album_selector_empty_desc">Послушай несколько треков из одного альбома, и он появится здесь</string>
+    <string name="album_selector_card_tracks">%1$d / %2$d треков</string>
+    <string name="album_practice_mode_reanalyze">Найти ещё</string>
+    <string name="album_extraction_progress">Извлекаем слова: %1$d из %2$d</string>
+    <string name="album_learning_no_new_words_title">Нет новых слов</string>
+    <string name="album_learning_no_new_words_desc">Все слова в этом треке уже знакомы или добавлены</string>
+</resources>
+

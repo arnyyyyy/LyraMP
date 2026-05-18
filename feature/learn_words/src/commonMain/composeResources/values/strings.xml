@@ -4,21 +4,37 @@
     <string name="words_loading">Загружаем слова...</string>
     <string name="words_empty_title">Нет слов для изучения</string>
     <string name="words_empty_subtitle">Добавьте слова из текстов песен</string>
-    <string name="words_count_summary">📖 %1$d слов для изучения</string>
-    <string name="words_mode_section_study">Режимы изучения</string>
-    <string name="words_mode_section_music">Из Вашей музыки</string>
+    <string name="words_count_summary">📖 %1$d слов в словаре</string>
+    <string name="words_section_study">Учим слова</string>
+    <string name="words_section_recommendations">Рекомендации</string>
     <string name="words_mode_cards">Карточки</string>
     <string name="words_mode_learn">Заучивание</string>
     <string name="words_mode_test">Тест</string>
     <string name="words_mode_stories">Истории</string>
+    <string name="words_all_words_title">Все слова</string>
+    <string name="words_all_words_subtitle">Список, повторение, важные</string>
     <string name="extraction_card_title">Слова из песен</string>
+    <string name="init_extraction_card_title">Извлечь слова из песен</string>
+
+    <string name="stats_card_title">Статистика</string>
     <string name="suggestions_card_title">Выучить альбом</string>
+    <string name="audition_card_title">Аудирование</string>
+
+    <string name="all_words_screen_title">Все слова</string>
+    <string name="all_words_count">%1$d слов</string>
+    <string name="all_words_empty_title">Список пуст</string>
+    <string name="all_words_empty_subtitle">Добавьте слова, чтобы они появились здесь</string>
+    <string name="filter_all">Все</string>
+    <string name="filter_important">Важные</string>
+    <string name="important_toggle">Важное слово</string>
+    <string name="audio_play">Озвучить</string>
 
     <string name="know_ticked">✓ Знаю</string>
     <string name="learn_ticked">📖 Учить</string>
 
     <string name="translation">перевод</string>
     <string name="check">Проверить</string>
+    <string name="skip">Пропустить</string>
     <string name="finish">Завершить</string>
     <string name="next">Далее</string>
     <string name="check_icon">✓</string>

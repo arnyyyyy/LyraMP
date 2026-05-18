@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_select_service">Выберите сервис</string>
+    <string name="auth_login_with_yandex">Войти через Яндекс</string>
+    <string name="auth_continue_without_auth">Продолжить без авторизации</string>
+    <string name="auth_playlist_link_label">Ссылка на плейлист</string>
+
+    <string name="loading_init">Инициализация...</string>
+    <string name="loading_history">Загружаем музыку...</string>
+    <string name="lang_analyze">Анализируем языки...</string>
+    <string name="done">Готово!</string>
+    <string name="analyzed_res">Проанализировано %1$d треков</string>
+    <string name="found_languages">Найденные языки:</string>
+    <string name="continue_next">Продолжить</string>
+    <string name="error">Ошибка</string>
+    <string name="retry">Попробовать снова</string>
+    <string name="tracks_count">%1$d треков</string>
+
+    <string name="lang_english">🇬🇧 Английский</string>
+    <string name="lang_russian">🇷🇺 Русский</string>
+    <string name="lang_spanish">🇪🇸 Испанский</string>
+    <string name="lang_french">🇫🇷 Французский</string>
+    <string name="lang_german">🇩🇪 Немецкий</string>
+    <string name="lang_italian">🇮🇹 Итальянский</string>
+    <string name="lang_portuguese">🇵🇹 Португальский</string>
+    <string name="lang_japanese">🇯🇵 Японский</string>
+    <string name="lang_korean">🇰🇷 Корейский</string>
+    <string name="lang_chinese">🇨🇳 Китайский</string>
+    <string name="lang_hungarian">🇭🇺 Венгерский</string>
+    <string name="lang_hebrew">🇮🇱 Иврит</string>
+
+    <string name="history_title">Медиатека</string>
+    <string name="history_loading">Загружаем треки...</string>
+    <string name="history_empty_title">Медиатека пуста</string>
+    <string name="history_empty_subtitle">Добавьте песни для изучения</string>
+    <string name="history_error_title">Ошибка загрузки</string>
+    <string name="practice">Практика</string>
+    <string name="lyrics">Текст</string>
+
+    <string name="lyrics_loading">Загружаем текст...</string>
+    <string name="lyrics_not_found">Текст не найден</string>
+    <string name="repeat">Повторить</string>
+
+    <string name="translation_loading_audio">Загружаем аудио...</string>
+    <string name="translation_loading">Загружаем перевод...</string>
+    <string name="not_found">Не найдено</string>
+    <string name="translation_error_prefix">Ошибка: %1$s</string>
+    <string name="translation_ok">Ок</string>
+    <string name="translation_listen_button">🔊 </string>
+
+    <string name="practice_loading">Подготовка трека...</string>
+    <string name="practice_completed">Практика завершена!</string>
+    <string name="correct">Правильно</string>
+    <string name="incorrect">Неправильно</string>
+    <string name="accuracy">Точность: %1$d%%</string>
+    <string name="result">Результаты:</string>
+    <string name="back">Назад</string>
+    <string name="correct_ticked">✓ Правильно</string>
+    <string name="incorrect_ticked">✗ Неправильно</string>
+    <string name="correct_stat">Правильно: %1$s</string>
+    <string name="user_ans">Вы написали: %1$s</string>
+    <string name="practice_input">Введите текст строки</string>
+    <string name="practice_input_placeholder">Что вы услышали?</string>
+    <string name="practice_skip">Пропустить</string>
+    <string name="practice_check">Проверить</string>
+    <string name="full_song">Вся песня</string>
+    <string name="random_song">Случайная</string>
+    <string name="practice_line_hint">Нажмите, чтобы прослушать строку</string>
+    <string name="practice_playing">⏸  Воспроизводится...</string>
+    <string name="practice_listen_line">▶  Прослушать строку</string>
+    <string name="practice_previous_count">Предыдущие: %1$d</string>
+    <string name="practice_line_counter">Строка %1$d из %2$d</string>
+
+    <string name="words_loading">Загружаем слова...</string>
+    <string name="words_empty_title">Нет слов для изучения</string>
+    <string name="words_empty_subtitle">Добавьте слова из текстов песен</string>
+    <string name="words_card_counter">Карточка %1$d из %2$d</string>
+    <string name="words_flip_hint">Нажмите для переворота</string>
+    <string name="words_see_translation_hint">Нажмите, чтобы увидеть перевод</string>
+    <string name="words_go_back_hint">Нажмите, чтобы вернуться</string>
+    <string name="words_previous">← Назад</string>
+    <string name="next">Далее</string>
+    <string name="words_finish">Завершить ✓</string>
+    <string name="words_completed_title">Все карточки пройдены!</string>
+    <string name="words_completed_subtitle">Отличная работа! Продолжайте изучать слова.</string>
+    <string name="words_restart">Повторить</string>
+    <string name="words_back_to_library">Назад к медиатеке</string>
+    <string name="words_mode_cards">Карточки</string>
+    <string name="words_mode_learn">Заучивание</string>
+    <string name="words_mode_test">Тест</string>
+
+    <string name="words_mode_section_study">Режимы изучения</string>
+    <string name="words_mode_section_music">Из Вашей музыки</string>
+    <string name="words_count_summary">📖 %1$d слов для изучения</string>
+
+    <string name="words_learn_hint">Напишите слово</string>
+    <string name="check">Проверить</string>
+    <string name="words_learn_correct">Правильно</string>
+    <string name="correct_answer_is">Правильный ответ:</string>
+    <string name="choose_translation">Выберите перевод:</string>
+    <string name="choose_word">Выберите слово:</string>
+    <string name="words_result_title">Результат</string>
+    <string name="words_result_correct">Правильных: %1$d</string>
+    <string name="words_result_incorrect">Ошибок: %1$d</string>
+    <string name="words_back_to_modes">← Выбор режима</string>
+    <string name="counter_ratio">%1$d / %2$d</string>
+    <string name="words_know">Знаю</string>
+    <string name="words_again">Ещё раз</string>
+    <string name="words_tap_to_flip">Нажмите чтобы перевернуть</string>
+    <string name="words_mode_select_title">Мои слова</string>
+    <string name="words_score">Результат: %1$d из %2$d</string>
+    <string name="words_correct_answer">Правильный ответ: %1$s</string>
+    <string name="words_progress">%1$d из %2$d слов</string>
+
+    <string name="words_mode_stories">Истории</string>
+    <string name="books_icon">📚</string>
+    <string name="pencil_icon">✏️</string>
+    <string name="test_icon">🎯</string>
+    <string name="star_icon">✨</string>
+    <string name="chevron">›</string>
+    <string name="notebook_icon">📖</string>
+    <string name="words_back_arrow">←</string>
+    <string name="check_icon">✓</string>
+    <string name="cross_icon">✗</string>
+    <string name="finish">Завершить</string>
+    <string name="translation">перевод</string>
+    <string name="words_label_correct">Правильно</string>
+    <string name="errors_num">Ошибок</string>
+
+    <string name="nav_library">Медиатека</string>
+    <string name="nav_words">Слова</string>
+
+    <string name="story_title">Истории</string>
+    <string name="select_all">Выбрать все</string>
+    <string name="story_generate">✨ Сгенерировать историю</string>
+    <string name="story_result_title">📖 Ваша история</string>
+    <string name="story_words_used">Слова: %1$s</string>
+    <string name="back_arrowed">← Назад</string>
+    <string name="story_generating">Генерация истории...</string>
+    <string name="story_empty_title">Нет сохранённых слов</string>
+    <string name="story_empty_subtitle">Сохраните слова из песен, чтобы генерировать истории</string>
+    <string name="model_loading">Загрузка модели...</string>
+    <string name="downloading_proc">⬇️ %1$s...</string>
+    <string name="model_default_name">Модель</string>
+    <string name="nums_description">%1$s • %2$s</string>
+    <string name="model_ready">Модель готова • %1$s</string>
+    <string name="model_change">Другая модель</string>
+
+    <string name="know">Знаю</string>
+    <string name="learn">Учить</string>
+    <string name="loading_dots">...</string>
+
+    <string name="correct_count">✓ %1$d</string>
+    <string name="incorrect_count">✗ %1$d</string>
+    <string name="score_compact">✓ %1$d  ✗ %2$d</string>
+    <string name="percent">%1$d%%</string>
+
+    <string name="know_ticked">✓ Знаю</string>
+    <string name="learn_ticked">📖 Учить</string>
+
+    <string name="cefr_title">Уровень сложности</string>
+    <string name="cefr_beginner">Начальный</string>
+    <string name="cefr_intermediate">Средний</string>
+    <string name="cefr_advanced">Продвинутый</string>
+    <string name="cefr_words_count">%1$d слов</string>
+
+    <string name="extraction_title">Слова из песен</string>
+    <string name="extraction_subtitle">Извлечём слова из текстов Ваших последних английских песен и добавим их для изучения</string>
+    <string name="extraction_start">Извлечь слова</string>
+    <string name="extraction_running">Обрабатываем тексты песен...</string>
+    <string name="extraction_done_title">Готово!</string>
+    <string name="extraction_done_tracks">🎶 Обработано треков: %1$d</string>
+    <string name="extraction_done_words">✓ Сохранено слов: %1$d</string>
+    <string name="extraction_failed">Не удалось извлечь слова</string>
+    <string name="extraction_card_title">Слова из песен</string>
+
+    <string name="suggestions_title">Учить альбом</string>
+    <string name="suggestions_card_title">Выучить альбом</string>
+    <string name="suggestions_loading_albums">Ищем альбомы...</string>
+    <string name="suggestions_loading_words">Извлекаем слова из альбома...</string>
+    <string name="suggestions_empty">Нет подходящих альбомов</string>
+    <string name="suggestions_empty_subtitle">Лайкните хотя бы 2 английские песни из одного альбома</string>
+    <string name="suggestions_album_liked">❤️ Лайкнуто: %1$d</string>
+    <string name="suggestions_album_progress">Прогресс: %1$d / %2$d</string>
+    <string name="suggestions_album_not_started">Начать изучение</string>
+    <string name="suggestions_words_found">Найдено слов: %1$d</string>
+    <string name="suggestions_known_count">✓ Знаю: %1$d</string>
+    <string name="suggestions_save_unknown">📖 Учить незнакомые (%1$d)</string>
+    <string name="suggestions_saved_title">Слова добавлены!</string>
+    <string name="suggestions_saved_count">✓ Добавлено слов: %1$d</string>
+
+    <string name="album_learning_title">Учить альбом</string>
+    <string name="album_learning_level">Lvl %1$d</string>
+    <string name="album_learning_level_locked">🔒</string>
+    <string name="album_learning_level_done">✅</string>
+    <string name="album_learning_level_current">▶️</string>
+    <string name="album_learning_loading_words">Загрузка слов из трека...</string>
+    <string name="album_learning_track_words">Слова из «%1$s»</string>
+    <string name="album_learning_save_and_next">Сохранить и продолжить</string>
+    <string name="album_learning_level_complete_title">Уровень пройден!</string>
+    <string name="album_learning_level_complete_words">📖 Новых слов на изучение: %1$d</string>
+    <string name="album_learning_next_level">Следующий уровень</string>
+    <string name="album_learning_back_to_album">← К альбому</string>
+    <string name="album_learning_progress">Прогресс: %1$d / %2$d</string>
+    <string name="album_learning_all_done">🎉 Альбом пройден!</string>
+</resources>
+
+

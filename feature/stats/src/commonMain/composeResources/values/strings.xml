@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="stats_screen_title">Статистика</string>
+    <string name="stats_screen_title">  Статистика</string>
     <string name="stats_section_vocabulary">СЛОВАРЬ</string>
     <string name="stats_section_cefr">ПРОГРЕСС ПО CEFR</string>
     <string name="stats_section_library">МЕДИАТЕКА</string>
@@ -13,4 +13,20 @@
     <string name="stats_empty_cefr">Нет данных для CEFR. Нажми «Обновить», чтобы начать обработку.</string>
     <string name="stats_loading">Собираем статистику…</string>
     <string name="stats_error_title">Не удалось загрузить статистику</string>
+    <string name="stats_words_loading">Загружаем слова...</string>
+    <string name="stats_words_count">%1$d слов</string>
+    <string name="stats_words_empty_title">Список пуст</string>
+    <string name="stats_words_empty_subtitle">Здесь появятся слова из выбранной категории</string>
+    <string name="stats_words_no_filtered_title">Нет слов для выбранного фильтра</string>
+    <string name="stats_filter_all">Все</string>
+    <string name="stats_filter_important">Важные</string>
+    <string name="stats_cefr_beginner">Начальный</string>
+    <string name="stats_cefr_intermediate">Средний</string>
+    <string name="stats_cefr_advanced">Продвинутый</string>
+    <string name="stats_words_important_toggle">Важное слово</string>
+    <string name="stats_select_all">Выбрать все</string>
+    <string name="stats_deselect_all">Снять все</string>
+    <string name="stats_cefr_words_count">%1$d слов</string>
+    <string name="stats_cefr_words_empty">Нет слов для этого уровня</string>
+    <string name="stats_cefr_words_mark_shown">Не рекомендовать выбранные (%1$d)</string>
 </resources>
